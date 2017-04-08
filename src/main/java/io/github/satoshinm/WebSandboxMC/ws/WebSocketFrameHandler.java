@@ -42,21 +42,12 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
     }
 
     @Override
+    @SuppressWarnings("deprecation") // TODO: why is HANDSHAKE_COMPLETE deprecated and what is the replacement?
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         System.out.println("userEventTriggered: "+evt);
         if (evt == WebSocketServerProtocolHandler.ServerHandshakeStateEvent.HANDSHAKE_COMPLETE) {
             // "The Handshake was complete successful and so the channel was upgraded to websockets"
-            // TODO: why is HANDSHAKE_COMPLETE deprecated and what is the replacement?
 
-
-    /* TODO: send initial server messages on client connect here, example:
-
-U,1,0,0,0,0,0
-E,1491627331.01,600
-T,Welcome to Craft!
-T,Type "/help" for a list of commands.
-N,1,guest1
-*/
             webSocketServerThread.handleNewClient(ctx);
         }
     }

@@ -231,6 +231,16 @@ public final class WebSocketServerThread extends Thread {
 
     // Handle a command from the client
     public void handleNewClient(ChannelHandlerContext ctx) {
+
+    /* Send initial server messages on client connect here, example from Python server for comparison:
+
+U,1,0,0,0,0,0
+E,1491627331.01,600
+T,Welcome to Craft!
+T,Type "/help" for a list of commands.
+N,1,guest1
+*/
+
         String response = "T,Welcome to WebSandboxMC\n";
 
         List<World> worlds = Bukkit.getServer().getWorlds();
@@ -242,7 +252,7 @@ public final class WebSocketServerThread extends Thread {
 
         // TODO: configurable world
         World world = worlds.get(0);
-        
+
         for (int i = -radius; i < radius; ++i) {
             for (int j = -radius; j < radius; ++j) {
                 for (int k = -radius; k < radius; ++k) {
