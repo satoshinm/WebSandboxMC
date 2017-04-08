@@ -3,6 +3,7 @@ package io.github.satoshinm.WebSandboxMC;
 
 import java.util.HashMap;
 
+import io.github.satoshinm.WebSandboxMC.bukkit.BlockListener;
 import io.github.satoshinm.WebSandboxMC.ws.WebSocketServerThread;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;

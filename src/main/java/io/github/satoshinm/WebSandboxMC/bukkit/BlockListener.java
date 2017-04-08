@@ -1,5 +1,5 @@
 
-package io.github.satoshinm.WebSandboxMC;
+package io.github.satoshinm.WebSandboxMC.bukkit;
 
 import io.github.satoshinm.WebSandboxMC.ws.WebSocketServerThread;
 import org.bukkit.Location;
