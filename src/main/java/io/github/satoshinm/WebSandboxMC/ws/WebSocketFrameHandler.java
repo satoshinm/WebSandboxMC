@@ -83,11 +83,16 @@ N,1,guest1
 
                 World world = worlds.get(0);
 
-                // Send blocks around this area
+                // Send blocks around this area in the Bukkit world
                 int x_center = -85;
                 int y_center = 78;
                 int z_center = 93;
+
+                // of this dimension, +/-d
                 int d = 16;
+
+                // raised this amount in the web world
+                int y_offset = 20;
 
                 response = "";
                 for (int i = -d; i < d; ++i) {
@@ -166,7 +171,7 @@ N,1,guest1
 
                             }
 
-                            response = "B,0,0,"+(i+d)+","+(j+d+30)+","+(k+d)+","+type+"\n";
+                            response = "B,0,0,"+(i+d)+","+(j+d+y_offset)+","+(k+d)+","+type+"\n";
                             ctx.channel().writeAndFlush(new BinaryWebSocketFrame(Unpooled.copiedBuffer(response.getBytes())));
                         }
                     }
