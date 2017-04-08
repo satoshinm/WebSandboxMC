@@ -110,6 +110,16 @@ N,1,guest1
                                 case SAND:
                                     type = 2;
                                     break;
+                                    // TODO: ores, for now, showing as stone
+                                case COAL_ORE:
+                                case IRON_ORE:
+                                //case DIAMOND_ORE:
+                                //case EMERALD_ORE:
+                                case REDSTONE_ORE:
+                                case GLOWING_REDSTONE_ORE:
+                                case LAPIS_ORE:
+                                //case QUARTZ_ORE:
+                                case GOLD_ORE:
                                 case STONE:
                                     type = 3;
                                     break;
@@ -120,7 +130,8 @@ N,1,guest1
                                 case LOG_2:
                                     type = 5; // wood
                                     break;
-                                    // TODO: cement (6)
+                                case GRAVEL:
+                                    type = 6; // cement, close enough
                                 case DIRT:
                                     type = 7;
                                     break;
@@ -147,6 +158,7 @@ N,1,guest1
                                     type = 15;
                                     break;
                                     // TODO: cloud (16)
+                                case DOUBLE_PLANT: // TODO: other double plants, but a lot look like longer long grass
                                 case LONG_GRASS:
                                     type = 17; // tall grass
                                     break;
@@ -164,7 +176,7 @@ N,1,guest1
                                 // TODO: blue flower (23)
 
                                 default:
-                                    //System.out.println("type="+block.getType());
+                                    System.out.println("unknown block type="+block.getType());
                                     // unknown/unsupported becomes cloud
                                     // TODO: support more
                                     type = 16;
