@@ -26,6 +26,7 @@ import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 
@@ -51,7 +52,18 @@ N,1,guest1
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, WebSocketFrame frame) throws Exception {
-        // ping and pong frames already handled
+
+        // Send blocks around this area in the Bukkit world
+        // TODO: configurable center
+        int x_center = -85;
+        int y_center = 78;
+        int z_center = 93;
+
+        // of this radius, +/-
+        int radius = 16;
+
+        // raised this amount in the web world, so it is clearly distinguished from the client-generated terrain
+        int y_offset = 20;
 
         if (frame instanceof TextWebSocketFrame) {
             // TODO: remove text frames, not used
@@ -80,24 +92,14 @@ N,1,guest1
                 response += "R,0,0\n"; // refresh chunk (0,0)
                 ctx.channel().writeAndFlush(new BinaryWebSocketFrame(Unpooled.copiedBuffer(response.getBytes())));
 
-
+                // TODO: configurable world
                 World world = worlds.get(0);
 
-                // Send blocks around this area in the Bukkit world
-                int x_center = -85;
-                int y_center = 78;
-                int z_center = 93;
-
-                // of this dimension, +/-d
-                int d = 16;
-
-                // raised this amount in the web world
-                int y_offset = 20;
 
                 response = "";
-                for (int i = -d; i < d; ++i) {
-                    for (int j = -d; j < d; ++j) {
-                        for (int k = -d; k < d; ++k) {
+                for (int i = -radius; i < radius; ++i) {
+                    for (int j = -radius; j < radius; ++j) {
+                        for (int k = -radius; k < radius; ++k) {
                             Block block = world.getBlockAt(i + x_center, j + y_center, k + z_center);
                             int type; // = block.getTypeId();
                             switch (block.getType()) {
@@ -183,7 +185,7 @@ N,1,guest1
 
                             }
 
-                            response = "B,0,0,"+(i+d)+","+(j+d+y_offset)+","+(k+d)+","+type+"\n";
+                            response = "B,0,0,"+(i+radius)+","+(j+radius+y_offset)+","+(k+radius)+","+type+"\n";
                             ctx.channel().writeAndFlush(new BinaryWebSocketFrame(Unpooled.copiedBuffer(response.getBytes())));
                         }
                     }
@@ -196,10 +198,61 @@ N,1,guest1
 
                 response = "T,Blocks sent\n";
                 ctx.channel().writeAndFlush(new BinaryWebSocketFrame(Unpooled.copiedBuffer(response.getBytes())));
+                // TODO: move player on top of the new blocks
 
 
                 System.out.println("Sending response: "+response);
 
+            } else if (string.startsWith("B,")) {
+                System.out.println("client block update: "+string);
+                String[] array = string.trim().split(",");
+                if (array.length != 5) {
+                    throw new RuntimeException("malformed block update B, command from client: "+string);
+                }
+                int x = Integer.parseInt(array[1]);
+                int y = Integer.parseInt(array[2]);
+                int z = Integer.parseInt(array[3]);
+                int type = Integer.parseInt(array[4]);
+
+                Material material;
+                // TODO: refactor reverse translation
+                switch (type) {
+                    case 0: material = Material.AIR; break;
+                    case 1: material = Material.GRASS; break;
+                    case 2: material = Material.SAND; break;
+                    case 3: material = Material.STONE; break;
+                    case 4: material = Material.BRICK; break;
+                    case 5: material = Material.LOG; break;
+                    case 6: material = Material.GRAVEL; break;
+                    case 7: material = Material.DIRT; break;
+                    case 8: material = Material.WOOD; break;
+                    case 9: material = Material.SNOW_BLOCK; break;
+                    case 10: material = Material.GLASS; break;
+                    case 11: material = Material.COBBLESTONE; break;
+                    //case 12: material = Material. light stone?
+                    //case 13: material = Material. dark stone?
+                    case 14: material = Material.CHEST; break;
+                    case 15: material = Material.LEAVES; break;
+                    //case 16: material = Material.clouds; break; // clouds
+                    case 17: material = Material.LONG_GRASS; break;
+                    case 18: material = Material.YELLOW_FLOWER; break;
+                    case 19: material = Material.RED_ROSE; break;
+                    case 20: material = Material.CHORUS_FLOWER; break;
+                    case 21: material = Material.DOUBLE_PLANT; break; // sunflower
+                    //case 22: material = Material.white flower
+                    //case 23: material = Material.blue flower
+                    default: material = Material.DIAMOND_ORE; // placeholder TODO fix
+                }
+                x += -radius + x_center;
+                y += -radius + y_center - y_offset;
+                z += -radius + z_center;
+                Block block = Bukkit.getServer().getWorlds().get(0).getBlockAt(x, y, z);
+                if (block != null) {
+                    System.out.println("setting block ("+x+","+y+","+z+",) to "+material);
+                    block.setType(material);
+                } else {
+                    System.out.println("no such block at "+x+","+y+","+z);
+                }
             }
         } else {
             String message = "unsupported frame type: " + frame.getClass().getName();
