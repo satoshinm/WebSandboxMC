@@ -60,21 +60,17 @@ public final class WebSocketServerThread extends Thread {
     private boolean SSL;
     private int x_center, y_center, z_center, radius, y_offset;
 
-    public WebSocketServerThread(int port) {
+    public WebSocketServerThread(int port, int x_center, int y_center, int z_center, int radius, int y_offset) {
         this.PORT = port;
         this.SSL = false; // TODO: support ssl?
 
-        // Send blocks around this area in the Bukkit world
-        // TODO: configurable center
-        this.x_center = -85;
-        this.y_center = 78;
-        this.z_center = 93;
+        this.x_center = x_center;
+        this.y_center = y_center;
+        this.z_center = z_center;
 
-        // of this radius, +/-
-        this.radius = 16;
+        this.radius = radius;
 
-        // raised this amount in the web world, so it is clearly distinguished from the client-generated terrain
-        this.y_offset = 20;
+        this.y_offset = y_offset;
     }
 
     @Override

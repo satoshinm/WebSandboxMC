@@ -50,15 +50,35 @@ public class WebSandboxPlugin extends JavaPlugin {
         config.options().copyDefaults(true);
 
         int httpPort = 4081;
+        // Send blocks around this area in the Bukkit world
+        int x_center = -85;
+        int y_center = 78;
+        int z_center = 93;
+
+        // of this radius, +/-
+        int radius = 16;
+
+        // raised this amount in the web world, so it is clearly distinguished from the client-generated terrain
+        int y_offset = 20;
 
         config.addDefault("http.port", httpPort);
+        config.addDefault("mc.x_center", x_center);
+        config.addDefault("mc.y_center", y_center);
+        config.addDefault("mc.z_center", z_center);
+        config.addDefault("mc.radius", radius);
+        config.addDefault("nc.y_offset", y_offset);
 
         httpPort = this.getConfig().getInt("http.port");
+        x_center = this.getConfig().getInt("mc.x_center");
+        y_center = this.getConfig().getInt("mc.y_center");
+        z_center = this.getConfig().getInt("mc.z_center");
+        radius = this.getConfig().getInt("mc.radius");
+        y_offset = this.getConfig().getInt("nc.y_offset");
 
         saveConfig();
 
         // Run the websocket server
-        webSocketServerThread = new WebSocketServerThread(httpPort);
+        webSocketServerThread = new WebSocketServerThread(httpPort, x_center, y_center, z_center, radius, y_offset);
         webSocketServerThread.start();
 
         // EXAMPLE: Custom code, here we just output some info so we can check all is well
