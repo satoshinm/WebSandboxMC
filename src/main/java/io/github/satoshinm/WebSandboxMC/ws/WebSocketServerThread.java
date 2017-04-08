@@ -19,6 +19,7 @@ import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelId;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
@@ -36,7 +37,9 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * A HTTP server which serves Web Socket requests at:
@@ -62,8 +65,11 @@ public final class WebSocketServerThread extends Thread {
     private int PORT;
     private boolean SSL;
     private int x_center, y_center, z_center, radius, y_offset;
+
     private ChannelGroup allUsersGroup;
     private int lastPlayerID;
+    private Map<ChannelId, String> channelId2name;
+    private Map<String, ChannelId> name2channelId;
 
     public WebSocketServerThread(int port, int x_center, int y_center, int z_center, int radius, int y_offset) {
         this.PORT = port;
@@ -79,6 +85,8 @@ public final class WebSocketServerThread extends Thread {
 
         this.allUsersGroup = new DefaultChannelGroup(ImmediateEventExecutor.INSTANCE);
         this.lastPlayerID = 0;
+        this.channelId2name = new HashMap<ChannelId, String>();
+        this.name2channelId = new HashMap<String, ChannelId>();
     }
 
     @Override
@@ -242,6 +250,8 @@ public final class WebSocketServerThread extends Thread {
         int theirID = ++this.lastPlayerID;
         String theirName = "guest" + theirID;
         allUsersGroup.add(ctx.channel());
+        this.channelId2name.put(ctx.channel().id(), theirName);
+        this.name2channelId.put(theirName, ctx.channel().id());
 
     /* Send initial server messages on client connect here, example from Python server for comparison:
 
@@ -296,6 +306,7 @@ N,1,guest1
         response = "T," + theirName + " has joined.\n";
         allUsersGroup.writeAndFlush(new BinaryWebSocketFrame(Unpooled.copiedBuffer(response.getBytes())));
     }
+    // TODO: cleanup clients when they disconnect
 
     public void handle(String string, ChannelHandlerContext ctx) {
         if (string.startsWith("B,")) {
@@ -320,6 +331,12 @@ N,1,guest1
             } else {
                 System.out.println("no such block at "+x+","+y+","+z);
             }
+        } else if (string.startsWith("T,")) {
+            String chat = string.substring(2);
+            String theirName = this.channelId2name.get(ctx.channel().id());
+            String response = "T,<" + theirName + "> " + chat + "\n";
+            allUsersGroup.writeAndFlush(new BinaryWebSocketFrame(Unpooled.copiedBuffer(response.getBytes())));
+            // TODO: support some server /commands?
         }
         // TODO: handle more client messages
     }
