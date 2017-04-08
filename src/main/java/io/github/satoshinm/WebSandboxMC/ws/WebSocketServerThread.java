@@ -257,7 +257,7 @@ public final class WebSocketServerThread extends Thread {
     public void handleNewClient(ChannelHandlerContext ctx) {
         Channel channel = ctx.channel();
         int theirID = ++this.lastPlayerID;
-        String theirName = "guest" + theirID;
+        String theirName = "webguest" + theirID;
         allUsersGroup.add(channel);
         this.channelId2name.put(channel.id(), theirName);
         this.name2channelId.put(theirName, channel.id());
@@ -331,10 +331,12 @@ N,1,guest1
                 System.out.println("no such block at "+x+","+y+","+z);
             }
         } else if (string.startsWith("T,")) {
-            String chat = string.substring(2);
+            String chat = string.substring(2).trim();
             String theirName = this.channelId2name.get(ctx.channel().id());
-            broadcastLine("T,<" + theirName + "> " + chat);
-            // TODO: also send/recv to/from mc clients!
+            String formattedChat = "<" + theirName + "> " + chat;
+            broadcastLine("T," + formattedChat);
+            Bukkit.getServer().broadcastMessage(formattedChat); // TODO: only to permission name?
+
             // TODO: support some server /commands?
         }
         // TODO: handle more client messages
@@ -354,5 +356,9 @@ N,1,guest1
         broadcastLine("R,0,0");
 
         System.out.println("notified block update: ("+x+","+y+","+z+") to "+type);
+    }
+
+    public void notifyChat(String message) {
+        broadcastLine("T," + message);
     }
 }

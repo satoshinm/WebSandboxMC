@@ -9,6 +9,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
 
 public class BlockListener implements Listener {
 
@@ -49,4 +50,14 @@ public class BlockListener implements Listener {
     // TODO: BlockPiston*Event
     // TODO: BlockRedstoneEvent
     // TODO: BlockSpreadEvent
+
+
+    // TODO: move handler to a different class?
+    @EventHandler(ignoreCancelled = true)
+    public void onChat(AsyncPlayerChatEvent event) {
+        String formattedMessage = event.getFormat().format(event.getMessage());
+        formattedMessage = "<" + event.getPlayer().getDisplayName() + "> " + formattedMessage; // TODO: why isn't getFormat() take care of this?
+
+        webSocketServerThread.notifyChat(formattedMessage);
+    }
 }
