@@ -227,7 +227,15 @@ public final class WebSocketServerThread extends Thread {
 
             response = "T,Blocks sent\n";
             ctx.channel().writeAndFlush(new BinaryWebSocketFrame(Unpooled.copiedBuffer(response.getBytes())));
-            // TODO: move player on top of the new blocks
+
+            // Move player on top of the new blocks
+            int x_start = radius;
+            int y_start = world.getHighestBlockYAt(x_center, y_center) + 1 - radius - y_offset;
+            int z_start = radius;
+            int rotation_x = 0;
+            int rotation_y = 0;
+            response = "U,1,"+x_start+","+y_start+","+z_start+","+rotation_x+","+rotation_y+"\n";
+            ctx.channel().writeAndFlush(new BinaryWebSocketFrame(Unpooled.copiedBuffer(response.getBytes())));
 
 
             System.out.println("Sending response: "+response);
