@@ -16,8 +16,8 @@ import org.bukkit.plugin.java.JavaPlugin;
  * @author Dinnerbone
  */
 public class WebSandboxPlugin extends JavaPlugin {
-    private final SamplePlayerListener playerListener = new SamplePlayerListener(this);
-    private final SampleBlockListener blockListener = new SampleBlockListener();
+    private SamplePlayerListener playerListener;
+    private BlockListener blockListener;
     private final HashMap<Player, Boolean> debugees = new HashMap<Player, Boolean>();
 
     private WebSocketServerThread webSocketServerThread;
@@ -34,17 +34,6 @@ public class WebSandboxPlugin extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        // TODO: Place any custom enable code here including the registration of any events
-
-        // Register our events
-        PluginManager pm = getServer().getPluginManager();
-        pm.registerEvents(playerListener, this);
-        pm.registerEvents(blockListener, this);
-
-        // Register our commands
-        getCommand("pos").setExecutor(new SamplePosCommand());
-        getCommand("debug").setExecutor(new SampleDebugCommand(this));
-
         // Configuration
         final FileConfiguration config = getConfig();
         config.options().copyDefaults(true);
@@ -80,6 +69,18 @@ public class WebSandboxPlugin extends JavaPlugin {
         // Run the websocket server
         webSocketServerThread = new WebSocketServerThread(httpPort, x_center, y_center, z_center, radius, y_offset);
         webSocketServerThread.start();
+
+        // Register our events
+        PluginManager pm = getServer().getPluginManager();
+        //playerListener = new SamplePlayerListener(this); // TODO
+        blockListener = new BlockListener(webSocketServerThread);
+        //pm.registerEvents(playerListener, this);
+        pm.registerEvents(blockListener, this);
+
+        // Register our commands
+        getCommand("pos").setExecutor(new SamplePosCommand());
+        getCommand("debug").setExecutor(new SampleDebugCommand(this));
+
 
         // EXAMPLE: Custom code, here we just output some info so we can check all is well
         PluginDescriptionFile pdfFile = this.getDescription();
