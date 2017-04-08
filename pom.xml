@@ -79,13 +79,53 @@
                 <relocation>
                   <pattern>io.netty</pattern>
                   <shadedPattern>
-                    io.github.satoshinm.WebSandboxMC.netty
+                    io.github.satoshinm.WebSandboxMC.dep.io.netty
+                  </shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>com.avaje</pattern>
+                  <shadedPattern>
+                    io.github.satoshinm.WebSandboxMC.dep.com.avaje
+                  </shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>com.google</pattern>
+                  <shadedPattern>
+                    io.github.satoshinm.WebSandboxMC.dep.com.google
+                  </shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>org.apache</pattern>
+                  <shadedPattern>
+                    io.github.satoshinm.WebSandboxMC.dep.org.apache
+                  </shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>org.hamcrest</pattern>
+                  <shadedPattern>
+                    io.github.satoshinm.WebSandboxMC.dep.org.hamcrest
+                  </shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>org.json</pattern>
+                  <shadedPattern>
+                    io.github.satoshinm.WebSandboxMC.dep.org.json
+                  </shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>org.yaml</pattern>
+                  <shadedPattern>
+                    io.github.satoshinm.WebSandboxMC.dep.org.yaml
                   </shadedPattern>
                 </relocation>
               </relocations>
               <artifactSet>
                 <excludes>
                   <excludes>org.spigotmc:*</excludes>
+                  <excludes>net.md_5:*</excludes>
+                  <excludes>javax.persistence:*</excludes>
+                  <excludes>com.avaje:*</excludes>
+                  <excludes>org.hamcrest:*</excludes>
                 </excludes>
               </artifactSet>
             </configuration>
