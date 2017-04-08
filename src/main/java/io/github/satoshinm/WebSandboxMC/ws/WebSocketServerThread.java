@@ -20,6 +20,8 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.EventLoopGroup;
+import io.netty.channel.group.ChannelGroup;
+import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
@@ -28,6 +30,7 @@ import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
+import io.netty.util.concurrent.ImmediateEventExecutor;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -59,6 +62,8 @@ public final class WebSocketServerThread extends Thread {
     private int PORT;
     private boolean SSL;
     private int x_center, y_center, z_center, radius, y_offset;
+    private ChannelGroup allUsersGroup;
+    private int lastPlayerID;
 
     public WebSocketServerThread(int port, int x_center, int y_center, int z_center, int radius, int y_offset) {
         this.PORT = port;
@@ -71,6 +76,9 @@ public final class WebSocketServerThread extends Thread {
         this.radius = radius;
 
         this.y_offset = y_offset;
+
+        this.allUsersGroup = new DefaultChannelGroup(ImmediateEventExecutor.INSTANCE);
+        this.lastPlayerID = 0;
     }
 
     @Override
@@ -231,6 +239,9 @@ public final class WebSocketServerThread extends Thread {
 
     // Handle a command from the client
     public void handleNewClient(ChannelHandlerContext ctx) {
+        int theirID = ++this.lastPlayerID;
+        String theirName = "guest" + theirID;
+        allUsersGroup.add(ctx.channel());
 
     /* Send initial server messages on client connect here, example from Python server for comparison:
 
@@ -241,7 +252,7 @@ T,Type "/help" for a list of commands.
 N,1,guest1
 */
 
-        String response = "T,Welcome to WebSandboxMC\n";
+        String response = "T,Welcome to WebSandboxMC, "+theirName+"!\n";
 
         List<World> worlds = Bukkit.getServer().getWorlds();
         response += "T,Worlds loaded: " + worlds.size() + "\n";
@@ -282,7 +293,8 @@ N,1,guest1
         response = "U,1," + x_start + "," + y_start + "," + z_start + "," + rotation_x + "," + rotation_y + "\n";
         ctx.channel().writeAndFlush(new BinaryWebSocketFrame(Unpooled.copiedBuffer(response.getBytes())));
 
-        System.out.println("Sending response: " + response);
+        response = "T," + theirName + " has joined.\n";
+        allUsersGroup.writeAndFlush(new BinaryWebSocketFrame(Unpooled.copiedBuffer(response.getBytes())));
     }
 
     public void handle(String string, ChannelHandlerContext ctx) {
@@ -313,7 +325,7 @@ N,1,guest1
     }
 
     public void notifyBlockUpdate(int x, int y, int z, Material material) {
-        // TODO: send to all web clients within range, if within range, "B," command setting block to 0
+        // TODO: send to all web clients within range, if within range, "B," command
         int type = toWebBlockType(material);
 
 
