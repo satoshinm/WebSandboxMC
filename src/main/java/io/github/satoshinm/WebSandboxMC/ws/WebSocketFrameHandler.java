@@ -94,35 +94,77 @@ N,1,guest1
                     for (int j = -d; j < d; ++j) {
                         for (int k = -d; k < d; ++k) {
                             Block block = world.getBlockAt(i + x_center, j + y_center, k + z_center);
-                            int type = block.getTypeId();
-                            /*
+                            int type; // = block.getTypeId();
                             switch (block.getType()) {
                                 case AIR:
                                     type = 0;
+                                    break;
                                 case GRASS:
                                     type = 1;
-                                default:
-                                    System.out.println("type="+block.getType());
+                                    break;
+                                case SAND:
+                                    type = 2;
+                                    break;
+                                case STONE:
                                     type = 3;
-TODO: translate blocks
+                                    break;
+                                case BRICK:
+                                    type = 4;
+                                    break;
+                                case LOG:
+                                case LOG_2:
+                                    type = 5; // wood
+                                    break;
+                                    // TODO: cement (6)
+                                case DIRT:
+                                    type = 7;
+                                    break;
+                                case WOOD:
+                                    type = 8; // plank
+                                    break;
+                                case SNOW:
+                                case SNOW_BLOCK:;
+                                    type = 9;
+                                    break;
+                                case GLASS:
+                                    type = 10;
+                                    break;
+                                case COBBLESTONE:
+                                    type = 11;
+                                    break;
+                                    // TODO: light stone (12)
+                                    // TODO: dark stone (13)
+                                case CHEST:
+                                    type = 14;
+                                    break;
+                                case LEAVES:
+                                case LEAVES_2:
+                                    type = 15;
+                                    break;
+                                    // TODO: cloud (16)
+                                case LONG_GRASS:
+                                    type = 17; // tall grass
+                                    break;
+                                case YELLOW_FLOWER:
+                                    type = 18;
+                                    break;
+                                case RED_ROSE:
+                                    type = 19;
+                                    break;
+                                case CHORUS_FLOWER:
+                                    type = 20;
+                                    break;
+                                // TODO: sunflower (21)
+                                // TODO: white flower (22)
+                                // TODO: blue flower (23)
 
-COAL_ORE
-DIRT
-DOUBLE_PLANT
-GRASS
-GRAVEL
-IRON_ORE
-LEAVES_2
-LOG_2
-LONG_GRASS
-RED_ROSE
-SAND
-STONE
-YELLOW_FLOWER
-
+                                default:
+                                    //System.out.println("type="+block.getType());
+                                    // unknown/unsupported becomes cloud
+                                    // TODO: support more
+                                    type = 16;
 
                             }
-                            */
 
                             response = "B,0,0,"+(i+d)+","+(j+d+30)+","+(k+d)+","+type+"\n";
                             ctx.channel().writeAndFlush(new BinaryWebSocketFrame(Unpooled.copiedBuffer(response.getBytes())));
