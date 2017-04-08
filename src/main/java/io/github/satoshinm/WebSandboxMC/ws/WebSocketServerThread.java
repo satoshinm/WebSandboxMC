@@ -342,9 +342,21 @@ N,1,guest1
     }
 
     public void notifyBlockUpdate(int x, int y, int z, Material material) {
+        System.out.println("bukkit block ("+x+","+y+","+z+") was set to "+material);
+
         // TODO: send to all web clients within range, if within range, "B," command
         int type = toWebBlockType(material);
 
+        x -= -radius + x_center;
+        y -= -radius + y_center - y_offset;
+        z -= -radius + z_center;
 
+        String response = "B,0,0,"+x+","+y+","+z+","+type+"\n";
+        allUsersGroup.writeAndFlush(new BinaryWebSocketFrame(Unpooled.copiedBuffer(response.getBytes())));
+
+        response = "R,0,0\n";
+        allUsersGroup.writeAndFlush(new BinaryWebSocketFrame(Unpooled.copiedBuffer(response.getBytes())));
+
+        System.out.println("notified block update: ("+x+","+y+","+z+") to "+type);
     }
 }

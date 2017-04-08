@@ -23,7 +23,7 @@ public class BlockListener implements Listener {
         Block block = event.getBlock();
         Location location = block.getLocation();
         int x = location.getBlockX();
-        int y = location.getBlockX();
+        int y = location.getBlockY();
         int z = location.getBlockZ();
 
         webSocketServerThread.notifyBlockUpdate(x, y, z, Material.AIR);
@@ -31,7 +31,13 @@ public class BlockListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onBlockPlace(BlockPlaceEvent event) {
-        // TODO
+        Block block = event.getBlock();
+        Location location = block.getLocation();
+        int x = location.getBlockX();
+        int y = location.getBlockY();
+        int z = location.getBlockZ();
+
+        webSocketServerThread.notifyBlockUpdate(x, y, z, block.getType());
     }
 
     // TODO: BlockBurnEvent
