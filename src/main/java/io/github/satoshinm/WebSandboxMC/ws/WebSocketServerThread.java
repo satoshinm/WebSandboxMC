@@ -47,9 +47,13 @@ import io.netty.handler.ssl.util.SelfSignedCertificate;
  */
 public final class WebSocketServerThread extends Thread {
 
-    // TODO: move to plugin config options
-    static final boolean SSL = System.getProperty("ssl") != null;
-    static final int PORT = Integer.parseInt(System.getProperty("port", SSL? "8443" : "8080"));
+    private int PORT;
+    private boolean SSL;
+
+    public WebSocketServerThread(int port) {
+        this.PORT = port;
+        this.SSL = false; // TODO: support ssl?
+    }
 
     @Override
     public void run() {

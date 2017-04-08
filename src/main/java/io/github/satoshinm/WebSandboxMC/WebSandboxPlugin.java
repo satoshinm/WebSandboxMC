@@ -4,6 +4,7 @@ package io.github.satoshinm.WebSandboxMC;
 import java.util.HashMap;
 
 import io.github.satoshinm.WebSandboxMC.ws.WebSocketServerThread;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
@@ -44,8 +45,20 @@ public class WebSandboxPlugin extends JavaPlugin {
         getCommand("pos").setExecutor(new SamplePosCommand());
         getCommand("debug").setExecutor(new SampleDebugCommand(this));
 
+        // Configuration
+        final FileConfiguration config = getConfig();
+        config.options().copyDefaults(true);
+
+        int httpPort = 4081;
+
+        config.addDefault("http.port", httpPort);
+
+        httpPort = this.getConfig().getInt("http.port");
+
+        saveConfig();
+
         // Run the websocket server
-        webSocketServerThread = new WebSocketServerThread();
+        webSocketServerThread = new WebSocketServerThread(httpPort);
         webSocketServerThread.start();
 
         // EXAMPLE: Custom code, here we just output some info so we can check all is well
