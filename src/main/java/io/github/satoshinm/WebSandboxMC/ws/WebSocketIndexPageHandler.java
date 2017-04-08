@@ -15,6 +15,7 @@
  */
 package io.github.satoshinm.WebSandboxMC.ws;
 
+import com.google.common.base.Charsets;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
@@ -30,6 +31,11 @@ import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.util.CharsetUtil;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 
 import static io.netty.handler.codec.http.HttpMethod.GET;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -65,11 +71,39 @@ public class WebSocketIndexPageHandler extends SimpleChannelInboundHandler<FullH
 
         // Send the index page
         if ("/".equals(req.uri()) || "/index.html".equals(req.uri())) {
-            String webSocketLocation = getWebSocketLocation(ctx.pipeline(), req, websocketPath);
-            ByteBuf content = WebSocketServerIndexPage.getContent(webSocketLocation);
+            //ByteBuf content = Unpooled.copiedBuffer("<p>Hello, world", CharsetUtil.US_ASCII);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("/craft.html")));
+            // TODO: alternatively if exists, check in plugin directory for updated files versus embedded resources
+            // TODO: read only once and buffer
+            String line;
+            StringBuffer buffer = new StringBuffer();
+            while ((line = reader.readLine()) != null) {
+                buffer.append(line);
+                buffer.append('\n');
+            }
+            ByteBuf content = Unpooled.copiedBuffer(buffer, Charsets.UTF_8);
+
             FullHttpResponse res = new DefaultFullHttpResponse(HTTP_1_1, OK, content);
 
             res.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/html; charset=UTF-8");
+            HttpUtil.setContentLength(res, content.readableBytes());
+
+            sendHttpResponse(ctx, req, res);
+        } else if ("/craft.js".equals(req.uri())) {
+            // TODO: refactor with above
+            BufferedReader reader = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("/craft.js")));
+            String line;
+            StringBuffer buffer = new StringBuffer();
+            while ((line = reader.readLine()) != null) {
+                buffer.append(line);
+                // TODO: change line to connect to us, this server (external address) on load (argv)
+                buffer.append('\n');
+            }
+            ByteBuf content = Unpooled.copiedBuffer(buffer, Charsets.UTF_8);
+
+            FullHttpResponse res = new DefaultFullHttpResponse(HTTP_1_1, OK, content);
+
+            res.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/javascript; charset=UTF-8");
             HttpUtil.setContentLength(res, content.readableBytes());
 
             sendHttpResponse(ctx, req, res);

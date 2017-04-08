@@ -16,6 +16,4 @@ Currently supports:
 
 ## Usage
 * Copy target/WebSandboxMC-0.1.jar to the `plugins` folder of your [Glowstone](https://www.glowstone.net) server (note: may/not work with other Bukkit-compatible servers, TODO: test)
-* Visit [https://github.com/satoshinm/NetCraft](https://github.com/satoshinm/NetCraft) on a modern browser with WebGL support
-* Type `/online localhost` to connect
-
+* Visit http://localhost:4081/index.html
