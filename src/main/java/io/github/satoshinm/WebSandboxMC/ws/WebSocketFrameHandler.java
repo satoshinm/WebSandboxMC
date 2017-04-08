@@ -17,8 +17,11 @@ package io.github.satoshinm.WebSandboxMC.ws;
 
 import java.util.Locale;
 
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;
 
@@ -27,15 +30,47 @@ import io.netty.handler.codec.http.websocketx.WebSocketFrame;
  */
 public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocketFrame> {
 
+    /* TODO: send initial server messages on client connect here, example:
+
+U,1,0,0,0,0,0
+E,1491627331.01,600
+T,Welcome to Craft!
+T,Type "/help" for a list of commands.
+N,1,guest1
+
+    @Override
+    public void channelActive(ChannelHandlerContext ctx) {
+        System.out.println("channel now active");
+        ctx.channel().writeAndFlush(new BinaryWebSocketFrame(Unpooled.copiedBuffer("T,Welcome to WebSandboxMC\n".getBytes())));
+    }
+    */
+
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, WebSocketFrame frame) throws Exception {
         // ping and pong frames already handled
 
         if (frame instanceof TextWebSocketFrame) {
+            // TODO: remove text frames, not used
             // Send the uppercase string back.
             String request = ((TextWebSocketFrame) frame).text();
-            System.out.println("channel "+ctx.channel()+" received request "+request);
+            System.out.println("channel " + ctx.channel() + " received request " + request);
             ctx.channel().writeAndFlush(new TextWebSocketFrame(request.toUpperCase(Locale.US)));
+        } else if (frame instanceof BinaryWebSocketFrame) {
+            ByteBuf content = ((BinaryWebSocketFrame) frame).content();
+
+            byte[] bytes = new byte[content.capacity()];
+            content.getBytes(0, bytes);
+
+            String string = new String(bytes);
+            System.out.println("received "+content.capacity()+" bytes: "+string);
+
+            // TODO: handle client messages
+
+            if (string.startsWith("V,")) { // TODO: move to channel active, but it isn't sent there? want initial client connect
+                String response = "T,Welcome to WebSandboxMC\n";
+                // TODO: send blocks
+                ctx.channel().writeAndFlush(new BinaryWebSocketFrame(Unpooled.copiedBuffer(response.getBytes())));
+            }
         } else {
             String message = "unsupported frame type: " + frame.getClass().getName();
             throw new UnsupportedOperationException(message);
