@@ -245,13 +245,22 @@ public final class WebSocketServerThread extends Thread {
         return material;
     }
 
+    private void sendLine(Channel channel, String message) {
+        channel.writeAndFlush(new BinaryWebSocketFrame(Unpooled.copiedBuffer((message + "\n").getBytes())));
+    }
+
+    private void broadcastLine(String message) {
+        allUsersGroup.writeAndFlush(new BinaryWebSocketFrame(Unpooled.copiedBuffer((message + "\n").getBytes())));
+    }
+
     // Handle a command from the client
     public void handleNewClient(ChannelHandlerContext ctx) {
+        Channel channel = ctx.channel();
         int theirID = ++this.lastPlayerID;
         String theirName = "guest" + theirID;
-        allUsersGroup.add(ctx.channel());
-        this.channelId2name.put(ctx.channel().id(), theirName);
-        this.name2channelId.put(theirName, ctx.channel().id());
+        allUsersGroup.add(channel);
+        this.channelId2name.put(channel.id(), theirName);
+        this.name2channelId.put(theirName, channel.id());
 
     /* Send initial server messages on client connect here, example from Python server for comparison:
 
@@ -262,14 +271,13 @@ T,Type "/help" for a list of commands.
 N,1,guest1
 */
 
-        String response = "T,Welcome to WebSandboxMC, "+theirName+"!\n";
+        sendLine(channel,"T,Welcome to WebSandboxMC, "+theirName+"!");
 
         List<World> worlds = Bukkit.getServer().getWorlds();
-        response += "T,Worlds loaded: " + worlds.size() + "\n";
-        response += "B,0,0,0,30,0,1\n"; // floating grass block at (0,30,0) in chunk (0,0)
-        response += "K,0,0,0\n"; // update chunk key (0,0) to 0
-        response += "R,0,0\n"; // refresh chunk (0,0)
-        ctx.channel().writeAndFlush(new BinaryWebSocketFrame(Unpooled.copiedBuffer(response.getBytes())));
+        sendLine(channel, "T,Worlds loaded: " + worlds.size());
+        sendLine(channel, "B,0,0,0,30,0,1"); // floating grass block at (0,30,0) in chunk (0,0)
+        sendLine(channel, "K,0,0,0"); // update chunk key (0,0) to 0
+        sendLine(channel, "R,0,0"); // refresh chunk (0,0)
 
         // TODO: configurable world
         World world = worlds.get(0);
@@ -280,19 +288,13 @@ N,1,guest1
                     Block block = world.getBlockAt(i + x_center, j + y_center, k + z_center);
                     int type = toWebBlockType(block.getType());
 
-                    response = "B,0,0," + (i + radius) + "," + (j + radius + y_offset) + "," + (k + radius) + "," + type + "\n";
-                    ctx.channel().writeAndFlush(new BinaryWebSocketFrame(Unpooled.copiedBuffer(response.getBytes())));
+                    sendLine(channel, "B,0,0," + (i + radius) + "," + (j + radius + y_offset) + "," + (k + radius) + "," + type);
                 }
             }
         }
-        response = "K,0,0,1\n";
-        ctx.channel().writeAndFlush(new BinaryWebSocketFrame(Unpooled.copiedBuffer(response.getBytes())));
-
-        response = "R,0,0\n";
-        ctx.channel().writeAndFlush(new BinaryWebSocketFrame(Unpooled.copiedBuffer(response.getBytes())));
-
-        response = "T,Blocks sent\n";
-        ctx.channel().writeAndFlush(new BinaryWebSocketFrame(Unpooled.copiedBuffer(response.getBytes())));
+        sendLine(channel,"K,0,0,1");
+        sendLine(channel, "R,0,0");
+        sendLine(channel, "T,Blocks sent");
 
         // Move player on top of the new blocks
         int x_start = radius;
@@ -300,11 +302,8 @@ N,1,guest1
         int z_start = radius;
         int rotation_x = 0;
         int rotation_y = 0;
-        response = "U,1," + x_start + "," + y_start + "," + z_start + "," + rotation_x + "," + rotation_y + "\n";
-        ctx.channel().writeAndFlush(new BinaryWebSocketFrame(Unpooled.copiedBuffer(response.getBytes())));
-
-        response = "T," + theirName + " has joined.\n";
-        allUsersGroup.writeAndFlush(new BinaryWebSocketFrame(Unpooled.copiedBuffer(response.getBytes())));
+        sendLine(channel, "U,1," + x_start + "," + y_start + "," + z_start + "," + rotation_x + "," + rotation_y );
+        broadcastLine("T," + theirName + " has joined.");
     }
     // TODO: cleanup clients when they disconnect
 
@@ -334,8 +333,8 @@ N,1,guest1
         } else if (string.startsWith("T,")) {
             String chat = string.substring(2);
             String theirName = this.channelId2name.get(ctx.channel().id());
-            String response = "T,<" + theirName + "> " + chat + "\n";
-            allUsersGroup.writeAndFlush(new BinaryWebSocketFrame(Unpooled.copiedBuffer(response.getBytes())));
+            broadcastLine("T,<" + theirName + "> " + chat);
+            // TODO: also send/recv to/from mc clients!
             // TODO: support some server /commands?
         }
         // TODO: handle more client messages
@@ -351,11 +350,8 @@ N,1,guest1
         y -= -radius + y_center - y_offset;
         z -= -radius + z_center;
 
-        String response = "B,0,0,"+x+","+y+","+z+","+type+"\n";
-        allUsersGroup.writeAndFlush(new BinaryWebSocketFrame(Unpooled.copiedBuffer(response.getBytes())));
-
-        response = "R,0,0\n";
-        allUsersGroup.writeAndFlush(new BinaryWebSocketFrame(Unpooled.copiedBuffer(response.getBytes())));
+        broadcastLine("B,0,0,"+x+","+y+","+z+","+type);
+        broadcastLine("R,0,0");
 
         System.out.println("notified block update: ("+x+","+y+","+z+") to "+type);
     }
