@@ -3,6 +3,7 @@ package io.github.satoshinm.WebSandboxMC;
 
 import io.github.satoshinm.WebSandboxMC.ws.WebSocketServerThread;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -25,8 +26,7 @@ public class BlockListener implements Listener {
         int y = location.getBlockX();
         int z = location.getBlockZ();
 
-        // TODO: send to all web clients within range, if within range, "B," command setting block to 0
-        //webSocketServerThread.
+        webSocketServerThread.notifyBlockUpdate(x, y, z, Material.AIR);
     }
 
     @EventHandler(ignoreCancelled = true)

@@ -20,11 +20,11 @@ import java.util.Locale;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.SimpleChannelInboundHandler;
+import io.netty.channel.*;
 import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;
+import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -41,6 +41,14 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
         this.webSocketServerThread = webSocketServerThread;
     }
 
+    @Override
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+        System.out.println("userEventTriggered: "+evt);
+        if (evt == WebSocketServerProtocolHandler.ServerHandshakeStateEvent.HANDSHAKE_COMPLETE) {
+            // "The Handshake was complete successful and so the channel was upgraded to websockets"
+            // TODO: why is HANDSHAKE_COMPLETE deprecated and what is the replacement?
+
+
     /* TODO: send initial server messages on client connect here, example:
 
 U,1,0,0,0,0,0
@@ -48,16 +56,15 @@ E,1491627331.01,600
 T,Welcome to Craft!
 T,Type "/help" for a list of commands.
 N,1,guest1
-
-    @Override
-    public void channelActive(ChannelHandlerContext ctx) {
-        System.out.println("channel now active");
-        ctx.channel().writeAndFlush(new BinaryWebSocketFrame(Unpooled.copiedBuffer("T,Welcome to WebSandboxMC\n".getBytes())));
+*/
+            webSocketServerThread.handleNewClient(ctx);
+        }
     }
-    */
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, WebSocketFrame frame) throws Exception {
+    public void channelRead0(ChannelHandlerContext ctx, WebSocketFrame frame) throws Exception {
+        //System.out.println("channel read, obj="+obj);
+
         if (frame instanceof TextWebSocketFrame) {
             // TODO: remove text frames, not used
             // Send the uppercase string back.
@@ -78,5 +85,11 @@ N,1,guest1
             String message = "unsupported frame type: " + frame.getClass().getName();
             throw new UnsupportedOperationException(message);
         }
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+        cause.printStackTrace();
+        ctx.close();
     }
 }

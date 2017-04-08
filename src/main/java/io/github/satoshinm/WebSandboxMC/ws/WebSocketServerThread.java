@@ -230,55 +230,53 @@ public final class WebSocketServerThread extends Thread {
     }
 
     // Handle a command from the client
-    public void handle(String string, ChannelHandlerContext ctx) {
-        if (string.startsWith("V,")) { // TODO: move to channel active, but it isn't sent there? want initial client connect
-            String response = "T,Welcome to WebSandboxMC\n";
+    public void handleNewClient(ChannelHandlerContext ctx) {
+        String response = "T,Welcome to WebSandboxMC\n";
 
-            List<World> worlds = Bukkit.getServer().getWorlds();
-            response += "T,Worlds loaded: " + worlds.size() + "\n";
-            response += "B,0,0,0,30,0,1\n"; // floating grass block at (0,30,0) in chunk (0,0)
-            response += "K,0,0,0\n"; // update chunk key (0,0) to 0
-            response += "R,0,0\n"; // refresh chunk (0,0)
-            ctx.channel().writeAndFlush(new BinaryWebSocketFrame(Unpooled.copiedBuffer(response.getBytes())));
+        List<World> worlds = Bukkit.getServer().getWorlds();
+        response += "T,Worlds loaded: " + worlds.size() + "\n";
+        response += "B,0,0,0,30,0,1\n"; // floating grass block at (0,30,0) in chunk (0,0)
+        response += "K,0,0,0\n"; // update chunk key (0,0) to 0
+        response += "R,0,0\n"; // refresh chunk (0,0)
+        ctx.channel().writeAndFlush(new BinaryWebSocketFrame(Unpooled.copiedBuffer(response.getBytes())));
 
-            // TODO: configurable world
-            World world = worlds.get(0);
+        // TODO: configurable world
+        World world = worlds.get(0);
+        
+        for (int i = -radius; i < radius; ++i) {
+            for (int j = -radius; j < radius; ++j) {
+                for (int k = -radius; k < radius; ++k) {
+                    Block block = world.getBlockAt(i + x_center, j + y_center, k + z_center);
+                    int type = toWebBlockType(block.getType());
 
-
-            response = "";
-            for (int i = -radius; i < radius; ++i) {
-                for (int j = -radius; j < radius; ++j) {
-                    for (int k = -radius; k < radius; ++k) {
-                        Block block = world.getBlockAt(i + x_center, j + y_center, k + z_center);
-                        int type = toWebBlockType(block.getType());
-
-                        response = "B,0,0,"+(i+radius)+","+(j+radius+y_offset)+","+(k+radius)+","+type+"\n";
-                        ctx.channel().writeAndFlush(new BinaryWebSocketFrame(Unpooled.copiedBuffer(response.getBytes())));
-                    }
+                    response = "B,0,0," + (i + radius) + "," + (j + radius + y_offset) + "," + (k + radius) + "," + type + "\n";
+                    ctx.channel().writeAndFlush(new BinaryWebSocketFrame(Unpooled.copiedBuffer(response.getBytes())));
                 }
             }
-            response = "K,0,0,1\n";
-            ctx.channel().writeAndFlush(new BinaryWebSocketFrame(Unpooled.copiedBuffer(response.getBytes())));
+        }
+        response = "K,0,0,1\n";
+        ctx.channel().writeAndFlush(new BinaryWebSocketFrame(Unpooled.copiedBuffer(response.getBytes())));
 
-            response = "R,0,0\n";
-            ctx.channel().writeAndFlush(new BinaryWebSocketFrame(Unpooled.copiedBuffer(response.getBytes())));
+        response = "R,0,0\n";
+        ctx.channel().writeAndFlush(new BinaryWebSocketFrame(Unpooled.copiedBuffer(response.getBytes())));
 
-            response = "T,Blocks sent\n";
-            ctx.channel().writeAndFlush(new BinaryWebSocketFrame(Unpooled.copiedBuffer(response.getBytes())));
+        response = "T,Blocks sent\n";
+        ctx.channel().writeAndFlush(new BinaryWebSocketFrame(Unpooled.copiedBuffer(response.getBytes())));
 
-            // Move player on top of the new blocks
-            int x_start = radius;
-            int y_start = world.getHighestBlockYAt(x_center, y_center) + 1 - radius - y_offset;
-            int z_start = radius;
-            int rotation_x = 0;
-            int rotation_y = 0;
-            response = "U,1,"+x_start+","+y_start+","+z_start+","+rotation_x+","+rotation_y+"\n";
-            ctx.channel().writeAndFlush(new BinaryWebSocketFrame(Unpooled.copiedBuffer(response.getBytes())));
+        // Move player on top of the new blocks
+        int x_start = radius;
+        int y_start = world.getHighestBlockYAt(x_center, y_center) + 1 - radius - y_offset;
+        int z_start = radius;
+        int rotation_x = 0;
+        int rotation_y = 0;
+        response = "U,1," + x_start + "," + y_start + "," + z_start + "," + rotation_x + "," + rotation_y + "\n";
+        ctx.channel().writeAndFlush(new BinaryWebSocketFrame(Unpooled.copiedBuffer(response.getBytes())));
 
+        System.out.println("Sending response: " + response);
+    }
 
-            System.out.println("Sending response: "+response);
-
-        } else if (string.startsWith("B,")) {
+    public void handle(String string, ChannelHandlerContext ctx) {
+        if (string.startsWith("B,")) {
             System.out.println("client block update: "+string);
             String[] array = string.trim().split(",");
             if (array.length != 5) {
@@ -304,7 +302,10 @@ public final class WebSocketServerThread extends Thread {
         // TODO: handle more client messages
     }
 
-    void notifyBlockUpdate(int x, int y, int z, Material material) {
+    public void notifyBlockUpdate(int x, int y, int z, Material material) {
+        // TODO: send to all web clients within range, if within range, "B," command setting block to 0
+        int type = toWebBlockType(material);
+
 
     }
 }
