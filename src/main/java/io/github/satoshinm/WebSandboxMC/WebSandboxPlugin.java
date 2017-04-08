@@ -2,6 +2,8 @@
 package io.github.satoshinm.WebSandboxMC;
 
 import java.util.HashMap;
+
+import io.github.satoshinm.WebSandboxMC.ws.WebSocketServerThread;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
@@ -16,6 +18,8 @@ public class WebSandboxPlugin extends JavaPlugin {
     private final SamplePlayerListener playerListener = new SamplePlayerListener(this);
     private final SampleBlockListener blockListener = new SampleBlockListener();
     private final HashMap<Player, Boolean> debugees = new HashMap<Player, Boolean>();
+
+    private WebSocketServerThread webSocketServerThread;
 
     @Override
     public void onDisable() {
@@ -39,6 +43,10 @@ public class WebSandboxPlugin extends JavaPlugin {
         // Register our commands
         getCommand("pos").setExecutor(new SamplePosCommand());
         getCommand("debug").setExecutor(new SampleDebugCommand(this));
+
+        // Run the websocket server
+        webSocketServerThread = new WebSocketServerThread();
+        webSocketServerThread.start();
 
         // EXAMPLE: Custom code, here we just output some info so we can check all is well
         PluginDescriptionFile pdfFile = this.getDescription();
