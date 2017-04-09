@@ -51,12 +51,17 @@ public class WebSandboxPlugin extends JavaPlugin {
         // raised this amount in the web world, so it is clearly distinguished from the client-generated terrain
         int y_offset = 20;
 
+        String ourExternalAddress = "localhost";
+        int ourExternalPort = httpPort;
+
         config.addDefault("http.port", httpPort);
         config.addDefault("mc.x_center", x_center);
         config.addDefault("mc.y_center", y_center);
         config.addDefault("mc.z_center", z_center);
         config.addDefault("mc.radius", radius);
         config.addDefault("nc.y_offset", y_offset);
+        config.addDefault("http.external_address", ourExternalAddress);
+        config.addDefault("http.external_port", ourExternalPort);
 
         httpPort = this.getConfig().getInt("http.port");
         x_center = this.getConfig().getInt("mc.x_center");
@@ -68,7 +73,7 @@ public class WebSandboxPlugin extends JavaPlugin {
         saveConfig();
 
         // Run the websocket server
-        webSocketServerThread = new WebSocketServerThread(httpPort, x_center, y_center, z_center, radius, y_offset);
+        webSocketServerThread = new WebSocketServerThread(httpPort, x_center, y_center, z_center, radius, y_offset, ourExternalAddress, ourExternalPort);
         webSocketServerThread.start();
 
         // Register our events

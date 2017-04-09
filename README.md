@@ -1,6 +1,6 @@
 # WebSandboxMC
 
-A web-based interface providing an interactive 3D preview or glimpse of your Glowstone server, for use with [NetCraft](https://github.com/satoshinm/NetCraft)
+A web-based interface providing an interactive WebGL 3D preview or glimpse of your Glowstone server
 
 ## Features
 Currently supports:
@@ -16,4 +16,5 @@ Currently supports:
 
 ## Usage
 * Copy target/WebSandboxMC-0.1.jar to the `plugins` folder of your [Glowstone](https://www.glowstone.net) server (note: may/not work with other Bukkit-compatible servers, TODO: test)
-* Visit http://localhost:4081/index.html
+* Visit http://localhost:4081/index.html in a modern browser (uses [NetCraft](https://github.com/satoshinm/NetCraft))
+

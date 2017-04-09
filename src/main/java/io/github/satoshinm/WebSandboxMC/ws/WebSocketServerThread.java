@@ -71,7 +71,10 @@ public final class WebSocketServerThread extends Thread {
     private Map<ChannelId, String> channelId2name;
     private Map<String, ChannelId> name2channelId;
 
-    public WebSocketServerThread(int port, int x_center, int y_center, int z_center, int radius, int y_offset) {
+    private String ourExternalAddress;
+    private int ourExternalPort;
+
+    public WebSocketServerThread(int port, int x_center, int y_center, int z_center, int radius, int y_offset, String ourExternalAddress, int ourExternalPort) {
         this.PORT = port;
         this.SSL = false; // TODO: support ssl?
 
@@ -87,6 +90,9 @@ public final class WebSocketServerThread extends Thread {
         this.lastPlayerID = 0;
         this.channelId2name = new HashMap<ChannelId, String>();
         this.name2channelId = new HashMap<String, ChannelId>();
+
+        this.ourExternalAddress = ourExternalAddress;
+        this.ourExternalPort = ourExternalPort;
     }
 
     @Override
@@ -108,12 +114,12 @@ public final class WebSocketServerThread extends Thread {
                 b.group(bossGroup, workerGroup)
                         .channel(NioServerSocketChannel.class)
                         .handler(new LoggingHandler(LogLevel.INFO))
-                        .childHandler(new WebSocketServerInitializer(sslCtx, this));
+                        .childHandler(new WebSocketServerInitializer(sslCtx, this, ourExternalAddress, ourExternalPort));
 
                 Channel ch = b.bind(PORT).sync().channel();
 
                 System.out.println("Open your web browser and navigate to " +
-                        (SSL ? "https" : "http") + "://127.0.0.1:" + PORT + '/');
+                        (SSL ? "https" : "http") + "://127.0.0.1:" + PORT + "/index.html");
 
                 ch.closeFuture().sync();
             } finally {

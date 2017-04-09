@@ -48,11 +48,12 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
  * Outputs index page content.
  */
 public class WebSocketIndexPageHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
+    private final String ourExternalAddress;
+    private final int ourExternalPort;
 
-    private final String websocketPath;
-
-    public WebSocketIndexPageHandler(String websocketPath) {
-        this.websocketPath = websocketPath;
+    public WebSocketIndexPageHandler(String ourExternalAddress, int ourExternalPort) {
+        this.ourExternalAddress = ourExternalAddress;
+        this.ourExternalPort = ourExternalPort;
     }
 
     @Override
@@ -95,8 +96,11 @@ public class WebSocketIndexPageHandler extends SimpleChannelInboundHandler<FullH
             String line;
             StringBuffer buffer = new StringBuffer();
             while ((line = reader.readLine()) != null) {
+                if (line.equals("Module['arguments'] = argv;")) {
+                    buffer.append("Module['arguments'] = ['" + ourExternalAddress + "', '" + ourExternalPort + "'];");
+                    continue;
+                }
                 buffer.append(line);
-                // TODO: change line to connect to us, this server (external address) on load (argv)
                 buffer.append('\n');
             }
             ByteBuf content = Unpooled.copiedBuffer(buffer, Charsets.UTF_8);

@@ -32,10 +32,15 @@ public class WebSocketServerInitializer extends ChannelInitializer<SocketChannel
 
     private final SslContext sslCtx;
     private final WebSocketServerThread webSocketServerThread;
+    private final String ourExternalAddress;
+    private final int ourExternalPort;
 
-    public WebSocketServerInitializer(SslContext sslCtx, WebSocketServerThread webSocketServerThread) {
+    public WebSocketServerInitializer(SslContext sslCtx, WebSocketServerThread webSocketServerThread, String ourExternalAddress, int ourExternalPort) {
         this.sslCtx = sslCtx;
         this.webSocketServerThread = webSocketServerThread;
+
+        this.ourExternalAddress = ourExternalAddress;
+        this.ourExternalPort = ourExternalPort;
     }
 
     @Override
@@ -48,7 +53,8 @@ public class WebSocketServerInitializer extends ChannelInitializer<SocketChannel
         pipeline.addLast(new HttpObjectAggregator(65536));
         pipeline.addLast(new WebSocketServerCompressionHandler());
         pipeline.addLast(new WebSocketServerProtocolHandler(WEBSOCKET_PATH, null, true));
-        pipeline.addLast(new WebSocketIndexPageHandler(WEBSOCKET_PATH)); // TODO: overload with '/' for html and ws? important TODO: serve web client
+        // TODO: overload with '/' for html and ws? currently, /index.html is html, but / is ws (html attempt = 'not a WebSocket handshake request: missing upgrade')
+        pipeline.addLast(new WebSocketIndexPageHandler(ourExternalAddress, ourExternalPort));
         pipeline.addLast(new WebSocketFrameHandler(webSocketServerThread));
     }
 }
