@@ -1,6 +1,8 @@
 # WebSandboxMC
 
-A web-based interface providing an interactive WebGL 3D preview or glimpse of your Glowstone server
+Bukkit plugin providing a web-based interface with an interactive WebGL 3D preview or glimpse of your server
+
+![Screenshot](screenshot.png)
 
 ## Features
 Currently supports:
