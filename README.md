@@ -24,7 +24,7 @@ TODO: missing features
 * Build the WebSandboxMC plugin: `mvn package`
 
 ## Usage
-* Copy target/WebSandboxMC-0.1.jar to the `plugins` folder of your [Glowstone](https://www.glowstone.net) server (note: may/not work with other Bukkit-compatible servers, TODO: test)
+* Copy target/WebSandboxMC.jar to the `plugins` folder of your [Glowstone](https://www.glowstone.net) server (note: may/not work with other Bukkit-compatible servers, TODO: test)
 * Visit http://localhost:4081/index.html in a modern browser (requires WebGL, Pointer Lock, WebSockets)
 * Play the game
 
