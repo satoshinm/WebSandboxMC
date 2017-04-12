@@ -72,20 +72,21 @@ public class WebSandboxPlugin extends JavaPlugin {
 
         saveConfig();
 
-        // Run the websocket server
-        webSocketServerThread = new WebSocketServerThread(httpPort, x_center, y_center, z_center, radius, y_offset, ourExternalAddress, ourExternalPort);
-        webSocketServerThread.start();
-
         // Register our events
         PluginManager pm = getServer().getPluginManager();
         //playerListener = new SamplePlayerListener(this); // TODO
-        blockListener = new BlockListener(webSocketServerThread);
+        blockListener = new BlockListener(webSocketServerThread, x_center, y_center, z_center, radius, y_offset);
         //pm.registerEvents(playerListener, this);
         pm.registerEvents(blockListener, this);
 
         // Register our commands
         getCommand("pos").setExecutor(new SamplePosCommand());
         getCommand("debug").setExecutor(new SampleDebugCommand(this));
+
+        // Run the websocket server
+        webSocketServerThread = new WebSocketServerThread(httpPort, blockListener, ourExternalAddress, ourExternalPort);
+        blockListener.webSocketServerThread = webSocketServerThread; // TODO: improve awkward reference linkages
+        webSocketServerThread.start();
     }
 
     public boolean isDebugging(final Player player) {
