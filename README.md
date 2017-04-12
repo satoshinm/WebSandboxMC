@@ -19,7 +19,8 @@ TODO: missing features
 * Install [Maven 3](http://maven.apache.org/download.html)
 * Check out this repository
 * Check out and build [NetCraft](https://github.com/satoshinm/NetCraft) using emscripten, when it completes copy the build output into resources:
-* `cp ../NetCraft/release-build-js/craft.* src/main/resources/`
+* `cp ../NetCraft/build/craft.html src/main/resources/craft.html`
+* `cp ../NetCraft/build/craft.js src/main/resources/craft.js`
 * Build the WebSandboxMC plugin: `mvn package`
 
 ## Usage
