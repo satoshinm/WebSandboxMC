@@ -3,7 +3,9 @@ package io.github.satoshinm.WebSandboxMC;
 
 import java.util.HashMap;
 
+import io.github.satoshinm.WebSandboxMC.bridge.BlockBridge;
 import io.github.satoshinm.WebSandboxMC.bukkit.BlockListener;
+import io.github.satoshinm.WebSandboxMC.bukkit.ChatListener;
 import io.github.satoshinm.WebSandboxMC.ws.WebSocketServerThread;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -17,8 +19,6 @@ import org.bukkit.plugin.java.JavaPlugin;
  * @author Dinnerbone
  */
 public class WebSandboxPlugin extends JavaPlugin {
-    private SamplePlayerListener playerListener;
-    private BlockListener blockListener;
     private final HashMap<Player, Boolean> debugees = new HashMap<Player, Boolean>();
 
     private WebSocketServerThread webSocketServerThread;
@@ -72,20 +72,28 @@ public class WebSandboxPlugin extends JavaPlugin {
 
         saveConfig();
 
+        webSocketServerThread = new WebSocketServerThread(httpPort, ourExternalAddress, ourExternalPort);
+
+        webSocketServerThread.blockBridge = new BlockBridge(webSocketServerThread, x_center, y_center, z_center, radius, y_offset);
+
         // Register our events
         PluginManager pm = getServer().getPluginManager();
         //playerListener = new SamplePlayerListener(this); // TODO
-        blockListener = new BlockListener(webSocketServerThread, x_center, y_center, z_center, radius, y_offset);
         //pm.registerEvents(playerListener, this);
+
+        BlockListener blockListener = new BlockListener(webSocketServerThread.blockBridge);
         pm.registerEvents(blockListener, this);
+
+        ChatListener chatListener = new ChatListener(webSocketServerThread);
+        pm.registerEvents(chatListener, this);
+
 
         // Register our commands
         getCommand("pos").setExecutor(new SamplePosCommand());
         getCommand("debug").setExecutor(new SampleDebugCommand(this));
 
+
         // Run the websocket server
-        webSocketServerThread = new WebSocketServerThread(httpPort, blockListener, ourExternalAddress, ourExternalPort);
-        blockListener.webSocketServerThread = webSocketServerThread; // TODO: improve awkward reference linkages
         webSocketServerThread.start();
     }
 
