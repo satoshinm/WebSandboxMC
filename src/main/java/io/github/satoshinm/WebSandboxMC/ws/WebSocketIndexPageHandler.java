@@ -96,6 +96,7 @@ public class WebSocketIndexPageHandler extends SimpleChannelInboundHandler<FullH
             String line;
             StringBuffer buffer = new StringBuffer();
             while ((line = reader.readLine()) != null) {
+                // TODO: this is ugly, find a better way to substitute?
                 if (line.equals("Module['arguments'] = argv;")) {
                     buffer.append("Module['arguments'] = ['" + ourExternalAddress + "', '" + ourExternalPort + "'];");
                     continue;
@@ -108,6 +109,23 @@ public class WebSocketIndexPageHandler extends SimpleChannelInboundHandler<FullH
             FullHttpResponse res = new DefaultFullHttpResponse(HTTP_1_1, OK, content);
 
             res.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/javascript; charset=UTF-8");
+            HttpUtil.setContentLength(res, content.readableBytes());
+
+            sendHttpResponse(ctx, req, res);
+        } else if ("/craft.html.mem".equals(req.uri())) {
+            // TODO: refactor with above, again please
+            BufferedReader reader = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("/craft.html.mem")));
+            String line;
+            StringBuffer buffer = new StringBuffer();
+            while ((line = reader.readLine()) != null) {
+                buffer.append(line);
+                buffer.append('\n');
+            }
+            ByteBuf content = Unpooled.copiedBuffer(buffer, Charsets.UTF_8);
+
+            FullHttpResponse res = new DefaultFullHttpResponse(HTTP_1_1, OK, content);
+
+            res.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/html; charset=UTF-8");
             HttpUtil.setContentLength(res, content.readableBytes());
 
             sendHttpResponse(ctx, req, res);
