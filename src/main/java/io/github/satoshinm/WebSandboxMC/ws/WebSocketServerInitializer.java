@@ -52,7 +52,7 @@ public class WebSocketServerInitializer extends ChannelInitializer<SocketChannel
         pipeline.addLast(new HttpServerCodec());
         pipeline.addLast(new HttpObjectAggregator(65536));
         pipeline.addLast(new WebSocketServerCompressionHandler());
-        pipeline.addLast(new WebSocketServerProtocolHandler(WEBSOCKET_PATH, null, true));
+        pipeline.addLast(new WebSocketServerProtocolHandler(WEBSOCKET_PATH, "binary", true));
         // TODO: overload with '/' for html and ws? currently, /index.html is html, but / is ws (html attempt = 'not a WebSocket handshake request: missing upgrade')
         pipeline.addLast(new WebSocketIndexPageHandler(ourExternalAddress, ourExternalPort));
         pipeline.addLast(new WebSocketFrameHandler(webSocketServerThread));
