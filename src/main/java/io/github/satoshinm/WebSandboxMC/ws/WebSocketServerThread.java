@@ -175,7 +175,7 @@ N,1,guest1
             int z = Integer.parseInt(array[3]);
             int type = Integer.parseInt(array[4]);
 
-            blockBridge.clientBlockUpdate(x, y, z, type);
+            blockBridge.clientBlockUpdate(ctx, x, y, z, type);
         } else if (string.startsWith("T,")) {
             String chat = string.substring(2).trim();
             String theirName = this.channelId2name.get(ctx.channel().id());

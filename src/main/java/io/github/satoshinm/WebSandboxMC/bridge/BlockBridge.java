@@ -57,12 +57,39 @@ public class BlockBridge {
         webSocketServerThread.sendLine(channel, "U,1," + x_start + "," + y_start + "," + z_start + "," + rotation_x + "," + rotation_y );
     }
 
+    private boolean withinSandboxRange(int x, int y, int z) {
+        if (x >= x_center + radius || x < x_center - radius) {
+            return false;
+        }
+        if (y >= y_center + radius || y < y_center - radius) {
+            return false;
+        }
+        if (z >= z_center + radius || z < z_center - radius) {
+            return false;
+        }
+        return true;
+    }
+
     // Handle the web client changing a block, update the bukkit world
-    public void clientBlockUpdate(int x, int y, int z, int type) {
+    public void clientBlockUpdate(ChannelHandlerContext ctx, int x, int y, int z, int type) {
         Material material = toBukkitBlockType(type);
+        int ox = x;
+        int oy = y;
+        int oz = z;
         x += -radius + x_center;
         y += -radius + y_center - y_offset;
         z += -radius + z_center;
+
+        if (!withinSandboxRange(x, y, z)) {
+            System.out.println("client tried to modify outside of sandbox! "+x+","+y+","+z);
+            webSocketServerThread.sendLine(ctx.channel(), "T,You cannot build at ("+ox+","+oy+","+oz+")");
+            // TODO: Clear the block, fix this (set to air)
+            /*
+            webSocketServerThread.sendLine(ctx.channel(), "B,0,0,"+ox+","+oy+","+oz+",0");
+            webSocketServerThread.sendLine(ctx.channel(), "R,0,0");
+            */
+            return;
+        }
 
         Block block = Bukkit.getServer().getWorlds().get(0).getBlockAt(x, y, z);
         if (block != null) {
@@ -75,9 +102,15 @@ public class BlockBridge {
 
     // Handle the bukkit world changing a block, tell all web clients
     public void notifyBlockUpdate(int x, int y, int z, Material material) {
-        System.out.println("bukkit block ("+x+","+y+","+z+") was set to "+material);
+        //System.out.println("bukkit block ("+x+","+y+","+z+") was set to "+material);
 
-        // Send to all web clients within range, if within range, "B," command
+        if (!withinSandboxRange(x, y, z)) {
+            // Clients don't need to know about every block change on the server, only within the sandbox
+            return;
+        }
+
+
+        // Send to all web clients to let them know it changed using the "B," command
         int type = toWebBlockType(material);
 
         x -= -radius + x_center;
