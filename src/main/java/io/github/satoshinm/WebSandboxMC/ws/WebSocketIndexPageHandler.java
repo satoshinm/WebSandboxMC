@@ -95,12 +95,11 @@ public class WebSocketIndexPageHandler extends SimpleChannelInboundHandler<FullH
             BufferedReader reader = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("/craft.js")));
             String line;
             StringBuffer buffer = new StringBuffer();
+
+            // Start connected to ourselves (NetCraft ../src/pre.js checks window.DEFAULT_ARGV)
+            buffer.append("window.DEFAULT_ARGV = ['" + ourExternalAddress + "', '" + ourExternalPort + "'];");
+
             while ((line = reader.readLine()) != null) {
-                // TODO: this is ugly, find a better way to substitute?
-                if (line.equals("Module['arguments'] = argv;")) {
-                    buffer.append("Module['arguments'] = ['" + ourExternalAddress + "', '" + ourExternalPort + "'];");
-                    continue;
-                }
                 buffer.append(line);
                 buffer.append('\n');
             }
