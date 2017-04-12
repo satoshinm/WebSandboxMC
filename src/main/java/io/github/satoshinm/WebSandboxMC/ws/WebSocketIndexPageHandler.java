@@ -32,10 +32,7 @@ import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.util.CharsetUtil;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 
 import static io.netty.handler.codec.http.HttpMethod.GET;
 import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
@@ -56,6 +53,27 @@ public class WebSocketIndexPageHandler extends SimpleChannelInboundHandler<FullH
         this.ourExternalPort = ourExternalPort;
     }
 
+    private void sendResource(String prepend, String name, String mimeType, FullHttpRequest req, ChannelHandlerContext ctx) throws IOException {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream(name)));
+        // TODO: alternatively if exists, check in plugin directory for updated files versus embedded resources
+        // TODO: read only once and buffer
+        String line;
+        StringBuffer buffer = new StringBuffer();
+        if (prepend != null) buffer.append(prepend);
+        while ((line = reader.readLine()) != null) {
+            buffer.append(line);
+            buffer.append('\n');
+        }
+        ByteBuf content = Unpooled.copiedBuffer(buffer, Charsets.UTF_8);
+
+        FullHttpResponse res = new DefaultFullHttpResponse(HTTP_1_1, OK, content);
+
+        res.headers().set(HttpHeaderNames.CONTENT_TYPE, mimeType);
+        HttpUtil.setContentLength(res, content.readableBytes());
+
+        sendHttpResponse(ctx, req, res);
+    }
+
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, FullHttpRequest req) throws Exception {
         // Handle a bad request.
@@ -72,62 +90,15 @@ public class WebSocketIndexPageHandler extends SimpleChannelInboundHandler<FullH
 
         // Send the index page
         if ("/".equals(req.uri()) || "/index.html".equals(req.uri())) {
-            //ByteBuf content = Unpooled.copiedBuffer("<p>Hello, world", CharsetUtil.US_ASCII);
-            BufferedReader reader = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("/craft.html")));
-            // TODO: alternatively if exists, check in plugin directory for updated files versus embedded resources
-            // TODO: read only once and buffer
-            String line;
-            StringBuffer buffer = new StringBuffer();
-            while ((line = reader.readLine()) != null) {
-                buffer.append(line);
-                buffer.append('\n');
-            }
-            ByteBuf content = Unpooled.copiedBuffer(buffer, Charsets.UTF_8);
-
-            FullHttpResponse res = new DefaultFullHttpResponse(HTTP_1_1, OK, content);
-
-            res.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/html; charset=UTF-8");
-            HttpUtil.setContentLength(res, content.readableBytes());
-
-            sendHttpResponse(ctx, req, res);
+            sendResource(null,"/craft.html", "text/html; charset=UTF-8", req, ctx);
         } else if ("/craft.js".equals(req.uri())) {
-            // TODO: refactor with above
-            BufferedReader reader = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("/craft.js")));
-            String line;
-            StringBuffer buffer = new StringBuffer();
-
-            // Start connected to ourselves (NetCraft ../src/pre.js checks window.DEFAULT_ARGV)
-            buffer.append("window.DEFAULT_ARGV = ['" + ourExternalAddress + "', '" + ourExternalPort + "'];");
-
-            while ((line = reader.readLine()) != null) {
-                buffer.append(line);
-                buffer.append('\n');
-            }
-            ByteBuf content = Unpooled.copiedBuffer(buffer, Charsets.UTF_8);
-
-            FullHttpResponse res = new DefaultFullHttpResponse(HTTP_1_1, OK, content);
-
-            res.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/javascript; charset=UTF-8");
-            HttpUtil.setContentLength(res, content.readableBytes());
-
-            sendHttpResponse(ctx, req, res);
+            String prepend = "window.DEFAULT_ARGV = ['" + ourExternalAddress + "', '" + ourExternalPort + "'];";
+            sendResource(prepend,"/craft.js", "application/javascript; charset=UTF-8", req, ctx);
         } else if ("/craft.html.mem".equals(req.uri())) {
-            // TODO: refactor with above, again please
-            BufferedReader reader = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream("/craft.html.mem")));
-            String line;
-            StringBuffer buffer = new StringBuffer();
-            while ((line = reader.readLine()) != null) {
-                buffer.append(line);
-                buffer.append('\n');
-            }
-            ByteBuf content = Unpooled.copiedBuffer(buffer, Charsets.UTF_8);
-
-            FullHttpResponse res = new DefaultFullHttpResponse(HTTP_1_1, OK, content);
-
-            res.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/html; charset=UTF-8");
-            HttpUtil.setContentLength(res, content.readableBytes());
-
-            sendHttpResponse(ctx, req, res);
+            sendResource(null,"/craft.html.mem", "application/octet-stream", req, ctx);
+        } else if ("/craft.wasm".equals(req.uri())) {
+            // TODO: test WebAssembly, it is a supported build target: https://github.com/satoshinm/NetCraft/issues/1)
+            sendResource(null,"/craft.wasm", "application/octet-stream", req, ctx);
         } else {
             sendHttpResponse(ctx, req, new DefaultFullHttpResponse(HTTP_1_1, NOT_FOUND));
         }
