@@ -18,6 +18,7 @@ package io.github.satoshinm.WebSandboxMC.ws;
 import com.google.common.base.Charsets;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import io.netty.buffer.UnpooledDirectByteBuf;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
@@ -31,6 +32,7 @@ import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.util.CharsetUtil;
+import sun.misc.IOUtils;
 
 import java.io.*;
 
@@ -53,7 +55,7 @@ public class WebSocketIndexPageHandler extends SimpleChannelInboundHandler<FullH
         this.ourExternalPort = ourExternalPort;
     }
 
-    private void sendResource(String prepend, String name, String mimeType, FullHttpRequest req, ChannelHandlerContext ctx) throws IOException {
+    private void sendTextResource(String prepend, String name, String mimeType, FullHttpRequest req, ChannelHandlerContext ctx) throws IOException {
         BufferedReader reader = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream(name)));
         // TODO: alternatively if exists, check in plugin directory for updated files versus embedded resources
         // TODO: read only once and buffer
@@ -65,6 +67,30 @@ public class WebSocketIndexPageHandler extends SimpleChannelInboundHandler<FullH
             buffer.append('\n');
         }
         ByteBuf content = Unpooled.copiedBuffer(buffer, Charsets.UTF_8);
+
+        FullHttpResponse res = new DefaultFullHttpResponse(HTTP_1_1, OK, content);
+
+        res.headers().set(HttpHeaderNames.CONTENT_TYPE, mimeType);
+        HttpUtil.setContentLength(res, content.readableBytes());
+
+        sendHttpResponse(ctx, req, res);
+    }
+
+    private void sendBinaryResource(String name, String mimeType, FullHttpRequest req, ChannelHandlerContext ctx) throws IOException {
+        DataInputStream stream = new DataInputStream(getClass().getResourceAsStream(name));
+
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+
+        int nRead;
+        byte[] data = new byte[16384];
+
+        while ((nRead = stream.read(data, 0, data.length)) != -1) {
+            buffer.write(data, 0, nRead);
+        }
+
+        buffer.flush();
+
+        ByteBuf content = Unpooled.copiedBuffer(buffer.toByteArray());
 
         FullHttpResponse res = new DefaultFullHttpResponse(HTTP_1_1, OK, content);
 
@@ -90,15 +116,15 @@ public class WebSocketIndexPageHandler extends SimpleChannelInboundHandler<FullH
 
         // Send the index page
         if ("/".equals(req.uri()) || "/index.html".equals(req.uri())) {
-            sendResource(null,"/craft.html", "text/html; charset=UTF-8", req, ctx);
+            sendTextResource(null,"/craft.html", "text/html; charset=UTF-8", req, ctx);
         } else if ("/craft.js".equals(req.uri())) {
             String prepend = "window.DEFAULT_ARGV = ['" + ourExternalAddress + "', '" + ourExternalPort + "'];";
-            sendResource(prepend,"/craft.js", "application/javascript; charset=UTF-8", req, ctx);
+            sendTextResource(prepend,"/craft.js", "application/javascript; charset=UTF-8", req, ctx);
         } else if ("/craft.html.mem".equals(req.uri())) {
-            sendResource(null,"/craft.html.mem", "application/octet-stream", req, ctx);
+            sendBinaryResource("/craft.html.mem", "application/octet-stream", req, ctx);
         } else if ("/craft.wasm".equals(req.uri())) {
             // TODO: test WebAssembly, it is a supported build target: https://github.com/satoshinm/NetCraft/issues/1)
-            sendResource(null,"/craft.wasm", "application/octet-stream", req, ctx);
+            sendBinaryResource("/craft.wasm", "application/octet-stream", req, ctx);
         } else {
             sendHttpResponse(ctx, req, new DefaultFullHttpResponse(HTTP_1_1, NOT_FOUND));
         }
