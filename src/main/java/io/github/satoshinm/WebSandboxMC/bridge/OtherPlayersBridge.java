@@ -5,18 +5,19 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 
 import java.util.HashSet;
 import java.util.Set;
 
-public class PlayersBridge {
+public class OtherPlayersBridge {
 
     private final WebSocketServerThread webSocketServerThread;
 
     private Set<Integer> playersInSandbox;
 
-    public PlayersBridge(WebSocketServerThread webSocketServerThread) {
+    public OtherPlayersBridge(WebSocketServerThread webSocketServerThread) {
         this.webSocketServerThread = webSocketServerThread;
 
         this.playersInSandbox = new HashSet<Integer>();

@@ -13,7 +13,7 @@ public class BlockBridge {
 
     public WebSocketServerThread webSocketServerThread;
     private final int x_center, y_center, z_center, radius, y_offset;
-    private final World world;
+    public final World world;
 
     public BlockBridge(WebSocketServerThread webSocketServerThread, int x_center, int y_center, int z_center, int radius, int y_offset) {
         this.webSocketServerThread = webSocketServerThread;

@@ -16,7 +16,8 @@
 package io.github.satoshinm.WebSandboxMC.ws;
 
 import io.github.satoshinm.WebSandboxMC.bridge.BlockBridge;
-import io.github.satoshinm.WebSandboxMC.bridge.PlayersBridge;
+import io.github.satoshinm.WebSandboxMC.bridge.PlayerBridge;
+import io.github.satoshinm.WebSandboxMC.bridge.OtherPlayersBridge;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
@@ -34,10 +35,8 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
 import io.netty.util.concurrent.ImmediateEventExecutor;
-import org.bukkit.Bukkit;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -71,15 +70,17 @@ public final class WebSocketServerThread extends Thread {
 
     private String ourExternalAddress;
     private int ourExternalPort;
+
     public BlockBridge blockBridge;
-    public PlayersBridge playersBridge;
+    public OtherPlayersBridge otherPlayersBridge;
+    public PlayerBridge playerBridge;
 
     public WebSocketServerThread(int port, String ourExternalAddress, int ourExternalPort) {
         this.PORT = port;
         this.SSL = false; // TODO: support ssl?
 
         this.blockBridge = null;
-        this.playersBridge = null;
+        this.otherPlayersBridge = null;
 
         this.allUsersGroup = new DefaultChannelGroup(ImmediateEventExecutor.INSTANCE);
         this.lastPlayerID = 0;
@@ -161,7 +162,7 @@ N,1,guest1
         sendLine(channel, "R,0,0"); // refresh chunk (0,0)
 
         blockBridge.sendWorld(channel);
-        playersBridge.sendPlayers(channel);
+        otherPlayersBridge.sendPlayers(channel);
 
         broadcastLine("T," + theirName + " has joined.");
     }
@@ -184,7 +185,7 @@ N,1,guest1
             String chat = string.substring(2).trim();
             String theirName = this.channelId2name.get(ctx.channel().id());
 
-            playersBridge.clientChat(ctx, theirName, chat);
+            otherPlayersBridge.clientChat(ctx, theirName, chat);
         }
         // TODO: handle more client messages
     }
