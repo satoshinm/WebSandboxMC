@@ -65,7 +65,10 @@ public class WebPlayerBridge {
         Entity entity = this.channelId2Entity.get(channel.id());
 
         Location location = this.webSocketServerThread.blockBridge.toBukkitPlayerLocation(x, y, z);
-        // TODO: location.setPitch, location.setYaw translate to -degrees see PlayersBridge
+
+        // Opposite of PlayerBridge encodeLocation - given negated radians, convert to degrees
+        location.setYaw((float)(-rx * 180 / Math.PI));
+        location.setPitch((float)(-ry * 180 / Math.PI));
 
         // Move the surrogate entity to represent where the web player is
         entity.teleport(location);
