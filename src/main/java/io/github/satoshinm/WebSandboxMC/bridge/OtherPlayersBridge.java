@@ -50,8 +50,8 @@ public class OtherPlayersBridge {
         // pitch is degrees, -90 (upward-facing, +y), or 0 (level), to 90 (downward facing, -y)
         float pitch = location.getPitch();
 
-        // Craft uses radians, and flips the pitch
-        double rx = yaw * Math.PI / 180;
+        // Craft uses radians, and flips it
+        double rx = -yaw * Math.PI / 180;
         double ry = -pitch * Math.PI / 180;
 
         return x + "," + y + "," + z + "," + rx + "," + ry;
