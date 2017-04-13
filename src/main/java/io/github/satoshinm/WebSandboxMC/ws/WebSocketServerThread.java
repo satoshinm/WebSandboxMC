@@ -16,6 +16,7 @@
 package io.github.satoshinm.WebSandboxMC.ws;
 
 import io.github.satoshinm.WebSandboxMC.bridge.BlockBridge;
+import io.github.satoshinm.WebSandboxMC.bridge.PlayersBridge;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
@@ -71,12 +72,14 @@ public final class WebSocketServerThread extends Thread {
     private String ourExternalAddress;
     private int ourExternalPort;
     public BlockBridge blockBridge;
+    public PlayersBridge playersBridge;
 
     public WebSocketServerThread(int port, String ourExternalAddress, int ourExternalPort) {
         this.PORT = port;
         this.SSL = false; // TODO: support ssl?
 
         this.blockBridge = null;
+        this.playersBridge = null;
 
         this.allUsersGroup = new DefaultChannelGroup(ImmediateEventExecutor.INSTANCE);
         this.lastPlayerID = 0;
@@ -179,16 +182,9 @@ N,1,guest1
         } else if (string.startsWith("T,")) {
             String chat = string.substring(2).trim();
             String theirName = this.channelId2name.get(ctx.channel().id());
-            String formattedChat = "<" + theirName + "> " + chat;
-            broadcastLine("T," + formattedChat);
-            Bukkit.getServer().broadcastMessage(formattedChat); // TODO: only to permission name?
 
-            // TODO: support some server /commands?
+            playersBridge.clientChat(ctx, theirName, chat);
         }
         // TODO: handle more client messages
-    }
-
-    public void notifyChat(String message) {
-        broadcastLine("T," + message);
     }
 }
