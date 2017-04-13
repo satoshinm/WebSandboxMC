@@ -5,7 +5,7 @@ import java.util.HashMap;
 
 import io.github.satoshinm.WebSandboxMC.bridge.BlockBridge;
 import io.github.satoshinm.WebSandboxMC.bridge.OtherPlayersBridge;
-import io.github.satoshinm.WebSandboxMC.bridge.PlayerBridge;
+import io.github.satoshinm.WebSandboxMC.bridge.WebPlayerBridge;
 import io.github.satoshinm.WebSandboxMC.bukkit.BlockListener;
 import io.github.satoshinm.WebSandboxMC.bukkit.PlayersListener;
 import io.github.satoshinm.WebSandboxMC.ws.WebSocketServerThread;
@@ -77,7 +77,7 @@ public class WebSandboxPlugin extends JavaPlugin {
 
         webSocketServerThread.blockBridge = new BlockBridge(webSocketServerThread, x_center, y_center, z_center, radius, y_offset);
         webSocketServerThread.otherPlayersBridge = new OtherPlayersBridge(webSocketServerThread);
-        webSocketServerThread.playerBridge = new PlayerBridge(webSocketServerThread);
+        webSocketServerThread.webPlayerBridge = new WebPlayerBridge(webSocketServerThread);
 
         // Register our events
         PluginManager pm = getServer().getPluginManager();

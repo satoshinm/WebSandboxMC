@@ -16,7 +16,7 @@
 package io.github.satoshinm.WebSandboxMC.ws;
 
 import io.github.satoshinm.WebSandboxMC.bridge.BlockBridge;
-import io.github.satoshinm.WebSandboxMC.bridge.PlayerBridge;
+import io.github.satoshinm.WebSandboxMC.bridge.WebPlayerBridge;
 import io.github.satoshinm.WebSandboxMC.bridge.OtherPlayersBridge;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.Unpooled;
@@ -66,7 +66,7 @@ public final class WebSocketServerThread extends Thread {
 
     public BlockBridge blockBridge;
     public OtherPlayersBridge otherPlayersBridge;
-    public PlayerBridge playerBridge;
+    public WebPlayerBridge webPlayerBridge;
 
     public WebSocketServerThread(int port, String ourExternalAddress, int ourExternalPort) {
         this.PORT = port;
@@ -74,7 +74,7 @@ public final class WebSocketServerThread extends Thread {
 
         this.blockBridge = null;
         this.otherPlayersBridge = null;
-        this.playerBridge = null;
+        this.webPlayerBridge = null;
 
         this.allUsersGroup = new DefaultChannelGroup(ImmediateEventExecutor.INSTANCE);
 
@@ -132,7 +132,7 @@ public final class WebSocketServerThread extends Thread {
 
         allUsersGroup.add(channel);
 
-        String theirName = playerBridge.newPlayer(channel);
+        String theirName = webPlayerBridge.newPlayer(channel);
 
     /* Send initial server messages on client connect here, example from Python server for comparison:
 
@@ -168,7 +168,7 @@ N,1,guest1
             blockBridge.clientBlockUpdate(ctx, x, y, z, type);
         } else if (string.startsWith("T,")) {
             String chat = string.substring(2).trim();
-            String theirName = this.playerBridge.channelId2name.get(ctx.channel().id());
+            String theirName = this.webPlayerBridge.channelId2name.get(ctx.channel().id());
 
             otherPlayersBridge.clientChat(ctx, theirName, chat);
         } else if (string.startsWith("P,")) {
@@ -182,7 +182,7 @@ N,1,guest1
             double rx = Double.parseDouble(array[4]);
             double ry = Double.parseDouble(array[5]);
 
-            playerBridge.clientMoved(ctx.channel(), x, y, z, rx, ry);
+            webPlayerBridge.clientMoved(ctx.channel(), x, y, z, rx, ry);
         }
 
         // TODO: handle more client messages

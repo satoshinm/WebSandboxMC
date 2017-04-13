@@ -14,7 +14,7 @@ import java.util.Map;
 /**
  * Bridges the web client players
  */
-public class PlayerBridge {
+public class WebPlayerBridge {
 
     private final WebSocketServerThread webSocketServerThread;
 
@@ -23,7 +23,7 @@ public class PlayerBridge {
     private Map<String, ChannelId> name2channelId;
     private Map<ChannelId, Entity> channelId2Entity;
 
-    public PlayerBridge(WebSocketServerThread webSocketServerThread) {
+    public WebPlayerBridge(WebSocketServerThread webSocketServerThread) {
         this.webSocketServerThread = webSocketServerThread;
 
         this.lastPlayerID = 0;
