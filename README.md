@@ -12,6 +12,8 @@ Currently supports:
 * Exposes a small piece of your server to web users, with configurable location and dimensions
 * Web users can place/break blocks, and see server block changes in realtime
 * Web users can send/receive chat, and other users can see their chat messages
+* Web users can see players on your server and other web users move and rotate
+* Sheep are spawned with custom names and track the web users movements
 
 TODO: missing features
 

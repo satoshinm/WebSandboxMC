@@ -16,6 +16,8 @@
 package io.github.satoshinm.WebSandboxMC.ws;
 
 import io.github.satoshinm.WebSandboxMC.bridge.BlockBridge;
+import io.github.satoshinm.WebSandboxMC.bridge.WebPlayerBridge;
+import io.github.satoshinm.WebSandboxMC.bridge.PlayersBridge;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
@@ -33,11 +35,6 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
 import io.netty.util.concurrent.ImmediateEventExecutor;
-import org.bukkit.Bukkit;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * A HTTP server which serves Web Socket requests at:
@@ -64,24 +61,23 @@ public final class WebSocketServerThread extends Thread {
     private boolean SSL;
 
     private ChannelGroup allUsersGroup;
-    private int lastPlayerID;
-    private Map<ChannelId, String> channelId2name;
-    private Map<String, ChannelId> name2channelId;
 
     private String ourExternalAddress;
     private int ourExternalPort;
+
     public BlockBridge blockBridge;
+    public PlayersBridge playersBridge;
+    public WebPlayerBridge webPlayerBridge;
 
     public WebSocketServerThread(int port, String ourExternalAddress, int ourExternalPort) {
         this.PORT = port;
         this.SSL = false; // TODO: support ssl?
 
         this.blockBridge = null;
+        this.playersBridge = null;
+        this.webPlayerBridge = null;
 
         this.allUsersGroup = new DefaultChannelGroup(ImmediateEventExecutor.INSTANCE);
-        this.lastPlayerID = 0;
-        this.channelId2name = new HashMap<ChannelId, String>();
-        this.name2channelId = new HashMap<String, ChannelId>();
 
         this.ourExternalAddress = ourExternalAddress;
         this.ourExternalPort = ourExternalPort;
@@ -123,8 +119,6 @@ public final class WebSocketServerThread extends Thread {
         }
     }
 
-
-
     public void sendLine(Channel channel, String message) {
         channel.writeAndFlush(new BinaryWebSocketFrame(Unpooled.copiedBuffer((message + "\n").getBytes())));
     }
@@ -133,14 +127,23 @@ public final class WebSocketServerThread extends Thread {
         allUsersGroup.writeAndFlush(new BinaryWebSocketFrame(Unpooled.copiedBuffer((message + "\n").getBytes())));
     }
 
+    public void broadcastLineExcept(ChannelId excludeChannelId, String message) {
+        for (Channel channel: allUsersGroup) {
+            if (channel.id().equals(excludeChannelId)) {
+                continue;
+            }
+
+            channel.writeAndFlush(new BinaryWebSocketFrame(Unpooled.copiedBuffer((message + "\n").getBytes())));
+        }
+    }
+
     // Handle a command from the client
     public void handleNewClient(ChannelHandlerContext ctx) {
         Channel channel = ctx.channel();
-        int theirID = ++this.lastPlayerID;
-        String theirName = "webguest" + theirID;
+
         allUsersGroup.add(channel);
-        this.channelId2name.put(channel.id(), theirName);
-        this.name2channelId.put(theirName, channel.id());
+
+        String theirName = webPlayerBridge.newPlayer(channel);
 
     /* Send initial server messages on client connect here, example from Python server for comparison:
 
@@ -150,14 +153,12 @@ T,Welcome to Craft!
 T,Type "/help" for a list of commands.
 N,1,guest1
 */
-
-        sendLine(channel,"T,Welcome to WebSandboxMC, "+theirName+"!");
-
         sendLine(channel, "B,0,0,0,30,0,1"); // floating grass block at (0,30,0) in chunk (0,0)
         sendLine(channel, "K,0,0,0"); // update chunk key (0,0) to 0
         sendLine(channel, "R,0,0"); // refresh chunk (0,0)
 
         blockBridge.sendWorld(channel);
+        playersBridge.sendPlayers(channel);
 
         broadcastLine("T," + theirName + " has joined.");
     }
@@ -178,17 +179,23 @@ N,1,guest1
             blockBridge.clientBlockUpdate(ctx, x, y, z, type);
         } else if (string.startsWith("T,")) {
             String chat = string.substring(2).trim();
-            String theirName = this.channelId2name.get(ctx.channel().id());
-            String formattedChat = "<" + theirName + "> " + chat;
-            broadcastLine("T," + formattedChat);
-            Bukkit.getServer().broadcastMessage(formattedChat); // TODO: only to permission name?
+            String theirName = this.webPlayerBridge.channelId2name.get(ctx.channel().id());
 
-            // TODO: support some server /commands?
+            playersBridge.clientChat(ctx, theirName, chat);
+        } else if (string.startsWith("P,")) {
+            String[] array = string.trim().split(",");
+            if (array.length != 6) {
+                throw new RuntimeException("malformed client position update P: "+string);
+            }
+            double x = Double.parseDouble(array[1]);
+            double y = Double.parseDouble(array[2]);
+            double z = Double.parseDouble(array[3]);
+            double rx = Double.parseDouble(array[4]);
+            double ry = Double.parseDouble(array[5]);
+
+            webPlayerBridge.clientMoved(ctx.channel(), x, y, z, rx, ry);
         }
-        // TODO: handle more client messages
-    }
 
-    public void notifyChat(String message) {
-        broadcastLine("T," + message);
+        // TODO: handle more client messages
     }
 }

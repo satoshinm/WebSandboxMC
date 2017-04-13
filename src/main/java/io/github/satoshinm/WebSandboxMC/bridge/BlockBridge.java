@@ -4,16 +4,20 @@ import io.github.satoshinm.WebSandboxMC.ws.WebSocketServerThread;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 
-import java.util.List;
-
+/**
+ * Bridges blocks in the world, translates between coordinate systems
+ */
 public class BlockBridge {
 
     public WebSocketServerThread webSocketServerThread;
     private final int x_center, y_center, z_center, radius, y_offset;
+    public final World world;
+    public Location spawnLocation;
 
     public BlockBridge(WebSocketServerThread webSocketServerThread, int x_center, int y_center, int z_center, int radius, int y_offset) {
         this.webSocketServerThread = webSocketServerThread;
@@ -25,14 +29,16 @@ public class BlockBridge {
         this.radius = radius;
 
         this.y_offset = y_offset;
+
+        // TODO: configurable world
+        this.world = Bukkit.getWorlds().get(0);
+
+        // TODO: configurable spawn within range of sandbox, right now, it is the center of the sandbox
+        this.spawnLocation = new Location(this.world, this.x_center, this.y_center, this.z_center);
     }
 
     // Send the client the initial section of the world when they join
     public void sendWorld(Channel channel) {
-        // TODO: configurable world
-
-        List<World> worlds = Bukkit.getServer().getWorlds();
-        World world = worlds.get(0);
 
         for (int i = -radius; i < radius; ++i) {
             for (int j = -radius; j < radius; ++j) {
@@ -57,7 +63,10 @@ public class BlockBridge {
         webSocketServerThread.sendLine(channel, "U,1," + x_start + "," + y_start + "," + z_start + "," + rotation_x + "," + rotation_y );
     }
 
-    private boolean withinSandboxRange(int x, int y, int z) {
+    public boolean withinSandboxRange(Location location) {
+        int x = location.getBlockX();
+        int y = location.getBlockY();
+        int z = location.getBlockZ();
         if (x >= x_center + radius || x < x_center - radius) {
             return false;
         }
@@ -70,19 +79,58 @@ public class BlockBridge {
         return true;
     }
 
-    // Handle the web client changing a block, update the bukkit world
-    public void clientBlockUpdate(ChannelHandlerContext ctx, int x, int y, int z, int type) {
-        Material material = toBukkitBlockType(type);
-        int ox = x;
-        int oy = y;
-        int oz = z;
+    public Location toBukkitLocation(int x, int y, int z) {
         x += -radius + x_center;
         y += -radius + y_center - y_offset;
         z += -radius + z_center;
 
-        if (!withinSandboxRange(x, y, z)) {
-            System.out.println("client tried to modify outside of sandbox! "+x+","+y+","+z);
-            webSocketServerThread.sendLine(ctx.channel(), "T,You cannot build at ("+ox+","+oy+","+oz+")");
+        Location location = new Location(world, x, y, z);
+
+        return location;
+    }
+
+    public Location toBukkitPlayerLocation(double x, double y, double z) {
+        x += -radius + x_center;
+        y += -radius + y_center - y_offset;
+        z += -radius + z_center;
+
+        Location location = new Location(world, x, y, z);
+
+        return location;
+    }
+
+    public int toWebLocationBlockX(Location location) {
+        return location.getBlockX() - (-radius + x_center);
+    }
+
+    public int toWebLocationBlockY(Location location) {
+        return location.getBlockY() - (-radius + y_center - y_offset);
+    }
+
+    public int toWebLocationBlockZ(Location location) {
+        return location.getBlockZ() - (-radius + z_center);
+    }
+
+    public double toWebLocationEntityX(Location location) {
+        return location.getX() - (-radius + x_center);
+    }
+
+    public double toWebLocationEntityY(Location location) {
+        return location.getY() - (-radius + y_center - y_offset);
+    }
+
+    public double toWebLocationEntityZ(Location location) {
+        return location.getZ() - (-radius + z_center);
+    }
+
+    // Handle the web client changing a block, update the bukkit world
+    public void clientBlockUpdate(ChannelHandlerContext ctx, int x, int y, int z, int type) {
+        Material material = toBukkitBlockType(type);
+        Location location = toBukkitLocation(x, y, z);
+
+        if (!withinSandboxRange(location)) {
+            System.out.println("client tried to modify outside of sandbox! "+location);
+            webSocketServerThread.sendLine(ctx.channel(), "T,You cannot build at ("+x+","+y+","+z+")");
             // TODO: Clear the block, fix this (set to air)
             /*
             webSocketServerThread.sendLine(ctx.channel(), "B,0,0,"+ox+","+oy+","+oz+",0");
@@ -91,20 +139,20 @@ public class BlockBridge {
             return;
         }
 
-        Block block = Bukkit.getServer().getWorlds().get(0).getBlockAt(x, y, z);
+        Block block = world.getBlockAt(location);
         if (block != null) {
-            System.out.println("setting block ("+x+","+y+","+z+",) to "+material);
+            System.out.println("setting block at "+location+" to "+material);
             block.setType(material);
         } else {
-            System.out.println("no such block at "+x+","+y+","+z);
+            System.out.println("no such block at "+location);
         }
     }
 
     // Handle the bukkit world changing a block, tell all web clients
-    public void notifyBlockUpdate(int x, int y, int z, Material material) {
+    public void notifyBlockUpdate(Location location, Material material) {
         //System.out.println("bukkit block ("+x+","+y+","+z+") was set to "+material);
 
-        if (!withinSandboxRange(x, y, z)) {
+        if (!withinSandboxRange(location)) {
             // Clients don't need to know about every block change on the server, only within the sandbox
             return;
         }
@@ -113,9 +161,9 @@ public class BlockBridge {
         // Send to all web clients to let them know it changed using the "B," command
         int type = toWebBlockType(material);
 
-        x -= -radius + x_center;
-        y -= -radius + y_center - y_offset;
-        z -= -radius + z_center;
+        int x = toWebLocationBlockX(location);
+        int y = toWebLocationBlockY(location);
+        int z = toWebLocationBlockZ(location);
 
         webSocketServerThread.broadcastLine("B,0,0,"+x+","+y+","+z+","+type);
         webSocketServerThread.broadcastLine("R,0,0");
