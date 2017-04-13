@@ -282,7 +282,9 @@ public class BlockBridge {
             case 21: material = Material.DOUBLE_PLANT; break; // sunflower
             //case 22: material = Material.white flower
             //case 23: material = Material.blue flower
-            default: material = Material.DIAMOND_ORE; // placeholder TODO fix
+            default:
+                System.out.println("untranslated web block id "+type);
+                material = Material.DIAMOND_ORE; // placeholder TODO fix
         }
         return material;
     }
