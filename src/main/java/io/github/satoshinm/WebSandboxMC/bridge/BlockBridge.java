@@ -127,12 +127,17 @@ public class BlockBridge {
         }
 
         Block block = world.getBlockAt(location);
-        if (block != null) {
-            System.out.println("setting block at "+location+" to "+material);
-            block.setType(material);
-        } else {
-            System.out.println("no such block at "+location);
+        if (block == null) {
+            System.out.println("no such block at " + location); // does this happen?
+            return;
         }
+
+        System.out.println("setting block at "+location+" to "+material);
+        block.setType(material);
+
+        // Notify other web clients - note they will have the benefit of seeing the untranslated block (feature or bug?)
+        webSocketServerThread.broadcastLineExcept(ctx.channel().id(), "B,0,0," + x + "," + y + "," + z + "," + type);
+        webSocketServerThread.broadcastLineExcept(ctx.channel().id(), "R,0,0");
     }
 
     // Handle the bukkit world changing a block, tell all web clients
