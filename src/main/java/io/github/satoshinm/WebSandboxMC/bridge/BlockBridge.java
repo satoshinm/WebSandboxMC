@@ -9,8 +9,6 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 
-import java.util.List;
-
 public class BlockBridge {
 
     public WebSocketServerThread webSocketServerThread;
@@ -58,7 +56,7 @@ public class BlockBridge {
         webSocketServerThread.sendLine(channel, "U,1," + x_start + "," + y_start + "," + z_start + "," + rotation_x + "," + rotation_y );
     }
 
-    private boolean withinSandboxRange(Location location) {
+    public boolean withinSandboxRange(Location location) {
         int x = location.getBlockX();
         int y = location.getBlockY();
         int z = location.getBlockZ();
@@ -74,7 +72,7 @@ public class BlockBridge {
         return true;
     }
 
-    private Location toBukkitLocation(int x, int y, int z) {
+    public Location toBukkitLocation(int x, int y, int z) {
         x += -radius + x_center;
         y += -radius + y_center - y_offset;
         z += -radius + z_center;
@@ -84,16 +82,28 @@ public class BlockBridge {
         return location;
     }
 
-    private int toWebLocationX(Location location) {
+    public int toWebLocationBlockX(Location location) {
         return location.getBlockX() - (-radius + x_center);
     }
 
-    private int toWebLocationY(Location location) {
+    public int toWebLocationBlockY(Location location) {
         return location.getBlockY() - (-radius + y_center - y_offset);
     }
 
-    private int toWebLocationZ(Location location) {
+    public int toWebLocationBlockZ(Location location) {
         return location.getBlockZ() - (-radius + z_center);
+    }
+
+    public double toWebLocationEntityX(Location location) {
+        return location.getX() - (-radius + x_center);
+    }
+
+    public double toWebLocationEntityY(Location location) {
+        return location.getY() - (-radius + y_center - y_offset);
+    }
+
+    public double toWebLocationEntityZ(Location location) {
+        return location.getZ() - (-radius + z_center);
     }
 
     // Handle the web client changing a block, update the bukkit world
@@ -134,9 +144,9 @@ public class BlockBridge {
         // Send to all web clients to let them know it changed using the "B," command
         int type = toWebBlockType(material);
 
-        int x = toWebLocationX(location);
-        int y = toWebLocationY(location);
-        int z = toWebLocationZ(location);
+        int x = toWebLocationBlockX(location);
+        int y = toWebLocationBlockY(location);
+        int z = toWebLocationBlockZ(location);
 
         webSocketServerThread.broadcastLine("B,0,0,"+x+","+y+","+z+","+type);
         webSocketServerThread.broadcastLine("R,0,0");

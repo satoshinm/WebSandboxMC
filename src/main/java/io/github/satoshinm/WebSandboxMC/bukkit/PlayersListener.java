@@ -27,7 +27,8 @@ public class PlayersListener implements Listener {
     @EventHandler(ignoreCancelled = true)
     public void onMove(PlayerMoveEvent event) {
         Location to = event.getTo();
+        int id = event.getPlayer().getEntityId();
 
-        // TODO
+        playersBridge.notifyMove(id, to);
     }
 }
