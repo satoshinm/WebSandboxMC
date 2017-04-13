@@ -14,13 +14,13 @@ import java.util.Set;
 /**
  * Bridges other Bukkit player's positions/names/chats to the web clients
  */
-public class OtherPlayersBridge {
+public class PlayersBridge {
 
     private final WebSocketServerThread webSocketServerThread;
 
     private Set<Integer> playersInSandbox;
 
-    public OtherPlayersBridge(WebSocketServerThread webSocketServerThread) {
+    public PlayersBridge(WebSocketServerThread webSocketServerThread) {
         this.webSocketServerThread = webSocketServerThread;
 
         this.playersInSandbox = new HashSet<Integer>();

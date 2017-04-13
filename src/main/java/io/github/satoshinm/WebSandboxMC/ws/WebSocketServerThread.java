@@ -17,7 +17,7 @@ package io.github.satoshinm.WebSandboxMC.ws;
 
 import io.github.satoshinm.WebSandboxMC.bridge.BlockBridge;
 import io.github.satoshinm.WebSandboxMC.bridge.WebPlayerBridge;
-import io.github.satoshinm.WebSandboxMC.bridge.OtherPlayersBridge;
+import io.github.satoshinm.WebSandboxMC.bridge.PlayersBridge;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
@@ -65,7 +65,7 @@ public final class WebSocketServerThread extends Thread {
     private int ourExternalPort;
 
     public BlockBridge blockBridge;
-    public OtherPlayersBridge otherPlayersBridge;
+    public PlayersBridge playersBridge;
     public WebPlayerBridge webPlayerBridge;
 
     public WebSocketServerThread(int port, String ourExternalAddress, int ourExternalPort) {
@@ -73,7 +73,7 @@ public final class WebSocketServerThread extends Thread {
         this.SSL = false; // TODO: support ssl?
 
         this.blockBridge = null;
-        this.otherPlayersBridge = null;
+        this.playersBridge = null;
         this.webPlayerBridge = null;
 
         this.allUsersGroup = new DefaultChannelGroup(ImmediateEventExecutor.INSTANCE);
@@ -147,7 +147,7 @@ N,1,guest1
         sendLine(channel, "R,0,0"); // refresh chunk (0,0)
 
         blockBridge.sendWorld(channel);
-        otherPlayersBridge.sendPlayers(channel);
+        playersBridge.sendPlayers(channel);
 
         broadcastLine("T," + theirName + " has joined.");
     }
@@ -170,7 +170,7 @@ N,1,guest1
             String chat = string.substring(2).trim();
             String theirName = this.webPlayerBridge.channelId2name.get(ctx.channel().id());
 
-            otherPlayersBridge.clientChat(ctx, theirName, chat);
+            playersBridge.clientChat(ctx, theirName, chat);
         } else if (string.startsWith("P,")) {
             String[] array = string.trim().split(",");
             if (array.length != 6) {

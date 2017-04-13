@@ -1,6 +1,6 @@
 package io.github.satoshinm.WebSandboxMC.bukkit;
 
-import io.github.satoshinm.WebSandboxMC.bridge.OtherPlayersBridge;
+import io.github.satoshinm.WebSandboxMC.bridge.PlayersBridge;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -11,10 +11,10 @@ import org.bukkit.event.player.PlayerQuitEvent;
 
 public class PlayersListener implements Listener {
 
-    private final OtherPlayersBridge otherPlayersBridge;
+    private final PlayersBridge playersBridge;
 
-    public PlayersListener(OtherPlayersBridge otherPlayersBridge) {
-        this.otherPlayersBridge = otherPlayersBridge;
+    public PlayersListener(PlayersBridge playersBridge) {
+        this.playersBridge = playersBridge;
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -22,27 +22,27 @@ public class PlayersListener implements Listener {
         String formattedMessage = event.getFormat().format(event.getMessage());
         formattedMessage = "<" + event.getPlayer().getDisplayName() + "> " + formattedMessage; // TODO: why doesn't getFormat() take care of this?
 
-        otherPlayersBridge.notifyChat(formattedMessage);
+        playersBridge.notifyChat(formattedMessage);
     }
 
     @EventHandler(ignoreCancelled = true)
     public void onMove(PlayerMoveEvent event) {
         Player player = event.getPlayer();
 
-        otherPlayersBridge.notifyMove(player.getEntityId(), player.getDisplayName(), event.getTo());
+        playersBridge.notifyMove(player.getEntityId(), player.getDisplayName(), event.getTo());
     }
 
     @EventHandler(ignoreCancelled = true)
     public void onJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
 
-        otherPlayersBridge.notifyAdd(player.getEntityId(), player.getDisplayName(), player.getLocation());
+        playersBridge.notifyAdd(player.getEntityId(), player.getDisplayName(), player.getLocation());
     }
 
     @EventHandler(ignoreCancelled = true)
     public void onQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
 
-        otherPlayersBridge.notifyDelete(player.getEntityId());
+        playersBridge.notifyDelete(player.getEntityId());
     }
 }
