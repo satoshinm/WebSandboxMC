@@ -11,6 +11,9 @@ import org.bukkit.entity.Player;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Bridges other Bukkit player's positions/names/chats to the web clients
+ */
 public class OtherPlayersBridge {
 
     private final WebSocketServerThread webSocketServerThread;

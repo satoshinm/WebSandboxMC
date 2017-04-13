@@ -9,6 +9,9 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 
+/**
+ * Bridges blocks in the world
+ */
 public class BlockBridge {
 
     public WebSocketServerThread webSocketServerThread;
