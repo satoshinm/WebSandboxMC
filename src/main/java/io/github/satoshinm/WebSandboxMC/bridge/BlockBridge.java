@@ -10,13 +10,14 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 
 /**
- * Bridges blocks in the world
+ * Bridges blocks in the world, translates between coordinate systems
  */
 public class BlockBridge {
 
     public WebSocketServerThread webSocketServerThread;
     private final int x_center, y_center, z_center, radius, y_offset;
     public final World world;
+    public Location spawnLocation;
 
     public BlockBridge(WebSocketServerThread webSocketServerThread, int x_center, int y_center, int z_center, int radius, int y_offset) {
         this.webSocketServerThread = webSocketServerThread;
@@ -31,6 +32,9 @@ public class BlockBridge {
 
         // TODO: configurable world
         this.world = Bukkit.getWorlds().get(0);
+
+        // TODO: configurable spawn within range of sandbox, right now, it is the center of the sandbox
+        this.spawnLocation = new Location(this.world, this.x_center, this.y_center, this.z_center);
     }
 
     // Send the client the initial section of the world when they join
@@ -76,6 +80,16 @@ public class BlockBridge {
     }
 
     public Location toBukkitLocation(int x, int y, int z) {
+        x += -radius + x_center;
+        y += -radius + y_center - y_offset;
+        z += -radius + z_center;
+
+        Location location = new Location(world, x, y, z);
+
+        return location;
+    }
+
+    public Location toBukkitPlayerLocation(double x, double y, double z) {
         x += -radius + x_center;
         y += -radius + y_center - y_offset;
         z += -radius + z_center;

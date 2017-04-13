@@ -45,8 +45,4 @@ public class PlayersListener implements Listener {
 
         otherPlayersBridge.notifyDelete(player.getEntityId());
     }
-
-
-
-    // TODO: player join/leave update entities
 }

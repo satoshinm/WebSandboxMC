@@ -171,7 +171,20 @@ N,1,guest1
             String theirName = this.playerBridge.channelId2name.get(ctx.channel().id());
 
             otherPlayersBridge.clientChat(ctx, theirName, chat);
+        } else if (string.startsWith("P,")) {
+            String[] array = string.trim().split(",");
+            if (array.length != 6) {
+                throw new RuntimeException("malformed client position update P: "+string);
+            }
+            double x = Double.parseDouble(array[1]);
+            double y = Double.parseDouble(array[2]);
+            double z = Double.parseDouble(array[3]);
+            double rx = Double.parseDouble(array[4]);
+            double ry = Double.parseDouble(array[5]);
+
+            playerBridge.clientMoved(ctx.channel(), x, y, z, rx, ry);
         }
+
         // TODO: handle more client messages
     }
 }
