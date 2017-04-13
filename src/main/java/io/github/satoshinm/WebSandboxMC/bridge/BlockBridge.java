@@ -98,29 +98,17 @@ public class BlockBridge {
         return location;
     }
 
-    public int toWebLocationBlockX(Location location) {
-        return location.getBlockX() - (-radius + x_center);
-    }
+    public int toWebLocationBlockX(Location location) { return location.getBlockX() - (-radius + x_center); }
 
-    public int toWebLocationBlockY(Location location) {
-        return location.getBlockY() - (-radius + y_center - y_offset);
-    }
+    public int toWebLocationBlockY(Location location) { return location.getBlockY() - (-radius + y_center - y_offset); }
 
-    public int toWebLocationBlockZ(Location location) {
-        return location.getBlockZ() - (-radius + z_center);
-    }
+    public int toWebLocationBlockZ(Location location) { return location.getBlockZ() - (-radius + z_center); }
 
-    public double toWebLocationEntityX(Location location) {
-        return location.getX() - (-radius + x_center);
-    }
+    public double toWebLocationEntityX(Location location) { return location.getX() - (-radius + x_center); }
 
-    public double toWebLocationEntityY(Location location) {
-        return location.getY() - (-radius + y_center - y_offset);
-    }
+    public double toWebLocationEntityY(Location location) { return location.getY() - (-radius + y_center - y_offset); }
 
-    public double toWebLocationEntityZ(Location location) {
-        return location.getZ() - (-radius + z_center);
-    }
+    public double toWebLocationEntityZ(Location location) { return location.getZ() - (-radius + z_center); }
 
     // Handle the web client changing a block, update the bukkit world
     public void clientBlockUpdate(ChannelHandlerContext ctx, int x, int y, int z, int type) {
