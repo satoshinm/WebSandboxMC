@@ -184,6 +184,16 @@ public class BlockBridge {
             case SAND:
                 type = 2;
                 break;
+            case SMOOTH_BRICK:
+                type = 3;
+                break;
+            case BRICK:
+                type = 4;
+                break;
+            case LOG:
+            case LOG_2:
+                type = 5; // wood
+                break;
             // TODO: ores, for now, showing as stone
             case COAL_ORE:
             case IRON_ORE:
@@ -195,18 +205,9 @@ public class BlockBridge {
                 //case QUARTZ_ORE:
             case GOLD_ORE:
             case STONE:
-                type = 3;
-                break;
-            case BRICK:
-                type = 4;
-                break;
-            case LOG:
-            case LOG_2:
-                type = 5; // wood
-                break;
-            case GRAVEL:
                 type = 6; // cement, close enough
                 break;
+            case GRAVEL:
             case DIRT:
                 type = 7;
                 break;
@@ -267,10 +268,10 @@ public class BlockBridge {
             case 0: material = Material.AIR; break;
             case 1: material = Material.GRASS; break;
             case 2: material = Material.SAND; break;
-            case 3: material = Material.STONE; break;
+            case 3: material = Material.SMOOTH_BRICK; break; // "smooth stone brick"
             case 4: material = Material.BRICK; break;
             case 5: material = Material.LOG; break;
-            case 6: material = Material.GRAVEL; break;
+            case 6: material = Material.STONE; break; // "cement"
             case 7: material = Material.DIRT; break;
             case 8: material = Material.WOOD; break;
             case 9: material = Material.SNOW_BLOCK; break;
