@@ -3,12 +3,15 @@ package io.github.satoshinm.WebSandboxMC.bridge;
 import io.github.satoshinm.WebSandboxMC.ws.WebSocketServerThread;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelId;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.HumanEntity;
 import org.bukkit.entity.Player;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -36,6 +39,25 @@ public class PlayersBridge {
                 webSocketServerThread.sendLine(channel, "P," + id + "," + encodeLocation(location));
                 webSocketServerThread.sendLine(channel, "N," + id + "," + name);
             }
+        }
+
+        // Web players
+        for (Map.Entry<ChannelId, Entity> entry : webSocketServerThread.webPlayerBridge.channelId2Entity.entrySet()) {
+            ChannelId channelId = entry.getKey();
+
+            if (channelId.equals(channel.id())) {
+                // No third person, web players don't need entities for themselves
+                continue;
+            }
+
+            Entity entity = entry.getValue();
+
+            int id = entity.getEntityId();
+            Location location = entity.getLocation();
+            String name = entity.getCustomName();
+
+            webSocketServerThread.sendLine(channel, "P," + id + "," + encodeLocation(location));
+            webSocketServerThread.sendLine(channel, "N," + id + "," + name);
         }
     }
 

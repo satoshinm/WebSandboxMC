@@ -21,7 +21,7 @@ public class WebPlayerBridge {
     private int lastPlayerID;
     public Map<ChannelId, String> channelId2name;
     private Map<String, ChannelId> name2channelId;
-    private Map<ChannelId, Entity> channelId2Entity;
+    public Map<ChannelId, Entity> channelId2Entity;
 
     public WebPlayerBridge(WebSocketServerThread webSocketServerThread) {
         this.webSocketServerThread = webSocketServerThread;
