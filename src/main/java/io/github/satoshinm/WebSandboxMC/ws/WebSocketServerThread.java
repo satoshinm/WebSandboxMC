@@ -166,7 +166,7 @@ N,1,guest1
 
     public void handle(String string, ChannelHandlerContext ctx) {
         if (string.startsWith("B,")) {
-            System.out.println("client block update: "+string);
+            //System.out.println("client block update: "+string);
             String[] array = string.trim().split(",");
             if (array.length != 5) {
                 throw new RuntimeException("malformed block update B, command from client: "+string);

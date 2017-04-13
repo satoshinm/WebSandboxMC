@@ -60,7 +60,7 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
             // TODO: remove text frames, not used
             // Send the uppercase string back.
             String request = ((TextWebSocketFrame) frame).text();
-            System.out.println("channel " + ctx.channel() + " received request " + request);
+            System.out.println("channel " + ctx.channel() + " received text request " + request);
             ctx.channel().writeAndFlush(new TextWebSocketFrame(request.toUpperCase(Locale.US)));
         } else if (frame instanceof BinaryWebSocketFrame) {
             ByteBuf content = ((BinaryWebSocketFrame) frame).content();
@@ -69,7 +69,7 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
             content.getBytes(0, bytes);
 
             String string = new String(bytes);
-            System.out.println("received "+content.capacity()+" bytes: "+string);
+            //System.out.println("received "+content.capacity()+" bytes: "+string);
 
             this.webSocketServerThread.handle(string, ctx);
         } else {

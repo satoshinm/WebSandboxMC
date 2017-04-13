@@ -52,7 +52,6 @@ public class BlockBridge {
         }
         webSocketServerThread.sendLine(channel,"K,0,0,1");
         webSocketServerThread.sendLine(channel, "R,0,0");
-        webSocketServerThread.sendLine(channel, "T,Blocks sent");
 
         // Move player on top of the new blocks
         int x_start = radius;
