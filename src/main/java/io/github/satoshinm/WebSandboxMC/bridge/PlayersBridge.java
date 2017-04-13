@@ -40,9 +40,15 @@ public class PlayersBridge {
         double y = webSocketServerThread.blockBridge.toWebLocationEntityY(location);
         double z = webSocketServerThread.blockBridge.toWebLocationEntityZ(location);
 
-        // TODO: pitch and yaw
-        int rx = 0;
-        int ry = 0;
+        // yaw is degrees, 0(360)=+z, 180=-z, 90=-x, 270=+x
+        float yaw = location.getYaw();
+
+        // pitch is degrees, -90 (upward-facing, +y), or 0 (level), to 90 (downward facing, -y)
+        float pitch = location.getPitch();
+
+        // Craft uses radians, and flips the pitch
+        double rx = yaw * Math.PI / 180;
+        double ry = -pitch * Math.PI / 180;
 
         return x + "," + y + "," + z + "," + rx + "," + ry;
     }
