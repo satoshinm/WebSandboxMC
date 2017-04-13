@@ -22,6 +22,7 @@ import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelId;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
@@ -124,6 +125,16 @@ public final class WebSocketServerThread extends Thread {
 
     public void broadcastLine(String message) {
         allUsersGroup.writeAndFlush(new BinaryWebSocketFrame(Unpooled.copiedBuffer((message + "\n").getBytes())));
+    }
+
+    public void broadcastLineExcept(ChannelId excludeChannelId, String message) {
+        for (Channel channel: allUsersGroup) {
+            if (channel.id().equals(excludeChannelId)) {
+                continue;
+            }
+
+            channel.writeAndFlush(new BinaryWebSocketFrame(Unpooled.copiedBuffer((message + "\n").getBytes())));
+        }
     }
 
     // Handle a command from the client

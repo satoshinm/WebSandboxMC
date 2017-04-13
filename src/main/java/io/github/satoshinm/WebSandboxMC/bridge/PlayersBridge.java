@@ -61,7 +61,7 @@ public class PlayersBridge {
         }
     }
 
-    private String encodeLocation(Location location) {
+    public String encodeLocation(Location location) {
         double x = webSocketServerThread.blockBridge.toWebLocationEntityX(location);
         double y = webSocketServerThread.blockBridge.toWebLocationEntityY(location);
         double z = webSocketServerThread.blockBridge.toWebLocationEntityZ(location);

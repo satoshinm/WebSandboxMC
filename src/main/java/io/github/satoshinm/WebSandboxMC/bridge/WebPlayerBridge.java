@@ -54,6 +54,10 @@ public class WebPlayerBridge {
         entity.setGravity(false); // allow flying TODO: this doesn't seem to work on Glowstone? drops like a rock
         this.channelId2Entity.put(channel.id(), entity);
 
+        // Notify other web clients (except this one) of this new user
+        webSocketServerThread.broadcastLineExcept(channel.id(), "P,"+entity.getEntityId()+","+webSocketServerThread.playersBridge.encodeLocation(location));
+        webSocketServerThread.broadcastLineExcept(channel.id(), "N,"+entity.getEntityId()+","+theirName);
+
         return theirName;
     }
 
@@ -61,8 +65,12 @@ public class WebPlayerBridge {
         Entity entity = this.channelId2Entity.get(channel.id());
 
         Location location = this.webSocketServerThread.blockBridge.toBukkitPlayerLocation(x, y, z);
+        // TODO: location.setPitch, location.setYaw translate to -degrees see PlayersBridge
 
         // Move the surrogate entity to represent where the web player is
         entity.teleport(location);
+
+        // Notify other web clients (except this one) they moved
+        webSocketServerThread.broadcastLineExcept(channel.id(), "P,"+entity.getEntityId()+","+webSocketServerThread.playersBridge.encodeLocation(location));
     }
 }
