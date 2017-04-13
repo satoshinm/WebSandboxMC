@@ -6,11 +6,11 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 
-public class ChatListener implements Listener {
+public class PlayersListener implements Listener {
 
     private final PlayersBridge playersBridge;
 
-    public ChatListener(PlayersBridge playersBridge) {
+    public PlayersListener(PlayersBridge playersBridge) {
         this.playersBridge = playersBridge;
     }
 

@@ -6,11 +6,10 @@ import java.util.HashMap;
 import io.github.satoshinm.WebSandboxMC.bridge.BlockBridge;
 import io.github.satoshinm.WebSandboxMC.bridge.PlayersBridge;
 import io.github.satoshinm.WebSandboxMC.bukkit.BlockListener;
-import io.github.satoshinm.WebSandboxMC.bukkit.ChatListener;
+import io.github.satoshinm.WebSandboxMC.bukkit.PlayersListener;
 import io.github.satoshinm.WebSandboxMC.ws.WebSocketServerThread;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.PluginDescriptionFile;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -86,8 +85,8 @@ public class WebSandboxPlugin extends JavaPlugin {
         BlockListener blockListener = new BlockListener(webSocketServerThread.blockBridge);
         pm.registerEvents(blockListener, this);
 
-        ChatListener chatListener = new ChatListener(webSocketServerThread.playersBridge);
-        pm.registerEvents(chatListener, this);
+        PlayersListener playersListener = new PlayersListener(webSocketServerThread.playersBridge);
+        pm.registerEvents(playersListener, this);
 
 
         // Register our commands
