@@ -7,28 +7,35 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public class PlayersBridge {
 
     private final WebSocketServerThread webSocketServerThread;
 
+    private Set<Integer> playersInSandbox;
+
     public PlayersBridge(WebSocketServerThread webSocketServerThread) {
         this.webSocketServerThread = webSocketServerThread;
+
+        this.playersInSandbox = new HashSet<Integer>();
     }
 
     public void sendPlayers(Channel channel) {
         for (Player player: Bukkit.getServer().getOnlinePlayers()) {
             int id = player.getEntityId();
+            Location location = player.getLocation();
             String name = player.getDisplayName();
-            webSocketServerThread.sendLine(channel, "N," + id + "," + name);
+
+            if (this.playersInSandbox.contains(id)) {
+                webSocketServerThread.sendLine(channel, "P," + id + "," + encodeLocation(location));
+                webSocketServerThread.sendLine(channel, "N," + id + "," + name);
+            }
         }
     }
 
-    public void notifyMove(int id, Location location) {
-        if (!webSocketServerThread.blockBridge.withinSandboxRange(location)) {
-            // ignore movements outside of sandbox range TODO: maybe allow some grace outside of the block sandbox? +
-            return;
-        }
-
+    private String encodeLocation(Location location) {
         double x = webSocketServerThread.blockBridge.toWebLocationEntityX(location);
         double y = webSocketServerThread.blockBridge.toWebLocationEntityY(location);
         double z = webSocketServerThread.blockBridge.toWebLocationEntityZ(location);
@@ -37,23 +44,46 @@ public class PlayersBridge {
         int rx = 0;
         int ry = 0;
 
-        webSocketServerThread.broadcastLine("P," + id + "," + x + "," + y + "," + z + "," + rx + "," + ry);
+        return x + "," + y + "," + z + "," + rx + "," + ry;
     }
 
-    public void notifyJoin(int id, String name, Location initialLocation) {
-        System.out.println("notifying web clients player id "+id+" is "+name);
+    public void notifyMove(int id, String name, Location location) {
+        if (!webSocketServerThread.blockBridge.withinSandboxRange(location)) {
+            // No position updates for players outside of the sandbox, but if they were previously inside, kill them
+            if (this.playersInSandbox.contains(id)) {
+                this.notifyDelete(id);
+            }
+            return;
+        }
+
+        if (!this.playersInSandbox.contains(id)) {
+            // Transitioned from outside to inside sandbox - allocate
+            this.notifyAdd(id, name, location);
+        }
+
+        webSocketServerThread.broadcastLine("P," + id + "," + encodeLocation(location));
+    }
+
+    public void notifyAdd(int id, String name, Location initialLocation) {
+        if (!webSocketServerThread.blockBridge.withinSandboxRange(initialLocation)) {
+            return;
+        }
+        this.playersInSandbox.add(id);
 
         // Craft requires P (position update) before N (name), since it allocates the entity in P...
         // even though it is named in N (before that, default name 'player'+id). Therefore we must send P first.
         // TODO: change this behavior on client, allowing N to allocate? OTOH, the initial position is important...
-        this.notifyMove(id, initialLocation);
+        this.notifyMove(id, name, initialLocation);
 
         webSocketServerThread.broadcastLine("N," + id + "," + name);
     }
 
-    public void notifyQuit(int id, String name) {
-        // delete this entity
-        webSocketServerThread.broadcastLine("D," + id);
+    public void notifyDelete(int id) {
+        if (this.playersInSandbox.contains(id)) {
+            this.playersInSandbox.remove(id);
+            // delete this entity
+            webSocketServerThread.broadcastLine("D," + id);
+        }
     }
 
     public void notifyChat(String message) {

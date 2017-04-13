@@ -1,8 +1,6 @@
 package io.github.satoshinm.WebSandboxMC.bukkit;
 
 import io.github.satoshinm.WebSandboxMC.bridge.PlayersBridge;
-import io.github.satoshinm.WebSandboxMC.ws.WebSocketServerThread;
-import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -29,24 +27,23 @@ public class PlayersListener implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onMove(PlayerMoveEvent event) {
-        Location to = event.getTo();
-        int id = event.getPlayer().getEntityId();
+        Player player = event.getPlayer();
 
-        playersBridge.notifyMove(id, to);
+        playersBridge.notifyMove(player.getEntityId(), player.getDisplayName(), event.getTo());
     }
 
     @EventHandler(ignoreCancelled = true)
     public void onJoin(PlayerJoinEvent event) {
         Player player = event.getPlayer();
 
-        playersBridge.notifyJoin(player.getEntityId(), player.getDisplayName(), player.getLocation());
+        playersBridge.notifyAdd(player.getEntityId(), player.getDisplayName(), player.getLocation());
     }
 
     @EventHandler(ignoreCancelled = true)
     public void onQuit(PlayerQuitEvent event) {
         Player player = event.getPlayer();
 
-        playersBridge.notifyQuit(player.getEntityId(), player.getDisplayName());
+        playersBridge.notifyDelete(player.getEntityId());
     }
 
 

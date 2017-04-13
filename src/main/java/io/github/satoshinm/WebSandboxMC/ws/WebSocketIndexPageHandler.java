@@ -32,7 +32,6 @@ import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpUtil;
 import io.netty.handler.ssl.SslHandler;
 import io.netty.util.CharsetUtil;
-import sun.misc.IOUtils;
 
 import java.io.*;
 
