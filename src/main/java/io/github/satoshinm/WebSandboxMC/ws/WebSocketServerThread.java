@@ -161,6 +161,7 @@ N,1,guest1
         sendLine(channel, "R,0,0"); // refresh chunk (0,0)
 
         blockBridge.sendWorld(channel);
+        playersBridge.sendPlayers(channel);
 
         broadcastLine("T," + theirName + " has joined.");
     }
