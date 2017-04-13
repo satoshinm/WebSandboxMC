@@ -40,7 +40,21 @@ public class PlayersBridge {
         webSocketServerThread.broadcastLine("P," + id + "," + x + "," + y + "," + z + "," + rx + "," + ry);
     }
 
-    // TODO: player join/leave update entities
+    public void notifyJoin(int id, String name, Location initialLocation) {
+        System.out.println("notifying web clients player id "+id+" is "+name);
+
+        // Craft requires P (position update) before N (name), since it allocates the entity in P...
+        // even though it is named in N (before that, default name 'player'+id). Therefore we must send P first.
+        // TODO: change this behavior on client, allowing N to allocate? OTOH, the initial position is important...
+        this.notifyMove(id, initialLocation);
+
+        webSocketServerThread.broadcastLine("N," + id + "," + name);
+    }
+
+    public void notifyQuit(int id, String name) {
+        // delete this entity
+        webSocketServerThread.broadcastLine("D," + id);
+    }
 
     public void notifyChat(String message) {
         webSocketServerThread.broadcastLine("T," + message);
