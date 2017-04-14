@@ -54,3 +54,14 @@ Configures the NetCraft web client:
 
 * `y_offset` (20): height to shift the web client blocks upwards, to distinguish from the pre-generated landscape
 
+## Compatibility
+
+WebSandboxMC uses the [Bukkit API from Spigot](https://hub.spigotmc.org/javadocs/bukkit/) with the aim of maximizing
+server compatibility. Known compatible server software:
+
+* [Glowstone](https://www.glowstone.net): for a fully open source end-to-end gameplay experience
+* [SpigotMC](https://www.spigotmc.org)
+
+## License
+
+MIT
