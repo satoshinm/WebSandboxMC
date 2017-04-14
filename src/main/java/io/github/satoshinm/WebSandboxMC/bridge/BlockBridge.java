@@ -44,7 +44,7 @@ public class BlockBridge {
             for (int j = -radius; j < radius; ++j) {
                 for (int k = -radius; k < radius; ++k) {
                     Block block = world.getBlockAt(i + x_center, j + y_center, k + z_center);
-                    int type = toWebBlockType(block.getType());
+                    int type = toWebBlockType(block.getType(), block.getData());
 
                     webSocketServerThread.sendLine(channel, "B,0,0," + (i + radius) + "," + (j + radius + y_offset) + "," + (k + radius) + "," + type);
                 }
@@ -147,7 +147,7 @@ public class BlockBridge {
     }
 
     // Handle the bukkit world changing a block, tell all web clients
-    public void notifyBlockUpdate(Location location, Material material) {
+    public void notifyBlockUpdate(Location location, Material material, byte data) {
         //System.out.println("bukkit block ("+x+","+y+","+z+") was set to "+material);
 
         if (!withinSandboxRange(location)) {
@@ -157,7 +157,7 @@ public class BlockBridge {
 
 
         // Send to all web clients to let them know it changed using the "B," command
-        int type = toWebBlockType(material);
+        int type = toWebBlockType(material, data);
 
         int x = toWebLocationBlockX(location);
         int y = toWebLocationBlockY(location);
@@ -171,7 +171,7 @@ public class BlockBridge {
 
     // Translate web<->bukkit blocks
     // TODO: refactor to remove all bukkit dependency in this class (enums strings?), generalize to can support others
-    private int toWebBlockType(Material material) {
+    private int toWebBlockType(Material material, byte data) {
         int type;
         switch (material) {
             case AIR:
@@ -250,6 +250,62 @@ public class BlockBridge {
             // TODO: white flower (22)
             // TODO: blue flower (23)
 
+            case WOOL:
+            {
+                switch (data) {
+                    case 0: // white
+                        type = 61; // #define COLOR_29 // 61 white
+                        break;
+                    case 1: // orange
+                        type = 53; // #define COLOR_21 // 53 orange
+                        break;
+                    case 2: // magenta
+                        type = 43; // #define COLOR_11 // 43 crimson
+                        break;
+                    case 3: // light blue
+                        type = 58; // #define COLOR_26 // 58 light blue
+                        break;
+                    case 4: // yellow
+                        type = 32; // #define COLOR_00 // 32 yellow
+                        break;
+                    case 5: // lime
+                        type = 46; // #define COLOR_14 // 46 puke green
+                        break;
+                    case 6: // pink
+                        type = 45; // #define COLOR_13 // 45 pink
+                        break;
+                    case 7: // gray
+                        type = 41; // #define COLOR_09 // 41 darker gray
+                        break;
+                    case 8: // light gray
+                        type = 50; // #define COLOR_18 // 50 medium gray
+                        break;
+                    case 9: // cyan
+                        type = 59; // #define COLOR_27 // 59 foam green
+                        break;
+                    case 10: // purple
+                        type = 39; // #define COLOR_07 // 39 purple
+                        break;
+                    case 11: // blue
+                        type = 57; // #define COLOR_25 // 57 blue
+                        break;
+                    case 12: // brown
+                        type = 47; // #define COLOR_15 // 47 poop brown
+                        break;
+                    case 13: // green
+                        type = 34; // #define COLOR_02 // 34 green
+                        break;
+                    case 14: // red
+                        type = 44; // #define COLOR_12 // 44 salmon
+                        break;
+                    default:
+                    case 15: // black
+                        type = 48; // #define COLOR_16 // 48 black
+                        break;
+                }
+                break;
+            }
+
             default:
                 System.out.println("unknown block type="+material);
                 // unknown/unsupported becomes cloud
@@ -299,6 +355,7 @@ public class BlockBridge {
     private int toBukkitBlockData(int type) {
         DyeColor color = null;
         switch (type) {
+            // Craft has 32 color block types, but MC only 16 - not 1:1, but try to get close enough
             case 32: // #define COLOR_00 // 32 yellow
                 color = DyeColor.YELLOW; break;
             case 33: // #define COLOR_01 // 33 light green
