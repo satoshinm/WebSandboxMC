@@ -24,16 +24,14 @@ public class BlockListener implements Listener {
     public void onBlockBreak(BlockBreakEvent event) {
         Block block = event.getBlock();
         Location location = block.getLocation();
-        blockBridge.notifyBlockUpdate(location, Material.AIR);
+        blockBridge.notifyBlockUpdate(location, Material.AIR, (byte) 0);
     }
 
     @EventHandler(ignoreCancelled = true)
     public void onBlockPlace(BlockPlaceEvent event) {
         Block block = event.getBlock();
-        Location location = block.getLocation();
-        Material material = block.getType();
 
-        blockBridge.notifyBlockUpdate(location, material);
+        blockBridge.notifyBlockUpdate(block.getLocation(), block.getType(), block.getData());
     }
 
     // TODO: BlockBurnEvent
