@@ -60,23 +60,30 @@ public class WebSandboxPlugin extends JavaPlugin {
         int ourExternalPort = httpPort;
 
         config.addDefault("http.port", httpPort);
+        config.addDefault("http.external_address", ourExternalAddress);
+        config.addDefault("http.external_port", ourExternalPort);
+
         config.addDefault("mc.entity_custom_names", setCustomNames);
         config.addDefault("mc.entity_disable_gravity", disableGravity);
         config.addDefault("mc.x_center", x_center);
         config.addDefault("mc.y_center", y_center);
         config.addDefault("mc.z_center", z_center);
         config.addDefault("mc.radius", radius);
-        config.addDefault("nc.y_offset", y_offset);
-        config.addDefault("http.external_address", ourExternalAddress);
-        config.addDefault("http.external_port", ourExternalPort);
 
+        config.addDefault("nc.y_offset", y_offset);
+
+        
         httpPort = this.getConfig().getInt("http.port");
+        ourExternalAddress = this.getConfig().getString("http.external_address");
+        ourExternalPort = this.getConfig().getInt("http.external_port");
+
         setCustomNames = this.getConfig().getBoolean("mc.entity_custom_names");
         disableGravity = this.getConfig().getBoolean("mc.entity_disable_gravity");
         x_center = this.getConfig().getInt("mc.x_center");
         y_center = this.getConfig().getInt("mc.y_center");
         z_center = this.getConfig().getInt("mc.z_center");
         radius = this.getConfig().getInt("mc.radius");
+
         y_offset = this.getConfig().getInt("nc.y_offset");
 
         saveConfig();
