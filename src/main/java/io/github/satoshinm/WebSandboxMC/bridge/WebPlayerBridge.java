@@ -42,7 +42,7 @@ public class WebPlayerBridge {
         webSocketServerThread.sendLine(channel, "T,Welcome to WebSandboxMC, "+theirName+"!");
 
         // HumanEntity.class fails on Glowstone with https://gist.github.com/satoshinm/ebc87cdf1d782ba91b893fe24cd8ffd2
-        // so use sheep instead for now
+        // so use sheep instead for now. TODO: spawn ala GlowNPC: https://github.com/satoshinm/WebSandboxMC/issues/13
         //Class entityClass = HumanEntity.class;
         Class entityClass = Sheep.class;
 
@@ -50,7 +50,7 @@ public class WebPlayerBridge {
         Location location = webSocketServerThread.blockBridge.spawnLocation;
         Entity entity = webSocketServerThread.blockBridge.world.spawn(location, entityClass);
         entity.setCustomName(theirName); // name tag
-        entity.setCustomNameVisible(true); // TODO: shows error saving on Glowstone? https://gist.github.com/satoshinm/8a7cb999c09bb42048e70647875f53c8
+        entity.setCustomNameVisible(true);
         entity.setGravity(false); // allow flying TODO: this doesn't seem to work on Glowstone? drops like a rock
         this.channelId2Entity.put(channel.id(), entity);
 
