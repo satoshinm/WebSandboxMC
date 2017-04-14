@@ -24,8 +24,13 @@ public class WebPlayerBridge {
     private Map<String, ChannelId> name2channelId;
     public Map<ChannelId, Entity> channelId2Entity;
 
-    public WebPlayerBridge(WebSocketServerThread webSocketServerThread) {
+    private boolean setCustomNames;
+    private boolean disableGravity;
+
+    public WebPlayerBridge(WebSocketServerThread webSocketServerThread, boolean setCustomNames, boolean disableGravity) {
         this.webSocketServerThread = webSocketServerThread;
+        this.setCustomNames = setCustomNames;
+        this.disableGravity = disableGravity;
 
         this.lastPlayerID = 0;
         this.channelId2name = new HashMap<ChannelId, String>();
@@ -50,9 +55,13 @@ public class WebPlayerBridge {
         // Spawn an entity in the web user's place
         Location location = webSocketServerThread.blockBridge.spawnLocation;
         Entity entity = webSocketServerThread.blockBridge.world.spawn(location, entityClass);
-        entity.setCustomName(theirName); // name tag
-        entity.setCustomNameVisible(true);
-        entity.setGravity(false); // allow flying TODO: this doesn't seem to work on Glowstone? drops like a rock
+        if (setCustomNames) {
+            entity.setCustomName(theirName); // name tag
+            entity.setCustomNameVisible(true);
+        }
+        if (disableGravity) {
+            entity.setGravity(false); // allow flying TODO: this doesn't seem to work on Glowstone? drops like a rock
+        }
         channelId2Entity.put(channel.id(), entity);
 
         // Notify other web clients (except this one) of this new user

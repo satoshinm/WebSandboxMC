@@ -41,6 +41,10 @@ public class WebSandboxPlugin extends JavaPlugin {
         config.options().copyDefaults(true);
 
         int httpPort = 4081;
+
+        boolean setCustomNames = true;
+        boolean disableGravity = true;
+
         // Send blocks around this area in the Bukkit world
         int x_center = -85;
         int y_center = 78;
@@ -56,6 +60,8 @@ public class WebSandboxPlugin extends JavaPlugin {
         int ourExternalPort = httpPort;
 
         config.addDefault("http.port", httpPort);
+        config.addDefault("mc.entity_custom_names", setCustomNames);
+        config.addDefault("mc.entity_disable_gravity", disableGravity);
         config.addDefault("mc.x_center", x_center);
         config.addDefault("mc.y_center", y_center);
         config.addDefault("mc.z_center", z_center);
@@ -65,6 +71,8 @@ public class WebSandboxPlugin extends JavaPlugin {
         config.addDefault("http.external_port", ourExternalPort);
 
         httpPort = this.getConfig().getInt("http.port");
+        setCustomNames = this.getConfig().getBoolean("mc.entity_custom_names");
+        disableGravity = this.getConfig().getBoolean("mc.entity_disable_gravity");
         x_center = this.getConfig().getInt("mc.x_center");
         y_center = this.getConfig().getInt("mc.y_center");
         z_center = this.getConfig().getInt("mc.z_center");
@@ -77,7 +85,7 @@ public class WebSandboxPlugin extends JavaPlugin {
 
         webSocketServerThread.blockBridge = new BlockBridge(webSocketServerThread, x_center, y_center, z_center, radius, y_offset);
         webSocketServerThread.playersBridge = new PlayersBridge(webSocketServerThread);
-        webSocketServerThread.webPlayerBridge = new WebPlayerBridge(webSocketServerThread);
+        webSocketServerThread.webPlayerBridge = new WebPlayerBridge(webSocketServerThread, setCustomNames, disableGravity);
 
         // Register our events
         PluginManager pm = getServer().getPluginManager();
