@@ -38,8 +38,8 @@ public class BlockBridge {
     }
 
     // Send the client the initial section of the world when they join
-    public void sendWorld(Channel channel) {
-
+    @SuppressWarnings("deprecation") // Block#getData()
+    public void sendWorld(final Channel channel) {
         for (int i = -radius; i < radius; ++i) {
             for (int j = -radius; j < radius; ++j) {
                 for (int k = -radius; k < radius; ++k) {
@@ -352,6 +352,7 @@ public class BlockBridge {
         return material;
     }
 
+    @SuppressWarnings("deprecation") // DyeColor#getData()
     private int toBukkitBlockData(int type) {
         DyeColor color = null;
         switch (type) {

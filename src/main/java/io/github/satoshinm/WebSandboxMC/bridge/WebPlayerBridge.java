@@ -3,6 +3,7 @@ package io.github.satoshinm.WebSandboxMC.bridge;
 import io.github.satoshinm.WebSandboxMC.ws.WebSocketServerThread;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelId;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.HumanEntity;
@@ -32,9 +33,9 @@ public class WebPlayerBridge {
         this.channelId2Entity = new HashMap<ChannelId, Entity>();
     }
 
-    public String newPlayer(Channel channel) {
+    public String newPlayer(final Channel channel) {
         int theirID = ++this.lastPlayerID;
-        String theirName = "webguest" + theirID;
+        final String theirName = "webguest" + theirID;
 
         this.channelId2name.put(channel.id(), theirName);
         this.name2channelId.put(theirName, channel.id());
@@ -52,19 +53,20 @@ public class WebPlayerBridge {
         entity.setCustomName(theirName); // name tag
         entity.setCustomNameVisible(true);
         entity.setGravity(false); // allow flying TODO: this doesn't seem to work on Glowstone? drops like a rock
-        this.channelId2Entity.put(channel.id(), entity);
+        channelId2Entity.put(channel.id(), entity);
 
         // Notify other web clients (except this one) of this new user
         webSocketServerThread.broadcastLineExcept(channel.id(), "P,"+entity.getEntityId()+","+webSocketServerThread.playersBridge.encodeLocation(location));
         webSocketServerThread.broadcastLineExcept(channel.id(), "N,"+entity.getEntityId()+","+theirName);
 
+
         return theirName;
     }
 
-    public void clientMoved(Channel channel, double x, double y, double z, double rx, double ry) {
-        Entity entity = this.channelId2Entity.get(channel.id());
+    public void clientMoved(final Channel channel, final double x, final double y, final double z, final double rx, final double ry) {
+        final Entity entity = this.channelId2Entity.get(channel.id());
 
-        Location location = this.webSocketServerThread.blockBridge.toBukkitPlayerLocation(x, y, z);
+        Location location = webSocketServerThread.blockBridge.toBukkitPlayerLocation(x, y, z);
 
         // Opposite of PlayerBridge encodeLocation - given negated radians, convert to degrees
         location.setYaw((float)(-rx * 180 / Math.PI));

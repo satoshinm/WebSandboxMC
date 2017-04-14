@@ -73,7 +73,7 @@ public class WebSandboxPlugin extends JavaPlugin {
 
         saveConfig();
 
-        webSocketServerThread = new WebSocketServerThread(httpPort, ourExternalAddress, ourExternalPort);
+        webSocketServerThread = new WebSocketServerThread(this, httpPort, ourExternalAddress, ourExternalPort);
 
         webSocketServerThread.blockBridge = new BlockBridge(webSocketServerThread, x_center, y_center, z_center, radius, y_offset);
         webSocketServerThread.playersBridge = new PlayersBridge(webSocketServerThread);

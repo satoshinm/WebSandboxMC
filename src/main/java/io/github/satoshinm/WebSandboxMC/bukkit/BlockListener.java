@@ -28,6 +28,7 @@ public class BlockListener implements Listener {
     }
 
     @EventHandler(ignoreCancelled = true)
+    @SuppressWarnings("deprecation") // Block#getData
     public void onBlockPlace(BlockPlaceEvent event) {
         Block block = event.getBlock();
 

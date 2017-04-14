@@ -35,6 +35,8 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
 import io.netty.util.concurrent.ImmediateEventExecutor;
+import org.bukkit.Bukkit;
+import org.bukkit.plugin.Plugin;
 
 /**
  * A HTTP server which serves Web Socket requests at:
@@ -68,8 +70,11 @@ public final class WebSocketServerThread extends Thread {
     public BlockBridge blockBridge;
     public PlayersBridge playersBridge;
     public WebPlayerBridge webPlayerBridge;
+    private Plugin plugin;
 
-    public WebSocketServerThread(int port, String ourExternalAddress, int ourExternalPort) {
+    public WebSocketServerThread(Plugin plugin, int port, String ourExternalAddress, int ourExternalPort) {
+        this.plugin = plugin;
+
         this.PORT = port;
         this.SSL = false; // TODO: support ssl?
 
@@ -81,6 +86,10 @@ public final class WebSocketServerThread extends Thread {
 
         this.ourExternalAddress = ourExternalAddress;
         this.ourExternalPort = ourExternalPort;
+    }
+
+    public void scheduleSyncTask(Runnable runnable) {
+        Bukkit.getScheduler().scheduleSyncDelayedTask(this.plugin, runnable);
     }
 
     @Override
