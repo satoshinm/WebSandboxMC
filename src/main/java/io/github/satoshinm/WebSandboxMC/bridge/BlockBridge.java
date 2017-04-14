@@ -111,9 +111,10 @@ public class BlockBridge {
     public double toWebLocationEntityZ(Location location) { return location.getZ() - (-radius + z_center); }
 
     // Handle the web client changing a block, update the bukkit world
+    @SuppressWarnings("deprecation") // for Block#setTypeIdAndData
     public void clientBlockUpdate(ChannelHandlerContext ctx, int x, int y, int z, int type) {
         Material material = toBukkitBlockType(type);
-        MaterialData materialData = toBukkitBlockData(type);
+        int blockdata = toBukkitBlockData(type);
         Location location = toBukkitLocation(x, y, z);
 
         if (!withinSandboxRange(location)) {
@@ -134,10 +135,10 @@ public class BlockBridge {
         }
 
         System.out.println("setting block at "+location+" to "+material);
-        block.setType(material);
-        if (materialData != null) {
-            block.getState().setData(materialData);
-            block.getState().update(true, true); // TODO: how to make the change take effect?
+        if (blockdata != -1) {
+            block.setTypeIdAndData(material.getId(), (byte) blockdata, true);
+        } else {
+            block.setType(material);
         }
 
         // Notify other web clients - note they will have the benefit of seeing the untranslated block (feature or bug?)
@@ -295,7 +296,7 @@ public class BlockBridge {
         return material;
     }
 
-    private MaterialData toBukkitBlockData(int type) {
+    private int toBukkitBlockData(int type) {
         DyeColor color = null;
         switch (type) {
             case 32: // #define COLOR_00 // 32 yellow
@@ -352,8 +353,8 @@ public class BlockBridge {
                 color = DyeColor.GRAY; break;
         }
         if (color != null) {
-            return new Wool(color);
+            return color.getWoolData();
         }
-        return null;
+        return -1;
     }
 }
