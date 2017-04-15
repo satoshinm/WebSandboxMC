@@ -15,24 +15,12 @@
  */
 package io.github.satoshinm.WebSandboxMC.ws;
 
-import java.util.List;
-import java.util.Locale;
-
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
 import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
-import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
-import org.bukkit.Bukkit;
-import org.bukkit.Material;
-import org.bukkit.World;
-import org.bukkit.block.Block;
 
-/**
- * Echoes uppercase content of text frames.
- */
 public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocketFrame> {
 
     private final WebSocketServerThread webSocketServerThread;
@@ -65,14 +53,8 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
     public void channelRead0(final ChannelHandlerContext ctx, WebSocketFrame frame) throws Exception {
         //System.out.println("channel read, obj="+obj);
 
-        if (frame instanceof TextWebSocketFrame) {
-            // TODO: remove text frames, not used
-            // Send the uppercase string back.
-            String request = ((TextWebSocketFrame) frame).text();
-            System.out.println("channel " + ctx.channel() + " received text request " + request);
-            ctx.channel().writeAndFlush(new TextWebSocketFrame(request.toUpperCase(Locale.US)));
-        } else if (frame instanceof BinaryWebSocketFrame) {
-            ByteBuf content = ((BinaryWebSocketFrame) frame).content();
+        if (frame instanceof BinaryWebSocketFrame) {
+            ByteBuf content = frame.content();
 
             byte[] bytes = new byte[content.capacity()];
             content.getBytes(0, bytes);
