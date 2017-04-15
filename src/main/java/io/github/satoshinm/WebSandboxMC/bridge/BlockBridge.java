@@ -484,4 +484,52 @@ public class BlockBridge {
         }
         return -1;
     }
+
+    public void notifySignChange(Location location, byte data, String[] lines) {
+        int x = toWebLocationBlockX(location);
+        int y = toWebLocationBlockY(location);
+        int z = toWebLocationBlockZ(location);
+
+        // data is packed bitfield, see http://minecraft.gamepedia.com/Sign#Block_data
+        // wallsigns
+        int face = 0;
+        // Craft's faces:
+        // 7
+        // 6
+        // 5 - top
+        // 4 - top, rotated
+        // 3 - south
+        // 2 - north
+        // 1 - east
+        // 0 - west
+        switch (data) {
+            case 2: // north
+                face = 2; // north
+                break;
+            case 3: // south
+                face = 3; // south
+                break;
+            case 4: // west
+                face = 0; // west
+                break;
+            case 5: // east
+                face = 1; // east
+                break;
+        }
+        // TODO: standing signs
+
+        System.out.println("sign change: "+location+", data="+data);
+        String text = "";
+        for (int i = 0; i < lines.length; ++i) {
+            System.out.println("line: "+lines[i]);
+            text += lines[i] + " "; // TODO: support explicit newlines; Craft wraps sign text lines automatically
+        }
+        if (text.contains("\n")) {
+            // \n is used as a command terminator in the Craft protocol (but ',' is acceptable)
+            text = text.replaceAll("\n", " ");
+        }
+
+        webSocketServerThread.broadcastLine("S,0,0,"+x+","+y+","+z+","+face+","+text);
+        webSocketServerThread.broadcastLine("R,0,0");
+    }
 }
