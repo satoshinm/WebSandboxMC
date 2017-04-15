@@ -175,8 +175,14 @@ public class BlockBridge {
     private int toWebLighting(Material material, byte data) {
         switch (material) {
             case GLOWSTONE:
+            case SEA_LANTERN:
+            case JACK_O_LANTERN:
+            case BEACON:
+            case REDSTONE_LAMP_ON: // TODO: get notified when toggles on/off
                 return 15;
-            // TODO: more lit blocks
+
+            //TODO case TORCH:
+
         }
 
         return 0;
@@ -270,7 +276,7 @@ public class BlockBridge {
                         type = 61; // #define COLOR_29 // 61 white
                         break;
                     case 1: // orange
-                        type = 53; // #define COLOR_21 // 53 orange
+                        type = 53;
                         break;
                     case 2: // magenta
                         type = 43; // #define COLOR_11 // 43 crimson
@@ -319,9 +325,19 @@ public class BlockBridge {
                 break;
             }
 
+            // Light sources (nonzero toWebLighting()) TODO: different textures?
             case GLOWSTONE:
-                // yellow color block + light level, TODO: a different texture?
-                type = 32;
+                type = 32; // #define COLOR_00 // 32 yellow
+                break;
+            case SEA_LANTERN:
+                type = 58; // #define COLOR_26 // 58 light blue
+                break;
+            case JACK_O_LANTERN:
+                type = 53; // #define COLOR_21 // 53 orange
+                break;
+            case REDSTONE_LAMP_ON:
+            case REDSTONE_LAMP_OFF:
+                type = 34; // // #define COLOR_12 // 44 salmon
                 break;
 
             default:
