@@ -5,9 +5,6 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import org.bukkit.*;
 import org.bukkit.block.Block;
-import org.bukkit.material.Dye;
-import org.bukkit.material.MaterialData;
-import org.bukkit.material.Wool;
 
 /**
  * Bridges blocks in the world, translates between coordinate systems

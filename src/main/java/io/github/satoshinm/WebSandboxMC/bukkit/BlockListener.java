@@ -2,7 +2,6 @@
 package io.github.satoshinm.WebSandboxMC.bukkit;
 
 import io.github.satoshinm.WebSandboxMC.bridge.BlockBridge;
-import io.github.satoshinm.WebSandboxMC.ws.WebSocketServerThread;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -10,7 +9,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
 
 public class BlockListener implements Listener {
 
