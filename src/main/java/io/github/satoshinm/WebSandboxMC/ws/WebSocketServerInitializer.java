@@ -28,7 +28,13 @@ import io.netty.handler.ssl.SslContext;
  */
 public class WebSocketServerInitializer extends ChannelInitializer<SocketChannel> {
 
-    private static final String WEBSOCKET_PATH = "/";
+    // WebSockets, unlike plain sockets, support the concept of a "path", since they are
+    // layered over HTTP. To avoid conflicting with serving the HTML and JavaScript resources
+    // at /, use /craftws for the WebSocket (TODO: possible to overload HTML and WS with Netty
+    // on the same URL? /), can connect in NetCraft using commands like this:
+    //  /online ws://localhost:4081/craftws
+    //  /online localhost
+    private static final String WEBSOCKET_PATH = "/craftws";
 
     private final SslContext sslCtx;
     private final WebSocketServerThread webSocketServerThread;
@@ -53,7 +59,6 @@ public class WebSocketServerInitializer extends ChannelInitializer<SocketChannel
         pipeline.addLast(new HttpObjectAggregator(65536));
         pipeline.addLast(new WebSocketServerCompressionHandler());
         pipeline.addLast(new WebSocketServerProtocolHandler(WEBSOCKET_PATH, "binary", true));
-        // TODO: overload with '/' for html and ws? currently, /index.html is html, but / is ws (html attempt = 'not a WebSocket handshake request: missing upgrade')
         pipeline.addLast(new WebSocketIndexPageHandler(ourExternalAddress, ourExternalPort));
         pipeline.addLast(new WebSocketFrameHandler(webSocketServerThread));
     }
