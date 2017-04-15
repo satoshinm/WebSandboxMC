@@ -96,8 +96,6 @@ public class WebSandboxPlugin extends JavaPlugin {
 
         // Register our events
         PluginManager pm = getServer().getPluginManager();
-        //playerListener = new SamplePlayerListener(this); // TODO
-        //pm.registerEvents(playerListener, this);
 
         BlockListener blockListener = new BlockListener(webSocketServerThread.blockBridge);
         pm.registerEvents(blockListener, this);
