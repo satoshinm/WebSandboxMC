@@ -41,9 +41,10 @@ public class BlockBridge {
             for (int j = -radius; j < radius; ++j) {
                 for (int k = -radius; k < radius; ++k) {
                     Block block = world.getBlockAt(i + x_center, j + y_center, k + z_center);
-                    int type = toWebBlockType(block.getType(), block.getData());
+                    //int type = toWebBlockType(block.getType(), block.getData());
 
-                    webSocketServerThread.sendLine(channel, "B,0,0," + (i + radius) + "," + (j + radius + y_offset) + "," + (k + radius) + "," + type);
+                    //webSocketServerThread.sendLine(channel, "B,0,0," + (i + radius) + "," + (j + radius + y_offset) + "," + (k + radius) + "," + type);
+                    notifyBlockUpdate(block.getLocation(), block.getType(), block.getData());
                 }
             }
         }
@@ -163,7 +164,22 @@ public class BlockBridge {
         webSocketServerThread.broadcastLine("B,0,0,"+x+","+y+","+z+","+type);
         webSocketServerThread.broadcastLine("R,0,0");
 
-        System.out.println("notified block update: ("+x+","+y+","+z+") to "+type);
+        int light_level = toWebLighting(material, data);
+        if (light_level != 0) {
+            webSocketServerThread.broadcastLine("L,0,0,"+x+","+y+","+z+"," + light_level);
+        }
+
+        //System.out.println("notified block update: ("+x+","+y+","+z+") to "+type);
+    }
+
+    private int toWebLighting(Material material, byte data) {
+        switch (material) {
+            case GLOWSTONE:
+                return 15;
+            // TODO: more lit blocks
+        }
+
+        return 0;
     }
 
     // Translate web<->bukkit blocks
@@ -302,6 +318,11 @@ public class BlockBridge {
                 }
                 break;
             }
+
+            case GLOWSTONE:
+                // yellow color block + light level, TODO: a different texture?
+                type = 32;
+                break;
 
             default:
                 System.out.println("unknown block type="+material);
