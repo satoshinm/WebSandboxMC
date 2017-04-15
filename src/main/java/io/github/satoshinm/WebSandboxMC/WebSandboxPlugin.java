@@ -1,8 +1,6 @@
 
 package io.github.satoshinm.WebSandboxMC;
 
-import java.util.HashMap;
-
 import io.github.satoshinm.WebSandboxMC.bridge.BlockBridge;
 import io.github.satoshinm.WebSandboxMC.bridge.PlayersBridge;
 import io.github.satoshinm.WebSandboxMC.bridge.WebPlayerBridge;
@@ -10,18 +8,19 @@ import io.github.satoshinm.WebSandboxMC.bukkit.BlockListener;
 import io.github.satoshinm.WebSandboxMC.bukkit.PlayersListener;
 import io.github.satoshinm.WebSandboxMC.ws.WebSocketServerThread;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /**
+ * Bukkit plugin class for WebSandboxMC
+ *
+ * Based on: https://github.com/bukkit/SamplePlugin/
+ *
  * Sample plugin for Bukkit
  *
  * @author Dinnerbone
  */
 public class WebSandboxPlugin extends JavaPlugin {
-    private final HashMap<Player, Boolean> debugees = new HashMap<Player, Boolean>();
-
     private WebSocketServerThread webSocketServerThread;
 
     @Override
@@ -104,24 +103,10 @@ public class WebSandboxPlugin extends JavaPlugin {
         pm.registerEvents(playersListener, this);
 
 
-        // Register our commands
-        getCommand("pos").setExecutor(new SamplePosCommand());
-        getCommand("debug").setExecutor(new SampleDebugCommand(this));
-
+        // TODO: Register our commands, what do we need?
+        //getCommand("websandbox").setExecutor(new WebsandboxCommand());
 
         // Run the websocket server
         webSocketServerThread.start();
-    }
-
-    public boolean isDebugging(final Player player) {
-        if (debugees.containsKey(player)) {
-            return debugees.get(player);
-        } else {
-            return false;
-        }
-    }
-
-    public void setDebugging(final Player player, final boolean value) {
-        debugees.put(player, value);
     }
 }
