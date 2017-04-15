@@ -41,9 +41,10 @@ public class BlockBridge {
             for (int j = -radius; j < radius; ++j) {
                 for (int k = -radius; k < radius; ++k) {
                     Block block = world.getBlockAt(i + x_center, j + y_center, k + z_center);
-                    int type = toWebBlockType(block.getType(), block.getData());
+                    //int type = toWebBlockType(block.getType(), block.getData());
 
-                    webSocketServerThread.sendLine(channel, "B,0,0," + (i + radius) + "," + (j + radius + y_offset) + "," + (k + radius) + "," + type);
+                    //webSocketServerThread.sendLine(channel, "B,0,0," + (i + radius) + "," + (j + radius + y_offset) + "," + (k + radius) + "," + type);
+                    notifyBlockUpdate(block.getLocation(), block.getType(), block.getData());
                 }
             }
         }
@@ -163,7 +164,56 @@ public class BlockBridge {
         webSocketServerThread.broadcastLine("B,0,0,"+x+","+y+","+z+","+type);
         webSocketServerThread.broadcastLine("R,0,0");
 
-        System.out.println("notified block update: ("+x+","+y+","+z+") to "+type);
+        int light_level = toWebLighting(material, data);
+        if (light_level != 0) {
+            webSocketServerThread.broadcastLine("L,0,0,"+x+","+y+","+z+"," + light_level);
+        }
+
+        //System.out.println("notified block update: ("+x+","+y+","+z+") to "+type);
+    }
+
+    private int toWebLighting(Material material, byte data) {
+        // See http://minecraft.gamepedia.com/Light#Blocks
+        // Note not all of these may be fully supported yet
+        switch (material) {
+            case BEACON:
+            case ENDER_PORTAL:
+            case FIRE:
+            case GLOWSTONE:
+            case JACK_O_LANTERN:
+            case LAVA:
+            case REDSTONE_LAMP_ON: // TODO: get notified when toggles on/off
+            case SEA_LANTERN:
+            case END_ROD:
+                return 15;
+
+            case TORCH:
+                return 14;
+
+            case BURNING_FURNACE:
+                return 13;
+
+            case PORTAL:
+                return 11;
+
+            case GLOWING_REDSTONE_ORE:
+                return 9;
+
+            case ENDER_CHEST:
+            case REDSTONE_TORCH_ON:
+                return 7;
+
+            case MAGMA:
+                return 3;
+
+            case BREWING_STAND:
+            case BROWN_MUSHROOM:
+            case DRAGON_EGG:
+            case ENDER_PORTAL_FRAME:
+                return 1;
+        }
+
+        return 0;
     }
 
     // Translate web<->bukkit blocks
@@ -254,7 +304,7 @@ public class BlockBridge {
                         type = 61; // #define COLOR_29 // 61 white
                         break;
                     case 1: // orange
-                        type = 53; // #define COLOR_21 // 53 orange
+                        type = 53;
                         break;
                     case 2: // magenta
                         type = 43; // #define COLOR_11 // 43 crimson
@@ -302,6 +352,28 @@ public class BlockBridge {
                 }
                 break;
             }
+
+            // Light sources (nonzero toWebLighting()) TODO: different textures? + allow placement, distinct blocks
+            case GLOWSTONE:
+                type = 32; // #define COLOR_00 // 32 yellow
+                break;
+            case SEA_LANTERN:
+                type = 58; // #define COLOR_26 // 58 light blue
+                break;
+            case JACK_O_LANTERN:
+                type = 53; // #define COLOR_21 // 53 orange
+                break;
+            case REDSTONE_LAMP_ON:
+            case REDSTONE_LAMP_OFF:
+                type = 34; // // #define COLOR_12 // 44 salmon
+                break;
+            case TORCH:
+                type = 21; // sunflower, looks kinda like a torch
+                break;
+            case REDSTONE_TORCH_OFF:
+            case REDSTONE_TORCH_ON:
+                type = 19; // red flower, vaguely a torch
+                break;
 
             default:
                 System.out.println("unknown block type="+material);
