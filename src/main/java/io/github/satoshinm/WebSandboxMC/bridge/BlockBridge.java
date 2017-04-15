@@ -181,8 +181,11 @@ public class BlockBridge {
             case REDSTONE_LAMP_ON: // TODO: get notified when toggles on/off
                 return 15;
 
-            //TODO case TORCH:
+            case TORCH:
+                return 14;
 
+            case REDSTONE_TORCH_ON:
+                return 7;
         }
 
         return 0;
@@ -325,7 +328,7 @@ public class BlockBridge {
                 break;
             }
 
-            // Light sources (nonzero toWebLighting()) TODO: different textures?
+            // Light sources (nonzero toWebLighting()) TODO: different textures? + allow placement, distinct blocks
             case GLOWSTONE:
                 type = 32; // #define COLOR_00 // 32 yellow
                 break;
@@ -338,6 +341,13 @@ public class BlockBridge {
             case REDSTONE_LAMP_ON:
             case REDSTONE_LAMP_OFF:
                 type = 34; // // #define COLOR_12 // 44 salmon
+                break;
+            case TORCH:
+                type = 21; // sunflower, looks kinda like a torch
+                break;
+            case REDSTONE_TORCH_OFF:
+            case REDSTONE_TORCH_ON:
+                type = 19; // red flower, vaguely a torch
                 break;
 
             default:
