@@ -153,6 +153,7 @@ public final class WebSocketServerThread extends Thread {
         allUsersGroup.add(channel);
 
         String theirName = webPlayerBridge.newPlayer(channel);
+        // TODO: join newPlayer _after_ sending world? since then they are really "in" the world, before, in-progress
 
     /* Send initial server messages on client connect here, example from Python server for comparison:
 
@@ -168,8 +169,6 @@ N,1,guest1
 
         blockBridge.sendWorld(channel);
         playersBridge.sendPlayers(channel);
-
-        broadcastLine("T," + theirName + " has joined.");
     }
     // TODO: cleanup clients when they disconnect
 

@@ -2,11 +2,13 @@ package io.github.satoshinm.WebSandboxMC.bridge;
 
 import io.github.satoshinm.WebSandboxMC.ws.WebSocketServerThread;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelId;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Sheep;
 
 import java.util.HashMap;
@@ -49,6 +51,8 @@ public class WebPlayerBridge {
 
         // HumanEntity.class fails on Glowstone with https://gist.github.com/satoshinm/ebc87cdf1d782ba91b893fe24cd8ffd2
         // so use sheep instead for now. TODO: spawn ala GlowNPC: https://github.com/satoshinm/WebSandboxMC/issues/13
+        // TODO: configurable Bukkit entity types
+        // TODO: allow disabling spawning Bukkit entity, but if disabled, would still have to track id for web entity
         //Class entityClass = HumanEntity.class;
         Class entityClass = Sheep.class;
 
@@ -68,6 +72,8 @@ public class WebPlayerBridge {
         webSocketServerThread.broadcastLineExcept(channel.id(), "P,"+entity.getEntityId()+","+webSocketServerThread.playersBridge.encodeLocation(location));
         webSocketServerThread.broadcastLineExcept(channel.id(), "N,"+entity.getEntityId()+","+theirName);
 
+        // TODO: should this go to Bukkit chat, too/instead? make configurable?
+        webSocketServerThread.broadcastLine("T," + theirName + " has joined.");
 
         return theirName;
     }
@@ -86,5 +92,34 @@ public class WebPlayerBridge {
 
         // Notify other web clients (except this one) they moved
         webSocketServerThread.broadcastLineExcept(channel.id(), "P,"+entity.getEntityId()+","+webSocketServerThread.playersBridge.encodeLocation(location));
+    }
+
+    public void clientDisconnected(ChannelHandlerContext ctx) {
+        Channel channel = ctx.channel();
+        String name = webSocketServerThread.webPlayerBridge.channelId2name.get(channel.id());
+
+        if (name == null) {
+            // TODO: Why are some channels activated and inactivated without fully logging in? Either way, ignore.
+            return;
+        }
+
+        webSocketServerThread.webPlayerBridge.channelId2name.remove(channel.id());
+
+        System.out.println("web client disconnected: " + name);
+        // TODO: should this go to Bukkit chat, too/instead? make configurable?
+        webSocketServerThread.broadcastLine("T," + name + " has disconnected.");
+
+        Entity entity = webSocketServerThread.webPlayerBridge.channelId2Entity.get(channel.id());
+        if (entity != null) {
+            webSocketServerThread.broadcastLineExcept(channel.id(), "D,"+entity.getEntityId());
+
+            webSocketServerThread.webPlayerBridge.channelId2Entity.remove(entity);
+
+            //((LivingEntity) entity).setHealth(0); // this kills the entity, but leaves drops (undesirable)
+            // This removes the entity server-side, but it still shows on the client and attacking shows
+            // "tried to attack an entity that does not exist" -- on Glowstone. Relogging clears. TODO: Glowstone bug
+            entity.remove();
+            //System.out.println("entity isDead? "+entity.isDead()+", isValid? "+entity.isValid());
+        }
     }
 }

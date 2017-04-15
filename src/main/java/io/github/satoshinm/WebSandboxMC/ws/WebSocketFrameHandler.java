@@ -79,4 +79,14 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
         cause.printStackTrace();
         ctx.close();
     }
+
+    @Override
+    public void channelInactive(final ChannelHandlerContext ctx) {
+        webSocketServerThread.scheduleSyncTask(new Runnable() {
+            @Override
+            public void run() {
+                webSocketServerThread.webPlayerBridge.clientDisconnected(ctx);
+            }
+        });
+    }
 }
