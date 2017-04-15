@@ -173,19 +173,44 @@ public class BlockBridge {
     }
 
     private int toWebLighting(Material material, byte data) {
+        // See http://minecraft.gamepedia.com/Light#Blocks
+        // Note not all of these may be fully supported yet
         switch (material) {
-            case GLOWSTONE:
-            case SEA_LANTERN:
-            case JACK_O_LANTERN:
             case BEACON:
+            case ENDER_PORTAL:
+            case FIRE:
+            case GLOWSTONE:
+            case JACK_O_LANTERN:
+            case LAVA:
             case REDSTONE_LAMP_ON: // TODO: get notified when toggles on/off
+            case SEA_LANTERN:
+            case END_ROD:
                 return 15;
 
             case TORCH:
                 return 14;
 
+            case BURNING_FURNACE:
+                return 13;
+
+            case PORTAL:
+                return 11;
+
+            case GLOWING_REDSTONE_ORE:
+                return 9;
+
+            case ENDER_CHEST:
             case REDSTONE_TORCH_ON:
                 return 7;
+
+            case MAGMA:
+                return 3;
+
+            case BREWING_STAND:
+            case BROWN_MUSHROOM:
+            case DRAGON_EGG:
+            case ENDER_PORTAL_FRAME:
+                return 1;
         }
 
         return 0;
