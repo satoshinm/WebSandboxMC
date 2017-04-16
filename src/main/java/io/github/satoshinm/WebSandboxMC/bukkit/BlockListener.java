@@ -37,8 +37,9 @@ public class BlockListener implements Listener {
     @SuppressWarnings("deprecation") // Block#getData
     public void onSignChange(SignChangeEvent event) {
         Block block = event.getBlock();
+        boolean wall = block.getType() == Material.WALL_SIGN;
 
-        blockBridge.notifySignChange(block.getLocation(), block.getData(), event.getLines());
+        blockBridge.notifySignChange(block.getLocation(), wall, block.getData(), event.getLines());
     }
 
     // TODO: BlockBurnEvent

@@ -168,6 +168,7 @@ public class BlockBridge {
         if (light_level != 0) {
             webSocketServerThread.broadcastLine("L,0,0,"+x+","+y+","+z+"," + light_level);
         }
+        // TODO: if sign, notify sign (initial world load)
 
         //System.out.println("notified block update: ("+x+","+y+","+z+") to "+type);
     }
@@ -353,6 +354,13 @@ public class BlockBridge {
                 break;
             }
 
+            case WALL_SIGN:
+                type = 0; // air, since text is written on block behind it
+                break;
+            case SIGN_POST:
+                type = 8; // plank TODO: sign post model
+                break;
+
             // Light sources (nonzero toWebLighting()) TODO: different textures? + allow placement, distinct blocks
             case GLOWSTONE:
                 type = 32; // #define COLOR_00 // 32 yellow
@@ -485,10 +493,15 @@ public class BlockBridge {
         return -1;
     }
 
-    public void notifySignChange(Location location, byte data, String[] lines) {
+    public void notifySignChange(Location location, boolean wall, byte data, String[] lines) {
         int x = toWebLocationBlockX(location);
         int y = toWebLocationBlockY(location);
         int z = toWebLocationBlockZ(location);
+
+        if (!wall) {
+            System.out.println("TODO: standing signs");
+            return;
+        }
 
         // data is packed bitfield, see http://minecraft.gamepedia.com/Sign#Block_data
         // wallsigns
@@ -505,15 +518,19 @@ public class BlockBridge {
         switch (data) {
             case 2: // north
                 face = 2; // north
+                z += 1;
                 break;
             case 3: // south
                 face = 3; // south
+                z -= 1;
                 break;
             case 4: // west
                 face = 0; // west
+                x += 1;
                 break;
             case 5: // east
                 face = 1; // east
+                x -= 1;
                 break;
         }
         // TODO: standing signs
