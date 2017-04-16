@@ -5,6 +5,8 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
+import org.bukkit.block.Sign;
 
 /**
  * Bridges blocks in the world, translates between coordinate systems
@@ -44,7 +46,7 @@ public class BlockBridge {
                     //int type = toWebBlockType(block.getType(), block.getData());
 
                     //webSocketServerThread.sendLine(channel, "B,0,0," + (i + radius) + "," + (j + radius + y_offset) + "," + (k + radius) + "," + type);
-                    notifyBlockUpdate(block.getLocation(), block.getType(), block.getData());
+                    setBlockUpdate(block.getLocation(), block.getType(), block.getData());
                 }
             }
         }
@@ -144,7 +146,8 @@ public class BlockBridge {
         webSocketServerThread.broadcastLineExcept(ctx.channel().id(), "R,0,0");
     }
 
-    // Handle the bukkit world changing a block, tell all web clients
+
+    // Handle the bukkit world changing a block, tell all web clients and refresh
     public void notifyBlockUpdate(Location location, Material material, byte data) {
         //System.out.println("bukkit block ("+x+","+y+","+z+") was set to "+material);
 
@@ -153,7 +156,13 @@ public class BlockBridge {
             return;
         }
 
+        setBlockUpdate(location, material, data);
 
+        webSocketServerThread.broadcastLine("R,0,0");
+    }
+
+    @SuppressWarnings("deprecation") // for Block#getData
+    private void setBlockUpdate(Location location, Material material, byte data) {
         // Send to all web clients to let them know it changed using the "B," command
         int type = toWebBlockType(material, data);
 
@@ -162,13 +171,21 @@ public class BlockBridge {
         int z = toWebLocationBlockZ(location);
 
         webSocketServerThread.broadcastLine("B,0,0,"+x+","+y+","+z+","+type);
-        webSocketServerThread.broadcastLine("R,0,0");
 
         int light_level = toWebLighting(material, data);
         if (light_level != 0) {
             webSocketServerThread.broadcastLine("L,0,0,"+x+","+y+","+z+"," + light_level);
         }
-        // TODO: if sign, notify sign (initial world load)
+
+        if (material == Material.WALL_SIGN || material == material.SIGN_POST) {
+            Block block = location.getWorld().getBlockAt(location);
+            BlockState blockState = block.getState();
+            if (blockState instanceof Sign) {
+                Sign sign = (Sign) blockState;
+
+                notifySignChange(block.getLocation(), block.getType(), block.getData(), sign.getLines());
+            }
+        }
 
         //System.out.println("notified block update: ("+x+","+y+","+z+") to "+type);
     }
@@ -493,7 +510,7 @@ public class BlockBridge {
         return -1;
     }
 
-    public void notifySignChange(Location location, boolean wall, byte data, String[] lines) {
+    public void notifySignChange(Location location, Material material, byte data, String[] lines) {
         int x = toWebLocationBlockX(location);
         int y = toWebLocationBlockY(location);
         int z = toWebLocationBlockZ(location);
@@ -510,7 +527,7 @@ public class BlockBridge {
         // 6 - top, rotated 3
         // 7 - top, rotated 4
         int face = 7;
-        if (wall) {
+        if (material == Material.WALL_SIGN) {
             // wallsigns, attached to block behind
             switch (data) {
                 case 2: // north
@@ -530,7 +547,7 @@ public class BlockBridge {
                     x -= 1;
                     break;
             }
-        } else {
+        } else if (material == Material.SIGN_POST) {
             // standing sign, on the block itself
             // TODO: support more fine-grained directions, right now Craft only four cardinal
             switch (data) {
