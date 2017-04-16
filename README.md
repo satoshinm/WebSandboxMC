@@ -55,7 +55,8 @@ Configures what part of your world to expose:
 Configures the NetCraft web client:
 
 * `y_offset` (20): height to shift the web client blocks upwards, to distinguish from the pre-generated landscape
-* `allow_break_place_blocks` (true): allow web users to break/place blocks, set to false for view-only
+* `allow_break_place_blocks` (true): allow web users to break/place blocks, set to false for view-only (see also `allow_signs`)
+* `allow_signs` (true): allow web users to place signs (by typing backquote followed by the text)
 
 ## Compatibility
 

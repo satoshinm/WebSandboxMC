@@ -216,7 +216,7 @@ N,1,guest1
 
             System.out.println("new sign: "+x+","+y+","+z+" face="+face+", text="+text);
 
-            this.blockBridge.clientNewSign(x, y, z, face, text);
+            this.blockBridge.clientNewSign(ctx, x, y, z, face, text);
         }
 
         // TODO: handle more client messages

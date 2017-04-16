@@ -18,8 +18,11 @@ public class BlockBridge {
     public final World world;
     public Location spawnLocation;
     private boolean allowBreakPlaceBlocks;
+    private boolean allowSigns;
 
-    public BlockBridge(WebSocketServerThread webSocketServerThread, String world, int x_center, int y_center, int z_center, int radius, int y_offset, boolean allowBreakPlaceBlocks) {
+    public BlockBridge(WebSocketServerThread webSocketServerThread,
+                       String world, int x_center, int y_center, int z_center, int radius, int y_offset,
+                       boolean allowBreakPlaceBlocks, boolean allowSigns) {
         this.webSocketServerThread = webSocketServerThread;
 
         this.x_center = x_center;
@@ -43,6 +46,7 @@ public class BlockBridge {
         this.spawnLocation = new Location(this.world, this.x_center, this.y_center, this.z_center);
 
         this.allowBreakPlaceBlocks = allowBreakPlaceBlocks;
+        this.allowSigns = allowSigns;
     }
 
     // Send the client the initial section of the world when they join
@@ -611,7 +615,13 @@ public class BlockBridge {
     }
 
     @SuppressWarnings("deprecation") // Block#setData()
-    public void clientNewSign(int x, int y, int z, int face, String text) {
+    public void clientNewSign(ChannelHandlerContext ctx, int x, int y, int z, int face, String text) {
+        if (!allowSigns) {
+            webSocketServerThread.sendLine(ctx.channel(), "T,Writing on signs is not allowed");
+            // TODO: revert on client
+            return;
+        }
+
         byte data = 0;
         switch (face) {
             case 0: // west
