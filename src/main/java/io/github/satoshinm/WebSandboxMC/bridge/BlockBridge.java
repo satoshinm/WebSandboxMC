@@ -637,5 +637,8 @@ public class BlockBridge {
         // TODO: text lines by 15 characters into 5 lines
         sign.setLine(0, text);
         sign.update();
+
+        // SignChangeEvent not posted when signs created programmatically; notify web clients ourselves
+        notifySignChange(location, block.getType(), block.getData(), sign.getLines());
     }
 }
