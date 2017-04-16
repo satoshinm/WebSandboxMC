@@ -38,6 +38,8 @@ import io.netty.util.concurrent.ImmediateEventExecutor;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 
+import java.io.File;
+
 /**
  * A HTTP server which serves Web Socket requests at:
  *
@@ -111,12 +113,13 @@ public final class WebSocketServerThread extends Thread {
                 b.group(bossGroup, workerGroup)
                         .channel(NioServerSocketChannel.class)
                         .handler(new LoggingHandler(LogLevel.INFO))
-                        .childHandler(new WebSocketServerInitializer(sslCtx, this, ourExternalAddress, ourExternalPort));
+                        .childHandler(new WebSocketServerInitializer(sslCtx, this,
+                                ourExternalAddress, ourExternalPort, this.plugin.getDataFolder()));
 
                 Channel ch = b.bind(PORT).sync().channel();
 
                 System.out.println("Open your web browser and navigate to " +
-                        (SSL ? "https" : "http") + "://127.0.0.1:" + PORT + "/index.html");
+                        (SSL ? "https" : "http") + "://127.0.0.1:" + PORT + "/");
 
                 ch.closeFuture().sync();
             } catch (InterruptedException ex) {

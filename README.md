@@ -62,6 +62,10 @@ Configures the NetCraft web client:
 * `see_chat` (true): allow web users to receive chat messages from the server
 * `see_players` (true): allow web users to see other player positions
 
+Newer versions of NetCraft can be installed without upgrading the plugin, or the main page customized,
+by placing the saving files in the plugin's data directory: craft.html (main page), craft.js, craft.html.mem.
+If not given, WebSandboxMC's embedded version of NetCraft will be served up instead.
+
 ## Compatibility
 
 WebSandboxMC uses the [Bukkit API from Spigot](https://hub.spigotmc.org/javadocs/bukkit/) with the aim of maximizing

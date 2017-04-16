@@ -47,15 +47,32 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 public class WebSocketIndexPageHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
     private final String ourExternalAddress;
     private final int ourExternalPort;
+    private final File pluginDataFolder;
 
-    public WebSocketIndexPageHandler(String ourExternalAddress, int ourExternalPort) {
+    public WebSocketIndexPageHandler(String ourExternalAddress, int ourExternalPort, File pluginDataFolder) {
         this.ourExternalAddress = ourExternalAddress;
         this.ourExternalPort = ourExternalPort;
+        this.pluginDataFolder = pluginDataFolder;
+    }
+
+    private InputStream getResourceAsStream(String name) {
+        // If it exists, use files in plugin resource directory - otherwise, embedded resources in our plugin jar
+
+        // TODO: cache to avoid checking each time?
+        File file = new File(this.pluginDataFolder, name);
+        if (file.exists()) {
+            try {
+                return new FileInputStream(file);
+            } catch (FileNotFoundException ex) {
+                // fallthrough
+            }
+        }
+
+        return getClass().getResourceAsStream(name);
     }
 
     private void sendTextResource(String prepend, String name, String mimeType, FullHttpRequest req, ChannelHandlerContext ctx) throws IOException {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(getClass().getResourceAsStream(name)));
-        // TODO: alternatively if exists, check in plugin directory for updated files versus embedded resources
+        BufferedReader reader = new BufferedReader(new InputStreamReader((this.getResourceAsStream(name))));
         // TODO: read only once and buffer
         String line;
         StringBuffer buffer = new StringBuffer();
@@ -75,7 +92,7 @@ public class WebSocketIndexPageHandler extends SimpleChannelInboundHandler<FullH
     }
 
     private void sendBinaryResource(String name, String mimeType, FullHttpRequest req, ChannelHandlerContext ctx) throws IOException {
-        DataInputStream stream = new DataInputStream(getClass().getResourceAsStream(name));
+        DataInputStream stream = new DataInputStream(this.getResourceAsStream(name));
 
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 
@@ -113,7 +130,7 @@ public class WebSocketIndexPageHandler extends SimpleChannelInboundHandler<FullH
         }
 
         // Send the index page
-        if ("/".equals(req.uri()) || "/index.html".equals(req.uri())) {
+        if ("/".equals(req.uri()) || "/index.html".equals(req.uri()) || "/craft.html".equals(req.uri())) {
             sendTextResource(null,"/craft.html", "text/html; charset=UTF-8", req, ctx);
         } else if ("/craft.js".equals(req.uri())) {
             String prepend = "window.DEFAULT_ARGV = ['" + ourExternalAddress + "', '" + ourExternalPort + "'];";

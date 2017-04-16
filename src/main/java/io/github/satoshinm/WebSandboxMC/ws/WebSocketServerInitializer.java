@@ -24,6 +24,8 @@ import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import io.netty.handler.codec.http.websocketx.extensions.compression.WebSocketServerCompressionHandler;
 import io.netty.handler.ssl.SslContext;
 
+import java.io.File;
+
 /**
  */
 public class WebSocketServerInitializer extends ChannelInitializer<SocketChannel> {
@@ -40,13 +42,16 @@ public class WebSocketServerInitializer extends ChannelInitializer<SocketChannel
     private final WebSocketServerThread webSocketServerThread;
     private final String ourExternalAddress;
     private final int ourExternalPort;
+    private final File pluginDataFolder;
 
-    public WebSocketServerInitializer(SslContext sslCtx, WebSocketServerThread webSocketServerThread, String ourExternalAddress, int ourExternalPort) {
+    public WebSocketServerInitializer(SslContext sslCtx, WebSocketServerThread webSocketServerThread,
+                                      String ourExternalAddress, int ourExternalPort, File pluginDataFolder) {
         this.sslCtx = sslCtx;
         this.webSocketServerThread = webSocketServerThread;
 
         this.ourExternalAddress = ourExternalAddress;
         this.ourExternalPort = ourExternalPort;
+        this.pluginDataFolder = pluginDataFolder;
     }
 
     @Override
@@ -59,7 +64,7 @@ public class WebSocketServerInitializer extends ChannelInitializer<SocketChannel
         pipeline.addLast(new HttpObjectAggregator(65536));
         pipeline.addLast(new WebSocketServerCompressionHandler());
         pipeline.addLast(new WebSocketServerProtocolHandler(WEBSOCKET_PATH, "binary", true));
-        pipeline.addLast(new WebSocketIndexPageHandler(ourExternalAddress, ourExternalPort));
+        pipeline.addLast(new WebSocketIndexPageHandler(ourExternalAddress, ourExternalPort, pluginDataFolder));
         pipeline.addLast(new WebSocketFrameHandler(webSocketServerThread));
     }
 }
