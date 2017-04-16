@@ -25,12 +25,7 @@ public class WebSandboxPlugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        // TODO: Place any custom disable code here
-
-        // NOTE: All registered events are automatically unregistered when a plugin is disabled
-
-        // EXAMPLE: Custom code, here we just output some info so we can check all is well
-        getLogger().info("Goodbye world!");
+        webSocketServerThread.interrupt();
     }
 
     @Override

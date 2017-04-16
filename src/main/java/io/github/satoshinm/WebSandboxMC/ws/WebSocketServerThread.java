@@ -119,6 +119,8 @@ public final class WebSocketServerThread extends Thread {
                         (SSL ? "https" : "http") + "://127.0.0.1:" + PORT + "/index.html");
 
                 ch.closeFuture().sync();
+            } catch (InterruptedException ex) {
+                // plugin is shutting down - let it interrupt quietly
             } finally {
                 bossGroup.shutdownGracefully();
                 workerGroup.shutdownGracefully();
