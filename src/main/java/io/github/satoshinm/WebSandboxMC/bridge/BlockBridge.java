@@ -5,6 +5,8 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import org.bukkit.*;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
+import org.bukkit.block.Sign;
 
 /**
  * Bridges blocks in the world, translates between coordinate systems
@@ -44,7 +46,7 @@ public class BlockBridge {
                     //int type = toWebBlockType(block.getType(), block.getData());
 
                     //webSocketServerThread.sendLine(channel, "B,0,0," + (i + radius) + "," + (j + radius + y_offset) + "," + (k + radius) + "," + type);
-                    notifyBlockUpdate(block.getLocation(), block.getType(), block.getData());
+                    setBlockUpdate(block.getLocation(), block.getType(), block.getData());
                 }
             }
         }
@@ -144,7 +146,8 @@ public class BlockBridge {
         webSocketServerThread.broadcastLineExcept(ctx.channel().id(), "R,0,0");
     }
 
-    // Handle the bukkit world changing a block, tell all web clients
+
+    // Handle the bukkit world changing a block, tell all web clients and refresh
     public void notifyBlockUpdate(Location location, Material material, byte data) {
         //System.out.println("bukkit block ("+x+","+y+","+z+") was set to "+material);
 
@@ -153,7 +156,13 @@ public class BlockBridge {
             return;
         }
 
+        setBlockUpdate(location, material, data);
 
+        webSocketServerThread.broadcastLine("R,0,0");
+    }
+
+    @SuppressWarnings("deprecation") // for Block#getData
+    private void setBlockUpdate(Location location, Material material, byte data) {
         // Send to all web clients to let them know it changed using the "B," command
         int type = toWebBlockType(material, data);
 
@@ -162,11 +171,20 @@ public class BlockBridge {
         int z = toWebLocationBlockZ(location);
 
         webSocketServerThread.broadcastLine("B,0,0,"+x+","+y+","+z+","+type);
-        webSocketServerThread.broadcastLine("R,0,0");
 
         int light_level = toWebLighting(material, data);
         if (light_level != 0) {
             webSocketServerThread.broadcastLine("L,0,0,"+x+","+y+","+z+"," + light_level);
+        }
+
+        if (material == Material.WALL_SIGN || material == material.SIGN_POST) {
+            Block block = location.getWorld().getBlockAt(location);
+            BlockState blockState = block.getState();
+            if (blockState instanceof Sign) {
+                Sign sign = (Sign) blockState;
+
+                notifySignChange(block.getLocation(), block.getType(), block.getData(), sign.getLines());
+            }
         }
 
         //System.out.println("notified block update: ("+x+","+y+","+z+") to "+type);
@@ -353,6 +371,13 @@ public class BlockBridge {
                 break;
             }
 
+            case WALL_SIGN:
+                type = 0; // air, since text is written on block behind it
+                break;
+            case SIGN_POST:
+                type = 8; // plank TODO: sign post model
+                break;
+
             // Light sources (nonzero toWebLighting()) TODO: different textures? + allow placement, distinct blocks
             case GLOWSTONE:
                 type = 32; // #define COLOR_00 // 32 yellow
@@ -483,5 +508,137 @@ public class BlockBridge {
             return color.getWoolData();
         }
         return -1;
+    }
+
+    public void notifySignChange(Location location, Material material, byte data, String[] lines) {
+        int x = toWebLocationBlockX(location);
+        int y = toWebLocationBlockY(location);
+        int z = toWebLocationBlockZ(location);
+
+
+        // data is packed bitfield, see http://minecraft.gamepedia.com/Sign#Block_data
+        // Craft's faces:
+        // 0 - west
+        // 1 - east
+        // 2 - north
+        // 3 - south
+        // 4 - top, rotated 1
+        // 5 - top, rotated 2
+        // 6 - top, rotated 3
+        // 7 - top, rotated 4
+        int face = 7;
+        if (material == Material.WALL_SIGN) {
+            // wallsigns, attached to block behind
+            switch (data) {
+                case 2: // north
+                    face = 2; // north
+                    z += 1;
+                    break;
+                case 3: // south
+                    face = 3; // south
+                    z -= 1;
+                    break;
+                case 4: // west
+                    face = 0; // west
+                    x += 1;
+                    break;
+                case 5: // east
+                    face = 1; // east
+                    x -= 1;
+                    break;
+            }
+        } else if (material == Material.SIGN_POST) {
+            // standing sign, on the block itself
+            // TODO: support more fine-grained directions, right now Craft only four cardinal
+            switch (data) {
+                case 0: // south
+                case 1: // south-southwest
+                case 2: // southwest
+                    face = 3; // south
+                    break;
+
+                case 3: // west-southwest
+                case 4: // west
+                case 5: // west-northwest
+                case 6: // northwest
+                    face = 0; // west
+                    break;
+
+                case 7: // north-northwest
+                case 8: // north
+                case 9: // north-northeast
+                case 10: // northeast
+                    face = 2; // north
+                    break;
+
+                case 11: // east-northeast
+                case 12: // east
+                case 13: // east-southeast
+                case 14: // southeast
+                case 15: // south-southeast
+                    face = 1; // east
+                    break;
+            }
+        }
+
+        //System.out.println("sign change: "+location+", data="+data);
+        String text = "";
+        for (int i = 0; i < lines.length; ++i) {
+            text += lines[i] + " "; // TODO: support explicit newlines; Craft wraps sign text lines automatically
+        }
+        if (text.contains("\n")) {
+            // \n is used as a command terminator in the Craft protocol (but ',' is acceptable)
+            text = text.replaceAll("\n", " ");
+        }
+
+        webSocketServerThread.broadcastLine("S,0,0,"+x+","+y+","+z+","+face+","+text);
+        webSocketServerThread.broadcastLine("R,0,0");
+    }
+
+    @SuppressWarnings("deprecation") // Block#setData()
+    public void clientNewSign(int x, int y, int z, int face, String text) {
+        byte data = 0;
+        switch (face) {
+            case 0: // west
+                data = 4; // west
+                x -= 1;
+                break;
+            case 1: // east
+                data = 5; // east
+                x += 1;
+                break;
+            case 2: // north
+                data = 2; // north
+                z -= 1;
+                break;
+            case 3: // south
+                data = 3; // south
+                z += 1;
+                break;
+        }
+
+        Location location = toBukkitLocation(x, y, z);
+        if (!withinSandboxRange(location)) {
+            System.out.println("client tried to write a sign outside sandbox range");
+            return;
+        }
+
+        Block block = location.getWorld().getBlockAt(location);
+        block.setType(Material.WALL_SIGN);
+        block.setData(data);
+        System.out.println("setting sign at "+location+" data="+data);
+        BlockState blockState = block.getState();
+        if (!(blockState instanceof Sign)) {
+            System.out.println("failed to place sign");
+            return;
+        }
+        Sign sign = (Sign) blockState;
+
+        // TODO: text lines by 15 characters into 5 lines
+        sign.setLine(0, text);
+        sign.update();
+
+        // SignChangeEvent not posted when signs created programmatically; notify web clients ourselves
+        notifySignChange(location, block.getType(), block.getData(), sign.getLines());
     }
 }

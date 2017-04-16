@@ -9,6 +9,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.block.SignChangeEvent;
 
 public class BlockListener implements Listener {
 
@@ -32,15 +33,28 @@ public class BlockListener implements Listener {
 
         blockBridge.notifyBlockUpdate(block.getLocation(), block.getType(), block.getData());
     }
+    @EventHandler(ignoreCancelled = true)
+    @SuppressWarnings("deprecation") // Block#getData
+    public void onSignChange(SignChangeEvent event) {
+        Block block = event.getBlock();
+
+        blockBridge.notifySignChange(block.getLocation(), block.getType(), block.getData(), event.getLines());
+    }
 
     // TODO: BlockBurnEvent
+    // TODO: BlockExplodeEvent
     // TODO: BlockFadeEvent
+    // TODO: BlockFromToEvent
     // TODO: BlockFormEvent
     // TODO: BlockGrowEvent
+    // TODO: BlockIgniteEvent
     // TODO: BlockMultiPlaceEvent
     // TODO: BlockPhysicsEvent
     // TODO: BlockPiston*Event
     // TODO: BlockRedstoneEvent
     // TODO: BlockSpreadEvent
+    // TODO: CauldronLevelChangeEvent
+    // TODO: FurnaceBurnEvent (change light levels)
+    // TODO: LeavesDecayEvent
 
 }

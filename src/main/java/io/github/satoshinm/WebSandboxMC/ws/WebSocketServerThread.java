@@ -202,6 +202,21 @@ N,1,guest1
             double ry = Double.parseDouble(array[5]);
 
             webPlayerBridge.clientMoved(ctx.channel(), x, y, z, rx, ry);
+        } else if (string.startsWith("S,")) {
+            String[] array = string.trim().split(",", 6);
+            if (array.length != 6) {
+                throw new RuntimeException("malformed sign text update S: "+string);
+            }
+
+            int x = Integer.parseInt(array[1]);
+            int y = Integer.parseInt(array[2]);
+            int z = Integer.parseInt(array[3]);
+            int face = Integer.parseInt(array[4]);
+            String text = array[5];
+
+            System.out.println("new sign: "+x+","+y+","+z+" face="+face+", text="+text);
+
+            this.blockBridge.clientNewSign(x, y, z, face, text);
         }
 
         // TODO: handle more client messages
