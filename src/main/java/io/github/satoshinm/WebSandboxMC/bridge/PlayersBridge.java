@@ -21,9 +21,11 @@ public class PlayersBridge {
     private final WebSocketServerThread webSocketServerThread;
 
     private Set<Integer> playersInSandbox;
+    private boolean allowChatting;
 
-    public PlayersBridge(WebSocketServerThread webSocketServerThread) {
+    public PlayersBridge(WebSocketServerThread webSocketServerThread, boolean allowChatting) {
         this.webSocketServerThread = webSocketServerThread;
+        this.allowChatting = allowChatting;
 
         this.playersInSandbox = new HashSet<Integer>();
     }
@@ -122,6 +124,11 @@ public class PlayersBridge {
     }
 
     public void clientChat(ChannelHandlerContext ctx, String theirName, String chat) {
+        if (!allowChatting) {
+            webSocketServerThread.sendLine(ctx.channel(), "T,Chatting is not allowed");
+            return;
+        }
+
         String formattedChat = "<" + theirName + "> " + chat;
         webSocketServerThread.broadcastLine("T," + formattedChat);
         Bukkit.getServer().broadcastMessage(formattedChat); // TODO: only to permission name?
