@@ -9,9 +9,9 @@ import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.*;
 
 /**
  * Bridges other Bukkit player's positions/names/chats to the web clients
@@ -39,7 +39,7 @@ public class PlayersBridge {
             return;
         }
 
-        for (Player player: Bukkit.getServer().getOnlinePlayers()) {
+        for (Player player: PlayersBridge.getOnlinePlayers()) {
             int id = player.getEntityId();
             Location location = player.getLocation();
             String name = player.getDisplayName();
@@ -68,6 +68,30 @@ public class PlayersBridge {
             webSocketServerThread.sendLine(channel, "P," + id + "," + encodeLocation(location));
             webSocketServerThread.sendLine(channel, "N," + id + "," + name);
         }
+    }
+    
+    private static Collection<? extends Player> getOnlinePlayers() {
+        try {
+            return Bukkit.getServer().getOnlinePlayers();
+        } catch (NoSuchMethodError ex1) {
+            // Older Bukkit servers return an array instead of collection
+            Class clazz = Bukkit.getServer().getClass();
+            try {
+                Method method = clazz.getMethod("getOnlinePlayers");
+                Player players[] = (Player[]) method.invoke(Bukkit.getServer());
+
+                return Arrays.asList(players);
+
+            } catch (NoSuchMethodException ex) { // funny it's Exception here but Error above
+                ex.printStackTrace();
+            } catch (IllegalAccessException ex) {
+                ex.printStackTrace();
+            } catch (InvocationTargetException ex) {
+                ex.printStackTrace();
+            }
+        }
+
+        return Collections.emptyList();
     }
 
     public String encodeLocation(Location location) {
