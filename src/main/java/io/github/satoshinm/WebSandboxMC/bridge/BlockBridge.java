@@ -594,4 +594,48 @@ public class BlockBridge {
         webSocketServerThread.broadcastLine("S,0,0,"+x+","+y+","+z+","+face+","+text);
         webSocketServerThread.broadcastLine("R,0,0");
     }
+
+    @SuppressWarnings("deprecation") // Block#setData()
+    public void clientNewSign(int x, int y, int z, int face, String text) {
+        byte data = 0;
+        switch (face) {
+            case 0: // west
+                data = 4; // west
+                x -= 1;
+                break;
+            case 1: // east
+                data = 5; // east
+                x += 1;
+                break;
+            case 2: // north
+                data = 2; // north
+                z -= 1;
+                break;
+            case 3: // south
+                data = 3; // south
+                z += 1;
+                break;
+        }
+
+        Location location = toBukkitLocation(x, y, z);
+        if (!withinSandboxRange(location)) {
+            System.out.println("client tried to write a sign outside sandbox range");
+            return;
+        }
+
+        Block block = location.getWorld().getBlockAt(location);
+        block.setType(Material.WALL_SIGN);
+        block.setData(data);
+        System.out.println("setting sign at "+location+" data="+data);
+        BlockState blockState = block.getState();
+        if (!(blockState instanceof Sign)) {
+            System.out.println("failed to place sign");
+            return;
+        }
+        Sign sign = (Sign) blockState;
+
+        // TODO: text lines by 15 characters into 5 lines
+        sign.setLine(0, text);
+        sign.update();
+    }
 }
