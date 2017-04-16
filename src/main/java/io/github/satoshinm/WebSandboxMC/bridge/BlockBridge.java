@@ -17,8 +17,12 @@ public class BlockBridge {
     private final int x_center, y_center, z_center, radius, y_offset;
     public final World world;
     public Location spawnLocation;
+    private boolean allowBreakPlaceBlocks;
+    private boolean allowSigns;
 
-    public BlockBridge(WebSocketServerThread webSocketServerThread, String world, int x_center, int y_center, int z_center, int radius, int y_offset) {
+    public BlockBridge(WebSocketServerThread webSocketServerThread,
+                       String world, int x_center, int y_center, int z_center, int radius, int y_offset,
+                       boolean allowBreakPlaceBlocks, boolean allowSigns) {
         this.webSocketServerThread = webSocketServerThread;
 
         this.x_center = x_center;
@@ -40,6 +44,9 @@ public class BlockBridge {
 
         // TODO: configurable spawn within range of sandbox, right now, it is the center of the sandbox
         this.spawnLocation = new Location(this.world, this.x_center, this.y_center, this.z_center);
+
+        this.allowBreakPlaceBlocks = allowBreakPlaceBlocks;
+        this.allowSigns = allowSigns;
     }
 
     // Send the client the initial section of the world when they join
@@ -119,6 +126,12 @@ public class BlockBridge {
     // Handle the web client changing a block, update the bukkit world
     @SuppressWarnings("deprecation") // for Block#setTypeIdAndData
     public void clientBlockUpdate(ChannelHandlerContext ctx, int x, int y, int z, int type) {
+        if (!allowBreakPlaceBlocks) {
+            webSocketServerThread.sendLine(ctx.channel(), "T,Breaking/placing blocks not allowed");
+            // TODO: set back to original block to revert on client
+            return;
+        }
+
         Material material = toBukkitBlockType(type);
         int blockdata = toBukkitBlockData(type);
         Location location = toBukkitLocation(x, y, z);
@@ -602,7 +615,13 @@ public class BlockBridge {
     }
 
     @SuppressWarnings("deprecation") // Block#setData()
-    public void clientNewSign(int x, int y, int z, int face, String text) {
+    public void clientNewSign(ChannelHandlerContext ctx, int x, int y, int z, int face, String text) {
+        if (!allowSigns) {
+            webSocketServerThread.sendLine(ctx.channel(), "T,Writing on signs is not allowed");
+            // TODO: revert on client
+            return;
+        }
+
         byte data = 0;
         switch (face) {
             case 0: // west

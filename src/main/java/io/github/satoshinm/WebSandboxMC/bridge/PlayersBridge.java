@@ -21,14 +21,24 @@ public class PlayersBridge {
     private final WebSocketServerThread webSocketServerThread;
 
     private Set<Integer> playersInSandbox;
+    private boolean allowChatting;
+    private boolean seeChat;
+    private boolean seePlayers;
 
-    public PlayersBridge(WebSocketServerThread webSocketServerThread) {
+    public PlayersBridge(WebSocketServerThread webSocketServerThread, boolean allowChatting, boolean seeChat, boolean seePlayers) {
         this.webSocketServerThread = webSocketServerThread;
+        this.allowChatting = allowChatting;
+        this.seeChat = seeChat;
+        this.seePlayers = seePlayers;
 
         this.playersInSandbox = new HashSet<Integer>();
     }
 
     public void sendPlayers(Channel channel) {
+        if (!seePlayers) {
+            return;
+        }
+
         for (Player player: Bukkit.getServer().getOnlinePlayers()) {
             int id = player.getEntityId();
             Location location = player.getLocation();
@@ -79,6 +89,10 @@ public class PlayersBridge {
     }
 
     public void notifyMove(int id, String name, Location location) {
+        if (!seePlayers) {
+            return;
+        }
+
         if (!webSocketServerThread.blockBridge.withinSandboxRange(location)) {
             // No position updates for players outside of the sandbox, but if they were previously inside, kill them
             if (this.playersInSandbox.contains(id)) {
@@ -96,6 +110,10 @@ public class PlayersBridge {
     }
 
     public void notifyAdd(int id, String name, Location initialLocation) {
+        if (!seePlayers) {
+            return;
+        }
+
         if (!webSocketServerThread.blockBridge.withinSandboxRange(initialLocation)) {
             return;
         }
@@ -110,6 +128,10 @@ public class PlayersBridge {
     }
 
     public void notifyDelete(int id) {
+        if (!seePlayers) {
+            return;
+        }
+
         if (this.playersInSandbox.contains(id)) {
             this.playersInSandbox.remove(id);
             // delete this entity
@@ -118,10 +140,19 @@ public class PlayersBridge {
     }
 
     public void notifyChat(String message) {
+        if (!seeChat) {
+            return;
+        }
+
         webSocketServerThread.broadcastLine("T," + message);
     }
 
     public void clientChat(ChannelHandlerContext ctx, String theirName, String chat) {
+        if (!allowChatting) {
+            webSocketServerThread.sendLine(ctx.channel(), "T,Chatting is not allowed");
+            return;
+        }
+
         String formattedChat = "<" + theirName + "> " + chat;
         webSocketServerThread.broadcastLine("T," + formattedChat);
         Bukkit.getServer().broadcastMessage(formattedChat); // TODO: only to permission name?

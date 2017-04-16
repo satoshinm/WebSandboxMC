@@ -59,6 +59,12 @@ public class WebSandboxPlugin extends JavaPlugin {
         String ourExternalAddress = "localhost";
         int ourExternalPort = httpPort;
 
+        boolean allowBreakPlaceBlocks = true;
+        boolean allowSigns = true;
+        boolean allowChatting = true;
+        boolean seeChat = true;
+        boolean seePlayers = true;
+
         config.addDefault("http.port", httpPort);
         config.addDefault("http.external_address", ourExternalAddress);
         config.addDefault("http.external_port", ourExternalPort);
@@ -72,6 +78,11 @@ public class WebSandboxPlugin extends JavaPlugin {
         config.addDefault("mc.radius", radius);
 
         config.addDefault("nc.y_offset", y_offset);
+        config.addDefault("nc.allow_break_place_blocks", allowBreakPlaceBlocks);
+        config.addDefault("nc.allow_signs", allowSigns);
+        config.addDefault("nc.allow_chatting", allowChatting);
+        config.addDefault("nc.see_chat", seeChat);
+        config.addDefault("nc.see_players", seePlayers);
 
         
         httpPort = this.getConfig().getInt("http.port");
@@ -88,12 +99,18 @@ public class WebSandboxPlugin extends JavaPlugin {
 
         y_offset = this.getConfig().getInt("nc.y_offset");
 
+        allowBreakPlaceBlocks = this.getConfig().getBoolean("nc.allow_break_place_blocks");
+        allowSigns = this.getConfig().getBoolean("nc.allow_signs");
+        allowChatting = this.getConfig().getBoolean("nc.allow_chatting");
+        seeChat = this.getConfig().getBoolean("nc.see_chat");
+        seePlayers = this.getConfig().getBoolean("nc.see_players");
+
         saveConfig();
 
         webSocketServerThread = new WebSocketServerThread(this, httpPort, ourExternalAddress, ourExternalPort);
 
-        webSocketServerThread.blockBridge = new BlockBridge(webSocketServerThread, world, x_center, y_center, z_center, radius, y_offset);
-        webSocketServerThread.playersBridge = new PlayersBridge(webSocketServerThread);
+        webSocketServerThread.blockBridge = new BlockBridge(webSocketServerThread, world, x_center, y_center, z_center, radius, y_offset, allowBreakPlaceBlocks, allowSigns);
+        webSocketServerThread.playersBridge = new PlayersBridge(webSocketServerThread, allowChatting, seeChat, seePlayers);
         webSocketServerThread.webPlayerBridge = new WebPlayerBridge(webSocketServerThread, setCustomNames, disableGravity);
 
         // Register our events
