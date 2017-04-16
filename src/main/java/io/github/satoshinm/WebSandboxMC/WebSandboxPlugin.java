@@ -62,6 +62,7 @@ public class WebSandboxPlugin extends JavaPlugin {
         boolean allowBreakPlaceBlocks = true;
         boolean allowSigns = true;
         boolean allowChatting = true;
+        boolean seeChat = true;
 
         config.addDefault("http.port", httpPort);
         config.addDefault("http.external_address", ourExternalAddress);
@@ -79,6 +80,7 @@ public class WebSandboxPlugin extends JavaPlugin {
         config.addDefault("nc.allow_break_place_blocks", allowBreakPlaceBlocks);
         config.addDefault("nc.allow_signs", allowSigns);
         config.addDefault("nc.allow_chatting", allowChatting);
+        config.addDefault("nc.see_chat", seeChat);
 
         
         httpPort = this.getConfig().getInt("http.port");
@@ -98,13 +100,14 @@ public class WebSandboxPlugin extends JavaPlugin {
         allowBreakPlaceBlocks = this.getConfig().getBoolean("nc.allow_break_place_blocks");
         allowSigns = this.getConfig().getBoolean("nc.allow_signs");
         allowChatting = this.getConfig().getBoolean("nc.allow_chatting");
+        seeChat = this.getConfig().getBoolean("nc.see_chat");
 
         saveConfig();
 
         webSocketServerThread = new WebSocketServerThread(this, httpPort, ourExternalAddress, ourExternalPort);
 
         webSocketServerThread.blockBridge = new BlockBridge(webSocketServerThread, world, x_center, y_center, z_center, radius, y_offset, allowBreakPlaceBlocks, allowSigns);
-        webSocketServerThread.playersBridge = new PlayersBridge(webSocketServerThread, allowChatting);
+        webSocketServerThread.playersBridge = new PlayersBridge(webSocketServerThread, allowChatting, seeChat);
         webSocketServerThread.webPlayerBridge = new WebPlayerBridge(webSocketServerThread, setCustomNames, disableGravity);
 
         // Register our events

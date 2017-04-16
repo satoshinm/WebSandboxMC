@@ -58,6 +58,7 @@ Configures the NetCraft web client:
 * `allow_break_place_blocks` (true): allow web users to break/place blocks, set to false for view-only (see also `allow_signs`)
 * `allow_signs` (true): allow web users to place signs (by typing backquote followed by the text)
 * `allow_chatting` (true): allow web users to send chat messages to the server
+* `see_chat` (true): allow web users to receive chat messages from the server
 
 ## Compatibility
 

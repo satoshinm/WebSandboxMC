@@ -22,10 +22,12 @@ public class PlayersBridge {
 
     private Set<Integer> playersInSandbox;
     private boolean allowChatting;
+    private boolean seeChat;
 
-    public PlayersBridge(WebSocketServerThread webSocketServerThread, boolean allowChatting) {
+    public PlayersBridge(WebSocketServerThread webSocketServerThread, boolean allowChatting, boolean seeChat) {
         this.webSocketServerThread = webSocketServerThread;
         this.allowChatting = allowChatting;
+        this.seeChat = seeChat;
 
         this.playersInSandbox = new HashSet<Integer>();
     }
@@ -120,6 +122,9 @@ public class PlayersBridge {
     }
 
     public void notifyChat(String message) {
+        if (!seeChat) {
+            return;
+        }
         webSocketServerThread.broadcastLine("T," + message);
     }
 
