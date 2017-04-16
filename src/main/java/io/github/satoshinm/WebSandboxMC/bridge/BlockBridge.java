@@ -18,7 +18,7 @@ public class BlockBridge {
     public final World world;
     public Location spawnLocation;
 
-    public BlockBridge(WebSocketServerThread webSocketServerThread, int x_center, int y_center, int z_center, int radius, int y_offset) {
+    public BlockBridge(WebSocketServerThread webSocketServerThread, String world, int x_center, int y_center, int z_center, int radius, int y_offset) {
         this.webSocketServerThread = webSocketServerThread;
 
         this.x_center = x_center;
@@ -29,8 +29,14 @@ public class BlockBridge {
 
         this.y_offset = y_offset;
 
-        // TODO: configurable world
-        this.world = Bukkit.getWorlds().get(0);
+        if (world == null || "".equals(world)) {
+            this.world = Bukkit.getWorlds().get(0);
+        } else {
+            this.world = Bukkit.getWorld(world);
+        }
+        if (this.world == null) {
+            throw new IllegalArgumentException("World not found: " + world);
+        }
 
         // TODO: configurable spawn within range of sandbox, right now, it is the center of the sandbox
         this.spawnLocation = new Location(this.world, this.x_center, this.y_center, this.z_center);

@@ -45,6 +45,7 @@ public class WebSandboxPlugin extends JavaPlugin {
         boolean disableGravity = true;
 
         // Send blocks around this area in the Bukkit world
+        String world = "";
         int x_center = -85;
         int y_center = 78;
         int z_center = 93;
@@ -64,6 +65,7 @@ public class WebSandboxPlugin extends JavaPlugin {
 
         config.addDefault("mc.entity_custom_names", setCustomNames);
         config.addDefault("mc.entity_disable_gravity", disableGravity);
+        config.addDefault("mc.world", world);
         config.addDefault("mc.x_center", x_center);
         config.addDefault("mc.y_center", y_center);
         config.addDefault("mc.z_center", z_center);
@@ -78,6 +80,7 @@ public class WebSandboxPlugin extends JavaPlugin {
 
         setCustomNames = this.getConfig().getBoolean("mc.entity_custom_names");
         disableGravity = this.getConfig().getBoolean("mc.entity_disable_gravity");
+        world = this.getConfig().getString("mc.world");
         x_center = this.getConfig().getInt("mc.x_center");
         y_center = this.getConfig().getInt("mc.y_center");
         z_center = this.getConfig().getInt("mc.z_center");
@@ -89,7 +92,7 @@ public class WebSandboxPlugin extends JavaPlugin {
 
         webSocketServerThread = new WebSocketServerThread(this, httpPort, ourExternalAddress, ourExternalPort);
 
-        webSocketServerThread.blockBridge = new BlockBridge(webSocketServerThread, x_center, y_center, z_center, radius, y_offset);
+        webSocketServerThread.blockBridge = new BlockBridge(webSocketServerThread, world, x_center, y_center, z_center, radius, y_offset);
         webSocketServerThread.playersBridge = new PlayersBridge(webSocketServerThread);
         webSocketServerThread.webPlayerBridge = new WebPlayerBridge(webSocketServerThread, setCustomNames, disableGravity);
 
