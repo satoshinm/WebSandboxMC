@@ -48,6 +48,7 @@ Configures what part of your world to expose:
 * `y_center` (78): " ", Y coordinate
 * `z_center` (93): " ", Z coordinate
 * `radius` (16): range out of the center to expose in each direction (cube), setting too high will slow down web client loading
+* `entity` ("Sheep"): name of entity class to spawn on server for web users, set to "" to disable
 * `entity_custom_names` (true): add web player names to the spawned entity's nametag if true
 * `entity_disable_gravity` (true): disable gravity for the spawned entities if true
 
