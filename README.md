@@ -4,7 +4,9 @@ Bukkit plugin providing a web-based interface with an interactive WebGL 3D previ
 
 ![Screenshot](screenshot.png)
 
-Downloads: https://github.com/satoshinm/WebSandboxMC/releases/
+**Downloads: https://github.com/satoshinm/WebSandboxMC/releases/**
+
+[![CircleCI](https://circleci.com/gh/satoshinm/WebSandboxMC.svg?style=svg)](https://circleci.com/gh/satoshinm/WebSandboxMC)
 
 ## Features
 Currently supports:
