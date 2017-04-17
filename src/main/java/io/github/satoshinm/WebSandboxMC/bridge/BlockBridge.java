@@ -8,6 +8,8 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 
+import java.util.logging.Level;
+
 /**
  * Bridges blocks in the world, translates between coordinate systems
  */
@@ -137,7 +139,7 @@ public class BlockBridge {
         Location location = toBukkitLocation(x, y, z);
 
         if (!withinSandboxRange(location)) {
-            System.out.println("client tried to modify outside of sandbox! "+location);
+            webSocketServerThread.log(Level.FINEST, "client tried to modify outside of sandbox! "+location); // not severe, since not prevented client-side
             webSocketServerThread.sendLine(ctx.channel(), "T,You cannot build at ("+x+","+y+","+z+")");
             // TODO: Clear the block, fix this (set to air)
             /*
@@ -149,11 +151,11 @@ public class BlockBridge {
 
         Block block = world.getBlockAt(location);
         if (block == null) {
-            System.out.println("no such block at " + location); // does this happen?
+            webSocketServerThread.log(Level.WARNING, "web client no such block at " + location); // does this happen?
             return;
         }
 
-        System.out.println("setting block at "+location+" to "+material);
+        webSocketServerThread.log(Level.FINEST, "setting block at "+location+" to "+material);
         if (blockdata != -1) {
             block.setTypeIdAndData(material.getId(), (byte) blockdata, true);
         } else {
@@ -168,7 +170,7 @@ public class BlockBridge {
 
     // Handle the bukkit world changing a block, tell all web clients and refresh
     public void notifyBlockUpdate(Location location, Material material, byte data) {
-        //System.out.println("bukkit block ("+x+","+y+","+z+") was set to "+material);
+        webSocketServerThread.log(Level.FINEST, "bukkit block at "+location+" was set to "+material);
 
         if (!withinSandboxRange(location)) {
             // Clients don't need to know about every block change on the server, only within the sandbox
@@ -206,7 +208,7 @@ public class BlockBridge {
             }
         }
 
-        //System.out.println("notified block update: ("+x+","+y+","+z+") to "+type);
+        webSocketServerThread.log(Level.FINEST, "notified block update: ("+x+","+y+","+z+") to "+type);
     }
 
     private int toWebLighting(Material material, byte data) {
@@ -420,8 +422,9 @@ public class BlockBridge {
                 break;
 
             default:
-                System.out.println("unknown block type="+material);
+                webSocketServerThread.log(Level.WARNING, "unknown block type="+material);
                 // unknown/unsupported becomes cloud
+                // TODO: log location where it was encountered, so server administrator can fix it
                 // TODO: support more
                 type = 16;
 
@@ -459,7 +462,7 @@ public class BlockBridge {
             //case 22: material = Material.white flower
             //case 23: material = Material.blue flower
             default:
-                System.out.println("untranslated web block id "+type);
+                webSocketServerThread.log(Level.WARNING, "untranslated web block id "+type);
                 material = Material.DIAMOND_ORE; // placeholder TODO fix
         }
         return material;
@@ -600,7 +603,7 @@ public class BlockBridge {
             }
         }
 
-        //System.out.println("sign change: "+location+", data="+data);
+        webSocketServerThread.log(Level.FINEST, "sign change: "+location+", data="+data);
         String text = "";
         for (int i = 0; i < lines.length; ++i) {
             text += lines[i] + " "; // TODO: support explicit newlines; Craft wraps sign text lines automatically
@@ -644,17 +647,17 @@ public class BlockBridge {
 
         Location location = toBukkitLocation(x, y, z);
         if (!withinSandboxRange(location)) {
-            System.out.println("client tried to write a sign outside sandbox range");
+            webSocketServerThread.log(Level.FINEST, "client tried to write a sign outside sandbox range");
             return;
         }
 
         Block block = location.getWorld().getBlockAt(location);
         block.setType(Material.WALL_SIGN);
         block.setData(data);
-        System.out.println("setting sign at "+location+" data="+data);
+        webSocketServerThread.log(Level.FINEST, "setting sign at "+location+" data="+data);
         BlockState blockState = block.getState();
         if (!(blockState instanceof Sign)) {
-            System.out.println("failed to place sign");
+            webSocketServerThread.log(Level.WARNING, "failed to place sign at "+location);
             return;
         }
         Sign sign = (Sign) blockState;

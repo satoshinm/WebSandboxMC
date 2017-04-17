@@ -21,6 +21,8 @@ import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 
+import java.util.logging.Level;
+
 public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocketFrame> {
 
     private final WebSocketServerThread webSocketServerThread;
@@ -32,10 +34,9 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
     @Override
     @SuppressWarnings("deprecation") // TODO: why is HANDSHAKE_COMPLETE deprecated and what is the replacement?
     public void userEventTriggered(final ChannelHandlerContext ctx, Object evt) throws Exception {
-        System.out.println("userEventTriggered: "+evt);
+        webSocketServerThread.log(Level.FINEST, "userEventTriggered: "+evt);
         if (evt == WebSocketServerProtocolHandler.ServerHandshakeStateEvent.HANDSHAKE_COMPLETE) {
             // "The Handshake was complete successful and so the channel was upgraded to websockets"
-
 
             // Since we're in a callback we cannot call any Bukkit API safely here, see:
             // http://bukkit.gamepedia.com/Scheduler_Programming#Tips_for_thread_safety
@@ -51,7 +52,7 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
 
     @Override
     public void channelRead0(final ChannelHandlerContext ctx, WebSocketFrame frame) throws Exception {
-        //System.out.println("channel read, obj="+obj);
+        webSocketServerThread.log(Level.FINEST, "channel read, frame="+frame);
 
         if (frame instanceof BinaryWebSocketFrame) {
             ByteBuf content = frame.content();
@@ -60,7 +61,7 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
             content.getBytes(0, bytes);
 
             final String string = new String(bytes);
-            //System.out.println("received "+content.capacity()+" bytes: "+string);
+            webSocketServerThread.log(Level.FINEST, "received "+content.capacity()+" bytes: "+string);
 
             this.webSocketServerThread.scheduleSyncTask(new Runnable() {
                 @Override

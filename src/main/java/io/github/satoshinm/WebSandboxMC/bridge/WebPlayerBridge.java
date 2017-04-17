@@ -10,6 +10,7 @@ import org.bukkit.entity.Sheep;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 
 /**
  * Bridges the web client players
@@ -42,7 +43,7 @@ public class WebPlayerBridge {
 
                 // HumanEntity.class fails on Glowstone with https://gist.github.com/satoshinm/ebc87cdf1d782ba91b893fe24cd8ffd2
                 // so use sheep instead for now. TODO: spawn ala GlowNPC: https://github.com/satoshinm/WebSandboxMC/issues/13
-                System.out.println("No such entity class " + entityClassName + ", falling back to Sheep");
+                webSocketServerThread.log(Level.WARNING, "No such entity class " + entityClassName + ", falling back to Sheep");
                 this.entityClass = Sheep.class;
             }
         }
@@ -118,7 +119,7 @@ public class WebPlayerBridge {
 
         webSocketServerThread.webPlayerBridge.channelId2name.remove(channel.id());
 
-        System.out.println("web client disconnected: " + name);
+        webSocketServerThread.log(Level.FINEST, "web client disconnected: " + name);
         // TODO: should this go to Bukkit chat, too/instead? make configurable?
         webSocketServerThread.broadcastLine("T," + name + " has disconnected.");
 

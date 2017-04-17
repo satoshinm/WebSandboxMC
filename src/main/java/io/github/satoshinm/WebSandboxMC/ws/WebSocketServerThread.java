@@ -39,6 +39,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 
 import java.io.File;
+import java.util.logging.Level;
 
 /**
  * A HTTP server which serves Web Socket requests at:
@@ -90,6 +91,10 @@ public final class WebSocketServerThread extends Thread {
         this.ourExternalPort = ourExternalPort;
     }
 
+    public void log(Level level, String message) {
+        plugin.getLogger().log(level, message);
+    }
+
     public void scheduleSyncTask(Runnable runnable) {
         Bukkit.getScheduler().scheduleSyncDelayedTask(this.plugin, runnable);
     }
@@ -118,7 +123,7 @@ public final class WebSocketServerThread extends Thread {
 
                 Channel ch = b.bind(PORT).sync().channel();
 
-                System.out.println("Open your web browser and navigate to " +
+                log(Level.INFO, "Open your web browser and navigate to " +
                         (SSL ? "https" : "http") + "://127.0.0.1:" + PORT + "/");
 
                 ch.closeFuture().sync();
@@ -179,7 +184,7 @@ N,1,guest1
 
     public void handle(String string, ChannelHandlerContext ctx) {
         if (string.startsWith("B,")) {
-            //System.out.println("client block update: "+string);
+            this.log(Level.FINEST, "client block update: "+string);
             String[] array = string.trim().split(",");
             if (array.length != 5) {
                 throw new RuntimeException("malformed block update B, command from client: "+string);
@@ -219,7 +224,7 @@ N,1,guest1
             int face = Integer.parseInt(array[4]);
             String text = array[5];
 
-            System.out.println("new sign: "+x+","+y+","+z+" face="+face+", text="+text);
+            this.log(Level.FINEST, "new sign: "+x+","+y+","+z+" face="+face+", text="+text);
 
             this.blockBridge.clientNewSign(ctx, x, y, z, face, text);
         }
