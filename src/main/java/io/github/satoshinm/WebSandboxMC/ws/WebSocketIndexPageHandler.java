@@ -15,7 +15,6 @@
  */
 package io.github.satoshinm.WebSandboxMC.ws;
 
-import com.google.common.base.Charsets;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
@@ -81,7 +80,7 @@ public class WebSocketIndexPageHandler extends SimpleChannelInboundHandler<FullH
             buffer.append(line);
             buffer.append('\n');
         }
-        ByteBuf content = Unpooled.copiedBuffer(buffer, Charsets.UTF_8);
+        ByteBuf content = Unpooled.copiedBuffer(buffer, java.nio.charset.Charset.forName("UTF-8"));
 
         FullHttpResponse res = new DefaultFullHttpResponse(HTTP_1_1, OK, content);
 
