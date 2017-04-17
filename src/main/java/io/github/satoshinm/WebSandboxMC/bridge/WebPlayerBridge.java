@@ -27,8 +27,10 @@ public class WebPlayerBridge {
     private boolean setCustomNames;
     private boolean disableGravity;
     private Class entityClass;
+    private boolean constrainToSandbox;
 
-    public WebPlayerBridge(WebSocketServerThread webSocketServerThread, boolean setCustomNames, boolean disableGravity, String entityClassName) {
+    public WebPlayerBridge(WebSocketServerThread webSocketServerThread, boolean setCustomNames, boolean disableGravity,
+                           String entityClassName, boolean constranToSandbox) {
         this.webSocketServerThread = webSocketServerThread;
         this.setCustomNames = setCustomNames;
         this.disableGravity = disableGravity;
@@ -47,6 +49,8 @@ public class WebPlayerBridge {
                 this.entityClass = Sheep.class;
             }
         }
+
+        this.constrainToSandbox = constranToSandbox;
 
         this.lastPlayerID = 0;
         this.channelId2name = new HashMap<ChannelId, String>();
@@ -72,7 +76,7 @@ public class WebPlayerBridge {
                 entity.setCustomNameVisible(true);
             }
             if (disableGravity) {
-                entity.setGravity(false); // allow flying TODO: this doesn't seem to work on Glowstone? drops like a rock
+                entity.setGravity(false); // allow flying TODO: this doesn't seem to work on Glowstone? drops like a rock. update: known bug: https://github.com/GlowstoneMC/Glowstone/issues/454
             }
             channelId2Entity.put(channel.id(), entity);
 
@@ -96,6 +100,11 @@ public class WebPlayerBridge {
         final Entity entity = this.channelId2Entity.get(channel.id());
 
         Location location = webSocketServerThread.blockBridge.toBukkitPlayerLocation(x, y, z);
+
+        if (constrainToSandbox && !webSocketServerThread.blockBridge.withinSandboxRange(location)) {
+            webSocketServerThread.log(Level.FINEST, "client tried to move outside of sandbox: "+location);
+            return;
+        }
 
         // Opposite of PlayerBridge encodeLocation - given negated radians, convert to degrees
         location.setYaw((float)(-rx * 180 / Math.PI));

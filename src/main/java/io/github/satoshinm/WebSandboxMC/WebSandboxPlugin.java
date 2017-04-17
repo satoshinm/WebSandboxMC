@@ -39,6 +39,7 @@ public class WebSandboxPlugin extends JavaPlugin {
         String entityClassName = "Sheep";
         boolean setCustomNames = true;
         boolean disableGravity = true;
+        boolean entityMoveSandbox = true;
 
         // Send blocks around this area in the Bukkit world
         String world = "";
@@ -68,6 +69,7 @@ public class WebSandboxPlugin extends JavaPlugin {
         config.addDefault("mc.entity", entityClassName);
         config.addDefault("mc.entity_custom_names", setCustomNames);
         config.addDefault("mc.entity_disable_gravity", disableGravity);
+        config.addDefault("mc.entity_move_sandbox", entityMoveSandbox);
         config.addDefault("mc.world", world);
         config.addDefault("mc.x_center", x_center);
         config.addDefault("mc.y_center", y_center);
@@ -89,6 +91,8 @@ public class WebSandboxPlugin extends JavaPlugin {
         entityClassName = this.getConfig().getString("mc.entity");
         setCustomNames = this.getConfig().getBoolean("mc.entity_custom_names");
         disableGravity = this.getConfig().getBoolean("mc.entity_disable_gravity");
+        entityMoveSandbox = this.getConfig().getBoolean("mc.entity_move_sandbox");
+
         world = this.getConfig().getString("mc.world");
         x_center = this.getConfig().getInt("mc.x_center");
         y_center = this.getConfig().getInt("mc.y_center");
@@ -109,7 +113,7 @@ public class WebSandboxPlugin extends JavaPlugin {
 
         webSocketServerThread.blockBridge = new BlockBridge(webSocketServerThread, world, x_center, y_center, z_center, radius, y_offset, allowBreakPlaceBlocks, allowSigns);
         webSocketServerThread.playersBridge = new PlayersBridge(webSocketServerThread, allowChatting, seeChat, seePlayers);
-        webSocketServerThread.webPlayerBridge = new WebPlayerBridge(webSocketServerThread, setCustomNames, disableGravity, entityClassName);
+        webSocketServerThread.webPlayerBridge = new WebPlayerBridge(webSocketServerThread, setCustomNames, disableGravity, entityClassName, entityMoveSandbox);
 
         // Register our events
         PluginManager pm = getServer().getPluginManager();
