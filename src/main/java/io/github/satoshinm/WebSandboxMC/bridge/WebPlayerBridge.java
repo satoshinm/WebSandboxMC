@@ -128,11 +128,7 @@ public class WebPlayerBridge {
 
             webSocketServerThread.webPlayerBridge.channelId2Entity.remove(entity);
 
-            //((LivingEntity) entity).setHealth(0); // this kills the entity, but leaves drops (undesirable)
-            // This removes the entity server-side, but it still shows on the client and attacking shows
-            // "tried to attack an entity that does not exist" -- on Glowstone. Relogging clears. TODO: Glowstone bug
             entity.remove();
-            //System.out.println("entity isDead? "+entity.isDead()+", isValid? "+entity.isValid());
         }
     }
 }
