@@ -54,7 +54,6 @@ Configures what part of your world to expose:
 * `entity_custom_names` (true): add web player names to the spawned entity's nametag if true
 * `entity_disable_gravity` (true): disable gravity for the spawned entities if true
 * `entity_move_sandbox` (true): constrain the web player entity's movement to within the sandbox, otherwise they can go anywhere
-* `entity_move_sandbox` (true): constrain the web player entity's movement to within the sandbox, otherwise they can go anywhere
 
 ### nc
 Configures the NetCraft web client:
