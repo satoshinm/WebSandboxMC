@@ -21,7 +21,6 @@ public class WebPlayerBridge {
 
     private int lastPlayerID;
     public Map<ChannelId, String> channelId2name;
-    private Map<String, ChannelId> name2channelId;
     public Map<ChannelId, Entity> channelId2Entity;
 
     private boolean setCustomNames;
@@ -54,7 +53,6 @@ public class WebPlayerBridge {
 
         this.lastPlayerID = 0;
         this.channelId2name = new HashMap<ChannelId, String>();
-        this.name2channelId = new HashMap<String, ChannelId>();
         this.channelId2Entity = new HashMap<ChannelId, Entity>();
     }
 
@@ -63,7 +61,6 @@ public class WebPlayerBridge {
         final String theirName = "webguest" + theirID;
 
         this.channelId2name.put(channel.id(), theirName);
-        this.name2channelId.put(theirName, channel.id());
 
         webSocketServerThread.sendLine(channel, "T,Welcome to WebSandboxMC, "+theirName+"!");
 
