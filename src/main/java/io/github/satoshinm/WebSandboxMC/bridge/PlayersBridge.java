@@ -63,13 +63,14 @@ public class PlayersBridge {
 
             int id = entity.getEntityId();
             Location location = entity.getLocation();
-            String name = entity.getCustomName();
+            String name = webSocketServerThread.webPlayerBridge.entityId2Username.get(id);
+            if (name == null) name = "entity-"+id;
 
             webSocketServerThread.sendLine(channel, "P," + id + "," + encodeLocation(location));
             webSocketServerThread.sendLine(channel, "N," + id + "," + name);
         }
     }
-    
+
     private static Collection<? extends Player> getOnlinePlayers() {
         try {
             return Bukkit.getServer().getOnlinePlayers();

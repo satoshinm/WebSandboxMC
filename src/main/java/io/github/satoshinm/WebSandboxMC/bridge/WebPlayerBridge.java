@@ -22,6 +22,7 @@ public class WebPlayerBridge {
     private int lastPlayerID;
     public Map<ChannelId, String> channelId2name;
     public Map<ChannelId, Entity> channelId2Entity;
+    public Map<Integer, String> entityId2Username;
 
     private boolean setCustomNames;
     private boolean disableGravity;
@@ -54,6 +55,7 @@ public class WebPlayerBridge {
         this.lastPlayerID = 0;
         this.channelId2name = new HashMap<ChannelId, String>();
         this.channelId2Entity = new HashMap<ChannelId, Entity>();
+        this.entityId2Username = new HashMap<Integer, String>();
     }
 
     public String newPlayer(final Channel channel) {
@@ -76,6 +78,7 @@ public class WebPlayerBridge {
                 entity.setGravity(false); // allow flying TODO: this doesn't seem to work on Glowstone? drops like a rock. update: known bug: https://github.com/GlowstoneMC/Glowstone/issues/454
             }
             channelId2Entity.put(channel.id(), entity);
+            entityId2Username.put(entity.getEntityId(), theirName);
 
             // Notify other web clients (except this one) of this new user
             webSocketServerThread.broadcastLineExcept(channel.id(), "P," + entity.getEntityId() + "," + webSocketServerThread.playersBridge.encodeLocation(location));
