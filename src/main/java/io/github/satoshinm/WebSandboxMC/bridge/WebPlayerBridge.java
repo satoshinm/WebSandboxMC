@@ -37,6 +37,7 @@ public class WebPlayerBridge {
         this.webSocketServerThread = webSocketServerThread;
         this.setCustomNames = setCustomNames;
         this.disableGravity = disableGravity;
+        this.disableAI = disableAI;
 
         if (entityClassName == null || "".equals(entityClassName)) {
             this.entityClass = null;
