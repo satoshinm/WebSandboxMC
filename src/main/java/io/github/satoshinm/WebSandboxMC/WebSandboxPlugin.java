@@ -9,6 +9,8 @@ import io.github.satoshinm.WebSandboxMC.bukkit.EntityListener;
 import io.github.satoshinm.WebSandboxMC.bukkit.PlayersListener;
 import io.github.satoshinm.WebSandboxMC.ws.WebSocketServerThread;
 import org.bukkit.Bukkit;
+import org.bukkit.configuration.Configuration;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
@@ -180,7 +182,8 @@ public class WebSandboxPlugin extends JavaPlugin {
         allowChatting = this.getConfig().getBoolean("nc.allow_chatting");
         seeChat = this.getConfig().getBoolean("nc.see_chat");
         seePlayers = this.getConfig().getBoolean("nc.see_players");
-        blocksToWeb = this.getConfig().getConfigurationSection("nc.blocks_to_web").getValues(false);
+        ConfigurationSection section = this.getConfig().getConfigurationSection("nc.blocks_to_web");
+        blocksToWeb = section != null ? section.getValues(false) : blocksToWeb;
         warnMissing = this.getConfig().getBoolean("nc.warn_missing_blocks_to_web");
 
         saveConfig();
