@@ -24,6 +24,7 @@ public class BlockBridge {
     private boolean allowBreakPlaceBlocks;
     private boolean allowSigns;
     private Map<Material, Integer> blocksToWeb;
+    private int blocksToWebMissing = 16; // unknown/unsupported becomes cloud, if key missing
 
     public BlockBridge(WebSocketServerThread webSocketServerThread,
                        String world, int x_center, int y_center, int z_center, int radius, int y_offset,
@@ -55,12 +56,6 @@ public class BlockBridge {
 
         this.blocksToWeb = new HashMap<Material, Integer>();
         for (String materialString : blocksToWeb.keySet()) {
-            Material material = Material.getMaterial(materialString);
-            if (material == null) {
-                webSocketServerThread.log(Level.WARNING, "blocks_to_web invalid material ignored: "+materialString);
-                continue;
-            }
-
             Object object = blocksToWeb.get(materialString);
 
             int n = 0;
@@ -73,8 +68,20 @@ public class BlockBridge {
                 continue;
             }
 
-            this.blocksToWeb.put(material, n);
-            System.out.println("blocks_to_web: "+material+" = "+n);
+
+            Material material = Material.getMaterial(materialString);
+            if (materialString.equals("missing")) {
+                this.blocksToWebMissing = n;
+                this.webSocketServerThread.log(Level.INFO, "blocks_to_web missing value to set to: "+n);
+            } else {
+                if (material == null) {
+                    webSocketServerThread.log(Level.WARNING, "blocks_to_web invalid material ignored: " + materialString);
+                    continue;
+                }
+
+                this.blocksToWeb.put(material, n);
+                this.webSocketServerThread.log(Level.FINEST, "blocks_to_web: " + material + " = " + n);
+            }
         }
     }
 
@@ -287,10 +294,8 @@ public class BlockBridge {
     private int toWebBlockType(Material material, byte data) {
         if (!blocksToWeb.containsKey(material)) {
             webSocketServerThread.log(Level.WARNING, "unknown block type=" + material);
-            // unknown/unsupported becomes cloud
             // TODO: log location where it was encountered, so server administrator can fix it
-            // TODO: configurable missing block and log unknown block
-            return 16;
+            return blocksToWebMissing;
         }
 
         int type = blocksToWeb.get(material);

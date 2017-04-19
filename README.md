@@ -66,6 +66,9 @@ Configures the NetCraft web client:
 * `see_chat` (true): allow web users to receive chat messages from the server
 * `see_players` (true): allow web users to see other player positions
 * `blocks_to_web`: map of Bukkit material names to NetCraft web client IDs -- you can add additional block types here if they don't show up correctly
+ * The special material name "missing" is used for unmapped blocks, interesting values:
+  * 16 (default): clouds, a solid white block you can walk through, useful as a placeholder so you know to edit spawn and remove or translate it
+  * 0: air, for if you want missing/unknown/unsupported blocks to be invisible to the web client
 
 Newer versions of NetCraft can be installed without upgrading the plugin, or the main page customized,
 by placing the saving files in the plugin's data directory: craft.html (main page), craft.js, craft.html.mem.

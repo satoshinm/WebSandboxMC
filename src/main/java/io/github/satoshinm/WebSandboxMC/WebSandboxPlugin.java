@@ -91,6 +91,7 @@ public class WebSandboxPlugin extends JavaPlugin {
         config.addDefault("nc.allow_chatting", allowChatting);
         config.addDefault("nc.see_chat", seeChat);
         config.addDefault("nc.see_players", seePlayers);
+        blocksToWeb.put("missing", 16); // unknown/unsupported becomes cloud
         blocksToWeb.put("AIR", 0);
         blocksToWeb.put("GRASS", 1);
         blocksToWeb.put("SAND", 2);
@@ -152,7 +153,6 @@ public class WebSandboxPlugin extends JavaPlugin {
         // TODO: support more by default
 
         config.addDefault("nc.blocks_to_web", blocksToWeb);
-
         
         httpPort = this.getConfig().getInt("http.port");
 
