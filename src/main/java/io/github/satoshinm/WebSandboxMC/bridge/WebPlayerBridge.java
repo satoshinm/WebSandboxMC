@@ -179,4 +179,14 @@ public class WebPlayerBridge {
             }
         }
     }
+
+    public void notifySheared(String username, String playerName) {
+        Channel channel = name2channel.get(username);
+
+        webSocketServerThread.log(Level.INFO, "web user " + username + " sheared by " + playerName);
+
+        if (channel != null) {
+            webSocketServerThread.sendLine(channel, "T,You were sheared by " + playerName);
+        }
+    }
 }
