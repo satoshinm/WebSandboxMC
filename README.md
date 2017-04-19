@@ -53,6 +53,7 @@ Configures what part of your world to expose:
 * `entity` ("Sheep"): name of entity class to spawn on server for web users, set to "" to disable
 * `entity_custom_names` (true): add web player names to the spawned entity's nametag if true
 * `entity_disable_gravity` (true): disable gravity for the spawned entities if true
+* `entity_disable_ai` (true): disable AI for the spawned living entities if true, otherwise they may move on their own
 * `entity_move_sandbox` (true): constrain the web player entity's movement to within the sandbox, otherwise they can go anywhere
 * `debug` (false): if true, enables vast amounts of additional logging with FINEST log level
 

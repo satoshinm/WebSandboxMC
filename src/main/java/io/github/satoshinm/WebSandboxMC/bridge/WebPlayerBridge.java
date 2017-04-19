@@ -6,6 +6,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelId;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Sheep;
 
 import java.util.HashMap;
@@ -26,10 +27,12 @@ public class WebPlayerBridge {
 
     private boolean setCustomNames;
     private boolean disableGravity;
+    private boolean disableAI;
     private Class entityClass;
     private boolean constrainToSandbox;
 
-    public WebPlayerBridge(WebSocketServerThread webSocketServerThread, boolean setCustomNames, boolean disableGravity,
+    public WebPlayerBridge(WebSocketServerThread webSocketServerThread, boolean setCustomNames,
+                           boolean disableGravity, boolean disableAI,
                            String entityClassName, boolean constranToSandbox) {
         this.webSocketServerThread = webSocketServerThread;
         this.setCustomNames = setCustomNames;
@@ -76,6 +79,12 @@ public class WebPlayerBridge {
             }
             if (disableGravity) {
                 entity.setGravity(false); // allow flying TODO: this doesn't seem to work on Glowstone? drops like a rock. update: known bug: https://github.com/GlowstoneMC/Glowstone/issues/454
+            }
+            if (disableAI) {
+                if (entity instanceof LivingEntity) {
+                    LivingEntity livingEntity = (LivingEntity) entity;
+                    livingEntity.setAI(false);
+                }
             }
             channelId2Entity.put(channel.id(), entity);
             entityId2Username.put(entity.getEntityId(), theirName);
