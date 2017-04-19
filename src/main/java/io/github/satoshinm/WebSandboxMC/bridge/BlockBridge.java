@@ -74,7 +74,7 @@ public class BlockBridge {
             Material material = Material.getMaterial(materialString);
             if (materialString.equals("missing")) {
                 this.blocksToWebMissing = n;
-                this.webSocketServerThread.log(Level.INFO, "blocks_to_web missing value to set to: "+n);
+                this.webSocketServerThread.log(Level.FINEST, "blocks_to_web missing value to set to: "+n);
             } else {
                 if (material == null) {
                     webSocketServerThread.log(Level.WARNING, "blocks_to_web invalid material ignored: " + materialString);
