@@ -1,10 +1,3 @@
 name: WebSandboxMC
 main: io.github.satoshinm.WebSandboxMC.WebSandboxPlugin
 version: ${version}
-commands:
-  pos:
-    description: Displays your position or teleports you to another.
-    usage: "Usage: '/pos' to get current position, or '/pos x y z' to teleport to x,y,z"
-  debug:
-    description: Toggles your debugging status for this plugin.
-    usage: /debug
