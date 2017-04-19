@@ -96,6 +96,11 @@ public final class WebSocketServerThread extends Thread {
     }
 
     public void scheduleSyncTask(Runnable runnable) {
+        if (!plugin.isEnabled()) {
+            // When we are shutting down, the Netty channels go inactive, but we cannot schedule tasks when
+            // the plugin is disabled so just return.
+            return;
+        }
         Bukkit.getScheduler().scheduleSyncDelayedTask(this.plugin, runnable);
     }
 
