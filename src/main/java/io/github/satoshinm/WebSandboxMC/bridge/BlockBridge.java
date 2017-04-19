@@ -8,6 +8,8 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 
 /**
@@ -21,10 +23,11 @@ public class BlockBridge {
     public Location spawnLocation;
     private boolean allowBreakPlaceBlocks;
     private boolean allowSigns;
+    private Map<Material, Integer> blocksToWeb;
 
     public BlockBridge(WebSocketServerThread webSocketServerThread,
                        String world, int x_center, int y_center, int z_center, int radius, int y_offset,
-                       boolean allowBreakPlaceBlocks, boolean allowSigns) {
+                       boolean allowBreakPlaceBlocks, boolean allowSigns, Map<String, Object> blocksToWeb) {
         this.webSocketServerThread = webSocketServerThread;
 
         this.x_center = x_center;
@@ -49,6 +52,30 @@ public class BlockBridge {
 
         this.allowBreakPlaceBlocks = allowBreakPlaceBlocks;
         this.allowSigns = allowSigns;
+
+        this.blocksToWeb = new HashMap<Material, Integer>();
+        for (String materialString : blocksToWeb.keySet()) {
+            Material material = Material.getMaterial(materialString);
+            if (material == null) {
+                webSocketServerThread.log(Level.WARNING, "blocks_to_web invalid material ignored: "+materialString);
+                continue;
+            }
+
+            Object object = blocksToWeb.get(materialString);
+
+            int n = 0;
+            if (object instanceof String) {
+                n = Integer.parseInt((String) object);
+            } else if (object instanceof Integer) {
+                n = (Integer) object;
+            } else {
+                webSocketServerThread.log(Level.WARNING, "blocks_to_web invalid integer ignored: "+n+", in "+object);
+                continue;
+            }
+
+            this.blocksToWeb.put(material, n);
+            System.out.println("blocks_to_web: "+material+" = "+n);
+        }
     }
 
     // Send the client the initial section of the world when they join
@@ -258,177 +285,70 @@ public class BlockBridge {
     // Translate web<->bukkit blocks
     // TODO: refactor to remove all bukkit dependency in this class (enums strings?), generalize to can support others
     private int toWebBlockType(Material material, byte data) {
-        int type;
-        switch (material) {
-            case AIR:
-                type = 0;
-                break;
-            case GRASS:
-                type = 1;
-                break;
-            case SAND:
-                type = 2;
-                break;
-            case SMOOTH_BRICK:
-                type = 3;
-                break;
-            case BRICK:
-                type = 4;
-                break;
-            case LOG:
-            case LOG_2:
-                type = 5; // wood
-                break;
-            // TODO: ores, for now, showing as stone
-            case COAL_ORE:
-            case IRON_ORE:
-                //case DIAMOND_ORE:
-                //case EMERALD_ORE:
-            case REDSTONE_ORE:
-            case GLOWING_REDSTONE_ORE:
-            case LAPIS_ORE:
-                //case QUARTZ_ORE:
-            case GOLD_ORE:
-            case STONE:
-                type = 6; // cement, close enough
-                break;
-            case GRAVEL:
-            case DIRT:
-                type = 7;
-                break;
-            case WOOD:
-                type = 8; // plank
-                break;
-            case SNOW:
-            case SNOW_BLOCK:;
-                type = 9;
-                break;
-            case GLASS:
-                type = 10;
-                break;
-            case COBBLESTONE:
-                type = 11;
-                break;
-            // TODO: light stone (12)
-            // TODO: dark stone (13)
-            case CHEST:
-                type = 14;
-                break;
-            case LEAVES:
-            case LEAVES_2:
-                type = 15;
-                break;
-            // TODO: cloud (16)
-            case DOUBLE_PLANT: // TODO: other double plants, but a lot look like longer long grass
-            case LONG_GRASS:
-                type = 17; // tall grass
-                break;
-            case YELLOW_FLOWER:
-                type = 18;
-                break;
-            case RED_ROSE:
-                type = 19;
-                break;
-            case CHORUS_FLOWER:
-                type = 20;
-                break;
-            // TODO: sunflower (21)
-            // TODO: white flower (22)
-            // TODO: blue flower (23)
-
-            case WOOL:
-            {
-                switch (data) {
-                    case 0: // white
-                        type = 61; // #define COLOR_29 // 61 white
-                        break;
-                    case 1: // orange
-                        type = 53;
-                        break;
-                    case 2: // magenta
-                        type = 43; // #define COLOR_11 // 43 crimson
-                        break;
-                    case 3: // light blue
-                        type = 58; // #define COLOR_26 // 58 light blue
-                        break;
-                    case 4: // yellow
-                        type = 32; // #define COLOR_00 // 32 yellow
-                        break;
-                    case 5: // lime
-                        type = 46; // #define COLOR_14 // 46 puke green
-                        break;
-                    case 6: // pink
-                        type = 45; // #define COLOR_13 // 45 pink
-                        break;
-                    case 7: // gray
-                        type = 41; // #define COLOR_09 // 41 darker gray
-                        break;
-                    case 8: // light gray
-                        type = 50; // #define COLOR_18 // 50 medium gray
-                        break;
-                    case 9: // cyan
-                        type = 59; // #define COLOR_27 // 59 foam green
-                        break;
-                    case 10: // purple
-                        type = 39; // #define COLOR_07 // 39 purple
-                        break;
-                    case 11: // blue
-                        type = 57; // #define COLOR_25 // 57 blue
-                        break;
-                    case 12: // brown
-                        type = 47; // #define COLOR_15 // 47 poop brown
-                        break;
-                    case 13: // green
-                        type = 34; // #define COLOR_02 // 34 green
-                        break;
-                    case 14: // red
-                        type = 44; // #define COLOR_12 // 44 salmon
-                        break;
-                    default:
-                    case 15: // black
-                        type = 48; // #define COLOR_16 // 48 black
-                        break;
-                }
-                break;
-            }
-
-            case WALL_SIGN:
-                type = 0; // air, since text is written on block behind it
-                break;
-            case SIGN_POST:
-                type = 8; // plank TODO: sign post model
-                break;
-
-            // Light sources (nonzero toWebLighting()) TODO: different textures? + allow placement, distinct blocks
-            case GLOWSTONE:
-                type = 32; // #define COLOR_00 // 32 yellow
-                break;
-            case SEA_LANTERN:
-                type = 58; // #define COLOR_26 // 58 light blue
-                break;
-            case JACK_O_LANTERN:
-                type = 53; // #define COLOR_21 // 53 orange
-                break;
-            case REDSTONE_LAMP_ON:
-            case REDSTONE_LAMP_OFF:
-                type = 34; // // #define COLOR_12 // 44 salmon
-                break;
-            case TORCH:
-                type = 21; // sunflower, looks kinda like a torch
-                break;
-            case REDSTONE_TORCH_OFF:
-            case REDSTONE_TORCH_ON:
-                type = 19; // red flower, vaguely a torch
-                break;
-
-            default:
-                webSocketServerThread.log(Level.WARNING, "unknown block type="+material);
-                // unknown/unsupported becomes cloud
-                // TODO: log location where it was encountered, so server administrator can fix it
-                // TODO: support more
-                type = 16;
-
+        if (!blocksToWeb.containsKey(material)) {
+            webSocketServerThread.log(Level.WARNING, "unknown block type=" + material);
+            // unknown/unsupported becomes cloud
+            // TODO: log location where it was encountered, so server administrator can fix it
+            // TODO: configurable missing block and log unknown block
+            return 16;
         }
+
+        int type = blocksToWeb.get(material);
+
+        if (type == 61) { // special case for wool / color block, not yet configurable
+            switch (data) {
+                case 0: // white
+                    type = 61; // #define COLOR_29 // 61 white
+                    break;
+                case 1: // orange
+                    type = 53;
+                    break;
+                case 2: // magenta
+                    type = 43; // #define COLOR_11 // 43 crimson
+                    break;
+                case 3: // light blue
+                    type = 58; // #define COLOR_26 // 58 light blue
+                    break;
+                case 4: // yellow
+                    type = 32; // #define COLOR_00 // 32 yellow
+                    break;
+                case 5: // lime
+                    type = 46; // #define COLOR_14 // 46 puke green
+                    break;
+                case 6: // pink
+                    type = 45; // #define COLOR_13 // 45 pink
+                    break;
+                case 7: // gray
+                    type = 41; // #define COLOR_09 // 41 darker gray
+                    break;
+                case 8: // light gray
+                    type = 50; // #define COLOR_18 // 50 medium gray
+                    break;
+                case 9: // cyan
+                    type = 59; // #define COLOR_27 // 59 foam green
+                    break;
+                case 10: // purple
+                    type = 39; // #define COLOR_07 // 39 purple
+                    break;
+                case 11: // blue
+                    type = 57; // #define COLOR_25 // 57 blue
+                    break;
+                case 12: // brown
+                    type = 47; // #define COLOR_15 // 47 poop brown
+                    break;
+                case 13: // green
+                    type = 34; // #define COLOR_02 // 34 green
+                    break;
+                case 14: // red
+                    type = 44; // #define COLOR_12 // 44 salmon
+                    break;
+                default:
+                case 15: // black
+                    type = 48; // #define COLOR_16 // 48 black
+                    break;
+            }
+        }
+
         return type;
     }
 

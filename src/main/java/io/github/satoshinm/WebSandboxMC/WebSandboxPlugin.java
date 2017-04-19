@@ -14,6 +14,9 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * Bukkit plugin class for WebSandboxMC
  *
@@ -54,6 +57,8 @@ public class WebSandboxPlugin extends JavaPlugin {
     private boolean seeChat = true;
     private boolean seePlayers = true;
 
+    private Map<String, Object> blocksToWeb = new HashMap<String, Object>();
+
     @Override
     public void onDisable() {
         webSocketServerThread.interrupt();
@@ -86,6 +91,67 @@ public class WebSandboxPlugin extends JavaPlugin {
         config.addDefault("nc.allow_chatting", allowChatting);
         config.addDefault("nc.see_chat", seeChat);
         config.addDefault("nc.see_players", seePlayers);
+        blocksToWeb.put("AIR", 0);
+        blocksToWeb.put("GRASS", 1);
+        blocksToWeb.put("SAND", 2);
+        blocksToWeb.put("SMOOTH_BRICK", 3);
+        blocksToWeb.put("BRICK", 4);
+        blocksToWeb.put("LOG", 5);
+        blocksToWeb.put("LOG_2", 5); // wood
+        // TODO: ores, for now, showing as stone
+        blocksToWeb.put("COAL_ORE", 6);
+        blocksToWeb.put("IRON_ORE", 6);
+        blocksToWeb.put("DIAMOND_ORE", 6);
+        blocksToWeb.put("EMERALD_ORE", 6);
+        blocksToWeb.put("REDSTONE_ORE", 6);
+        blocksToWeb.put("GLOWING_REDSTONE_ORE", 6);
+        blocksToWeb.put("LAPIS_ORE", 6);
+        blocksToWeb.put("QUARTZ_ORE", 6);
+        blocksToWeb.put("GOLD_ORE", 6);
+        blocksToWeb.put("STONE", 6); // cement, close enough
+
+        blocksToWeb.put("GRAVEL", 7);
+        blocksToWeb.put("DIRT", 7);
+
+        blocksToWeb.put("WOOD", 8); // plank
+
+        blocksToWeb.put("SNOW", 9);
+        blocksToWeb.put("SNOW_BLOCK", 9);
+
+        blocksToWeb.put("GLASS", 10);
+        blocksToWeb.put("COBBLESTONE", 11);
+        // TODO",  light stone (12));
+        // TODO",  dark stone (13));
+        blocksToWeb.put("CHEST", 14);
+        blocksToWeb.put("LEAVES", 15);
+        blocksToWeb.put("LEAVES_2", 15);
+        // TODO",  cloud (16));
+        blocksToWeb.put("DOUBLE_PLANT", 17);  // TODO: other double plants, but a lot look like longer long grass
+        blocksToWeb.put("LONG_GRASS", 17); // tall grass
+        blocksToWeb.put("YELLOW_FLOWER", 18);
+        blocksToWeb.put("RED_ROSE", 19);
+        blocksToWeb.put("CHORUS_FLOWER", 20);
+        // TODO",  sunflower (21));
+        // TODO",  white flower (22));
+        // TODO",  blue flower (23));
+
+        blocksToWeb.put("WOOL", 61); // note: special case
+
+        blocksToWeb.put("WALL_SIGN", 0); // air, since text is written on block behind it
+        blocksToWeb.put("SIGN_POST", 8); // plank TODO",  sign post model
+
+        // Light sources (nonzero toWebLighting()) TODO",  different textures? + allow placement, distinct blocks
+        blocksToWeb.put("GLOWSTONE", 32); // #define COLOR_00 // 32 yellow
+        blocksToWeb.put("SEA_LANTERN", 58); // #define COLOR_26 // 58 light blue
+        blocksToWeb.put("JACK_O_LANTERN", 53); // #define COLOR_21 // 53 orange
+        blocksToWeb.put("REDSTONE_LAMP_ON", 34);
+        blocksToWeb.put("REDSTONE_LAMP_OFF", 34); // // #define COLOR_12 // 44 salmon
+        blocksToWeb.put("TORCH", 21); // sunflower, looks kinda like a torch
+        blocksToWeb.put("REDSTONE_TORCH_OFF", 19);
+        blocksToWeb.put("REDSTONE_TORCH_ON", 19); // red flower, vaguely a torch
+        // TODO: support more by default
+
+        config.addDefault("nc.blocks_to_web", blocksToWeb);
 
         
         httpPort = this.getConfig().getInt("http.port");
@@ -112,6 +178,7 @@ public class WebSandboxPlugin extends JavaPlugin {
         allowChatting = this.getConfig().getBoolean("nc.allow_chatting");
         seeChat = this.getConfig().getBoolean("nc.see_chat");
         seePlayers = this.getConfig().getBoolean("nc.see_players");
+        blocksToWeb = this.getConfig().getConfigurationSection("nc.blocks_to_web").getValues(false);
 
         saveConfig();
 
@@ -124,7 +191,8 @@ public class WebSandboxPlugin extends JavaPlugin {
 
                 webSocketServerThread = new WebSocketServerThread(plugin, httpPort, debug);
 
-                webSocketServerThread.blockBridge = new BlockBridge(webSocketServerThread, world, x_center, y_center, z_center, radius, y_offset, allowBreakPlaceBlocks, allowSigns);
+                webSocketServerThread.blockBridge = new BlockBridge(webSocketServerThread, world, x_center, y_center,
+                        z_center, radius, y_offset, allowBreakPlaceBlocks, allowSigns, blocksToWeb);
                 webSocketServerThread.playersBridge = new PlayersBridge(webSocketServerThread, allowChatting, seeChat, seePlayers);
                 webSocketServerThread.webPlayerBridge = new WebPlayerBridge(webSocketServerThread, setCustomNames,
                         disableGravity, disableAI, entityClassName, entityMoveSandbox, entityDieDisconnect);
