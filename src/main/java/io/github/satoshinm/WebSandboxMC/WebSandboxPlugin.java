@@ -7,7 +7,9 @@ import io.github.satoshinm.WebSandboxMC.bridge.WebPlayerBridge;
 import io.github.satoshinm.WebSandboxMC.bukkit.BlockListener;
 import io.github.satoshinm.WebSandboxMC.bukkit.PlayersListener;
 import io.github.satoshinm.WebSandboxMC.ws.WebSocketServerThread;
+import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -23,6 +25,33 @@ import org.bukkit.plugin.java.JavaPlugin;
 public class WebSandboxPlugin extends JavaPlugin {
     private WebSocketServerThread webSocketServerThread;
 
+    private int httpPort = 4081;
+
+    private boolean debug = false;
+    private String entityClassName = "Sheep";
+    private boolean setCustomNames = true;
+    private boolean disableGravity = true;
+    private boolean disableAI = true;
+    private boolean entityMoveSandbox = true;
+
+    // Send blocks around this area in the Bukkit world
+    private String world = "";
+    private int x_center = -85;
+    private int y_center = 78;
+    private int z_center = 93;
+
+    // of this radius, +/-
+    private int radius = 16;
+
+    // raised this amount in the web world, so it is clearly distinguished from the client-generated terrain
+    private int y_offset = 20;
+
+    private boolean allowBreakPlaceBlocks = true;
+    private boolean allowSigns = true;
+    private boolean allowChatting = true;
+    private boolean seeChat = true;
+    private boolean seePlayers = true;
+
     @Override
     public void onDisable() {
         webSocketServerThread.interrupt();
@@ -33,33 +62,6 @@ public class WebSandboxPlugin extends JavaPlugin {
         // Configuration
         final FileConfiguration config = getConfig();
         config.options().copyDefaults(true);
-
-        int httpPort = 4081;
-
-        boolean debug = false;
-        String entityClassName = "Sheep";
-        boolean setCustomNames = true;
-        boolean disableGravity = true;
-        boolean disableAI = true;
-        boolean entityMoveSandbox = true;
-
-        // Send blocks around this area in the Bukkit world
-        String world = "";
-        int x_center = -85;
-        int y_center = 78;
-        int z_center = 93;
-
-        // of this radius, +/-
-        int radius = 16;
-
-        // raised this amount in the web world, so it is clearly distinguished from the client-generated terrain
-        int y_offset = 20;
-
-        boolean allowBreakPlaceBlocks = true;
-        boolean allowSigns = true;
-        boolean allowChatting = true;
-        boolean seeChat = true;
-        boolean seePlayers = true;
 
         config.addDefault("http.port", httpPort);
 
@@ -109,26 +111,35 @@ public class WebSandboxPlugin extends JavaPlugin {
 
         saveConfig();
 
-        webSocketServerThread = new WebSocketServerThread(this, httpPort, debug);
+        final Plugin plugin = this;
 
-        webSocketServerThread.blockBridge = new BlockBridge(webSocketServerThread, world, x_center, y_center, z_center, radius, y_offset, allowBreakPlaceBlocks, allowSigns);
-        webSocketServerThread.playersBridge = new PlayersBridge(webSocketServerThread, allowChatting, seeChat, seePlayers);
-        webSocketServerThread.webPlayerBridge = new WebPlayerBridge(webSocketServerThread, setCustomNames, disableGravity, disableAI, entityClassName, entityMoveSandbox);
+        // Run in a delayed task to ensure all worlds are loaded on startup (not only load: POSTWORLD).
+        Bukkit.getScheduler().scheduleSyncDelayedTask(this, new Runnable() {
+            @Override
+            public void run() {
 
-        // Register our events
-        PluginManager pm = getServer().getPluginManager();
+                webSocketServerThread = new WebSocketServerThread(plugin, httpPort, debug);
 
-        BlockListener blockListener = new BlockListener(webSocketServerThread.blockBridge);
-        pm.registerEvents(blockListener, this);
+                webSocketServerThread.blockBridge = new BlockBridge(webSocketServerThread, world, x_center, y_center, z_center, radius, y_offset, allowBreakPlaceBlocks, allowSigns);
+                webSocketServerThread.playersBridge = new PlayersBridge(webSocketServerThread, allowChatting, seeChat, seePlayers);
+                webSocketServerThread.webPlayerBridge = new WebPlayerBridge(webSocketServerThread, setCustomNames, disableGravity, disableAI, entityClassName, entityMoveSandbox);
 
-        PlayersListener playersListener = new PlayersListener(webSocketServerThread.playersBridge);
-        pm.registerEvents(playersListener, this);
+                // Register our events
+                PluginManager pm = getServer().getPluginManager();
+
+                BlockListener blockListener = new BlockListener(webSocketServerThread.blockBridge);
+                pm.registerEvents(blockListener, plugin);
+
+                PlayersListener playersListener = new PlayersListener(webSocketServerThread.playersBridge);
+                pm.registerEvents(playersListener, plugin);
 
 
-        // TODO: Register our commands, what do we need?
-        //getCommand("websandbox").setExecutor(new WebsandboxCommand());
+                // TODO: Register our commands, what do we need?
+                //getCommand("websandbox").setExecutor(new WebsandboxCommand());
 
-        // Run the websocket server
-        webSocketServerThread.start();
+                // Run the websocket server
+                webSocketServerThread.start();
+            }
+        });
     }
 }
