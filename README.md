@@ -40,8 +40,6 @@ The settings are as follows:
 Configures the HTTP and WebSocket server:
 
 * `port` (4081): TCP port for the HTTP server to listen on
-* `external_address` (localhost): externally-facing address of your server, for the web clients to connect to
-* `external_port` (4081): externally-facing port for the web clients to connect to, normally the same as `port` but can be changed if you are using port forwarding/proxying
 
 ### mc
 Configures what part of your world to expose:

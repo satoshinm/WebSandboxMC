@@ -67,16 +67,13 @@ public final class WebSocketServerThread extends Thread {
 
     private ChannelGroup allUsersGroup;
 
-    private String ourExternalAddress;
-    private int ourExternalPort;
-
     public BlockBridge blockBridge;
     public PlayersBridge playersBridge;
     public WebPlayerBridge webPlayerBridge;
     private Plugin plugin;
     private boolean debug;
 
-    public WebSocketServerThread(Plugin plugin, int port, String ourExternalAddress, int ourExternalPort, boolean debug) {
+    public WebSocketServerThread(Plugin plugin, int port, boolean debug) {
         this.plugin = plugin;
 
         this.PORT = port;
@@ -88,8 +85,6 @@ public final class WebSocketServerThread extends Thread {
 
         this.allUsersGroup = new DefaultChannelGroup(ImmediateEventExecutor.INSTANCE);
 
-        this.ourExternalAddress = ourExternalAddress;
-        this.ourExternalPort = ourExternalPort;
         this.debug = debug;
     }
 
@@ -124,7 +119,7 @@ public final class WebSocketServerThread extends Thread {
                         .channel(NioServerSocketChannel.class)
                         .handler(new LoggingHandler(LogLevel.INFO))
                         .childHandler(new WebSocketServerInitializer(sslCtx, this,
-                                ourExternalAddress, ourExternalPort, this.plugin.getDataFolder()));
+                                this.plugin.getDataFolder()));
 
                 Channel ch = b.bind(PORT).sync().channel();
 

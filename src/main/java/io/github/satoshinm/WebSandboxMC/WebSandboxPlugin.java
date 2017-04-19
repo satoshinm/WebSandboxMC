@@ -55,9 +55,6 @@ public class WebSandboxPlugin extends JavaPlugin {
         // raised this amount in the web world, so it is clearly distinguished from the client-generated terrain
         int y_offset = 20;
 
-        String ourExternalAddress = "localhost";
-        int ourExternalPort = httpPort;
-
         boolean allowBreakPlaceBlocks = true;
         boolean allowSigns = true;
         boolean allowChatting = true;
@@ -65,8 +62,6 @@ public class WebSandboxPlugin extends JavaPlugin {
         boolean seePlayers = true;
 
         config.addDefault("http.port", httpPort);
-        config.addDefault("http.external_address", ourExternalAddress);
-        config.addDefault("http.external_port", ourExternalPort);
 
         config.addDefault("mc.debug", debug);
         config.addDefault("mc.entity", entityClassName);
@@ -89,8 +84,6 @@ public class WebSandboxPlugin extends JavaPlugin {
 
         
         httpPort = this.getConfig().getInt("http.port");
-        ourExternalAddress = this.getConfig().getString("http.external_address");
-        ourExternalPort = this.getConfig().getInt("http.external_port");
 
         debug =  this.getConfig().getBoolean("mc.debug");
 
@@ -116,7 +109,7 @@ public class WebSandboxPlugin extends JavaPlugin {
 
         saveConfig();
 
-        webSocketServerThread = new WebSocketServerThread(this, httpPort, ourExternalAddress, ourExternalPort, debug);
+        webSocketServerThread = new WebSocketServerThread(this, httpPort, debug);
 
         webSocketServerThread.blockBridge = new BlockBridge(webSocketServerThread, world, x_center, y_center, z_center, radius, y_offset, allowBreakPlaceBlocks, allowSigns);
         webSocketServerThread.playersBridge = new PlayersBridge(webSocketServerThread, allowChatting, seeChat, seePlayers);

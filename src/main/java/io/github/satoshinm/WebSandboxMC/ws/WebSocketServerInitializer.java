@@ -40,17 +40,13 @@ public class WebSocketServerInitializer extends ChannelInitializer<SocketChannel
 
     private final SslContext sslCtx;
     private final WebSocketServerThread webSocketServerThread;
-    private final String ourExternalAddress;
-    private final int ourExternalPort;
     private final File pluginDataFolder;
 
     public WebSocketServerInitializer(SslContext sslCtx, WebSocketServerThread webSocketServerThread,
-                                      String ourExternalAddress, int ourExternalPort, File pluginDataFolder) {
+                                      File pluginDataFolder) {
         this.sslCtx = sslCtx;
         this.webSocketServerThread = webSocketServerThread;
 
-        this.ourExternalAddress = ourExternalAddress;
-        this.ourExternalPort = ourExternalPort;
         this.pluginDataFolder = pluginDataFolder;
     }
 
@@ -64,7 +60,7 @@ public class WebSocketServerInitializer extends ChannelInitializer<SocketChannel
         pipeline.addLast(new HttpObjectAggregator(65536));
         pipeline.addLast(new WebSocketServerCompressionHandler());
         pipeline.addLast(new WebSocketServerProtocolHandler(WEBSOCKET_PATH, "binary", true));
-        pipeline.addLast(new WebSocketIndexPageHandler(ourExternalAddress, ourExternalPort, pluginDataFolder));
+        pipeline.addLast(new WebSocketIndexPageHandler(pluginDataFolder));
         pipeline.addLast(new WebSocketFrameHandler(webSocketServerThread));
     }
 }

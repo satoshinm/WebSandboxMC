@@ -44,13 +44,9 @@ import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
  * Outputs index page content.
  */
 public class WebSocketIndexPageHandler extends SimpleChannelInboundHandler<FullHttpRequest> {
-    private final String ourExternalAddress;
-    private final int ourExternalPort;
     private final File pluginDataFolder;
 
-    public WebSocketIndexPageHandler(String ourExternalAddress, int ourExternalPort, File pluginDataFolder) {
-        this.ourExternalAddress = ourExternalAddress;
-        this.ourExternalPort = ourExternalPort;
+    public WebSocketIndexPageHandler(File pluginDataFolder) {
         this.pluginDataFolder = pluginDataFolder;
     }
 
@@ -132,7 +128,7 @@ public class WebSocketIndexPageHandler extends SimpleChannelInboundHandler<FullH
         if ("/".equals(req.uri()) || "/index.html".equals(req.uri()) || "/craft.html".equals(req.uri())) {
             sendTextResource(null,"/craft.html", "text/html; charset=UTF-8", req, ctx);
         } else if ("/craft.js".equals(req.uri())) {
-            String prepend = "window.DEFAULT_ARGV = ['" + ourExternalAddress + "', '" + ourExternalPort + "'];";
+            String prepend = "window.DEFAULT_ARGV = ['-'];"; // connect back to self
             sendTextResource(prepend,"/craft.js", "application/javascript; charset=UTF-8", req, ctx);
         } else if ("/craft.html.mem".equals(req.uri())) {
             sendBinaryResource("/craft.html.mem", "application/octet-stream", req, ctx);
