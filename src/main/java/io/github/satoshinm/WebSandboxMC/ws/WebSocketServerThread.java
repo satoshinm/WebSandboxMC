@@ -74,8 +74,9 @@ public final class WebSocketServerThread extends Thread {
     public PlayersBridge playersBridge;
     public WebPlayerBridge webPlayerBridge;
     private Plugin plugin;
+    private boolean debug;
 
-    public WebSocketServerThread(Plugin plugin, int port, String ourExternalAddress, int ourExternalPort) {
+    public WebSocketServerThread(Plugin plugin, int port, String ourExternalAddress, int ourExternalPort, boolean debug) {
         this.plugin = plugin;
 
         this.PORT = port;
@@ -89,9 +90,13 @@ public final class WebSocketServerThread extends Thread {
 
         this.ourExternalAddress = ourExternalAddress;
         this.ourExternalPort = ourExternalPort;
+        this.debug = debug;
     }
 
     public void log(Level level, String message) {
+        if (level == Level.FINEST && !debug) {
+            return;
+        }
         plugin.getLogger().log(level, message);
     }
 

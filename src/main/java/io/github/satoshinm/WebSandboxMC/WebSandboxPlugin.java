@@ -36,6 +36,7 @@ public class WebSandboxPlugin extends JavaPlugin {
 
         int httpPort = 4081;
 
+        boolean debug = false;
         String entityClassName = "Sheep";
         boolean setCustomNames = true;
         boolean disableGravity = true;
@@ -66,6 +67,7 @@ public class WebSandboxPlugin extends JavaPlugin {
         config.addDefault("http.external_address", ourExternalAddress);
         config.addDefault("http.external_port", ourExternalPort);
 
+        config.addDefault("mc.debug", debug);
         config.addDefault("mc.entity", entityClassName);
         config.addDefault("mc.entity_custom_names", setCustomNames);
         config.addDefault("mc.entity_disable_gravity", disableGravity);
@@ -88,6 +90,8 @@ public class WebSandboxPlugin extends JavaPlugin {
         ourExternalAddress = this.getConfig().getString("http.external_address");
         ourExternalPort = this.getConfig().getInt("http.external_port");
 
+        debug =  this.getConfig().getBoolean("mc.debug");
+
         entityClassName = this.getConfig().getString("mc.entity");
         setCustomNames = this.getConfig().getBoolean("mc.entity_custom_names");
         disableGravity = this.getConfig().getBoolean("mc.entity_disable_gravity");
@@ -109,7 +113,7 @@ public class WebSandboxPlugin extends JavaPlugin {
 
         saveConfig();
 
-        webSocketServerThread = new WebSocketServerThread(this, httpPort, ourExternalAddress, ourExternalPort);
+        webSocketServerThread = new WebSocketServerThread(this, httpPort, ourExternalAddress, ourExternalPort, debug);
 
         webSocketServerThread.blockBridge = new BlockBridge(webSocketServerThread, world, x_center, y_center, z_center, radius, y_offset, allowBreakPlaceBlocks, allowSigns);
         webSocketServerThread.playersBridge = new PlayersBridge(webSocketServerThread, allowChatting, seeChat, seePlayers);
