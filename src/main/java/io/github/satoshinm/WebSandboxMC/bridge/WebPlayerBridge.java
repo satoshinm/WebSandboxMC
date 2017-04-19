@@ -8,6 +8,7 @@ import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Sheep;
+import org.bukkit.event.entity.EntityDamageEvent;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -24,16 +25,19 @@ public class WebPlayerBridge {
     public Map<ChannelId, String> channelId2name;
     public Map<ChannelId, Entity> channelId2Entity;
     public Map<Integer, String> entityId2Username;
+    public Map<String, Channel> name2channel;
 
     private boolean setCustomNames;
     private boolean disableGravity;
     private boolean disableAI;
     private Class entityClass;
     private boolean constrainToSandbox;
+    private boolean dieDisconnect;
 
     public WebPlayerBridge(WebSocketServerThread webSocketServerThread, boolean setCustomNames,
                            boolean disableGravity, boolean disableAI,
-                           String entityClassName, boolean constrainToSandbox) {
+                           String entityClassName, boolean constrainToSandbox,
+                           boolean dieDisconnect) {
         this.webSocketServerThread = webSocketServerThread;
         this.setCustomNames = setCustomNames;
         this.disableGravity = disableGravity;
@@ -55,11 +59,13 @@ public class WebPlayerBridge {
         }
 
         this.constrainToSandbox = constrainToSandbox;
+        this.dieDisconnect = dieDisconnect;
 
         this.lastPlayerID = 0;
         this.channelId2name = new HashMap<ChannelId, String>();
         this.channelId2Entity = new HashMap<ChannelId, Entity>();
         this.entityId2Username = new HashMap<Integer, String>();
+        this.name2channel = new HashMap<String, Channel>();
     }
 
     public String newPlayer(final Channel channel) {
@@ -67,6 +73,7 @@ public class WebPlayerBridge {
         final String theirName = "webguest" + theirID;
 
         this.channelId2name.put(channel.id(), theirName);
+        this.name2channel.put(theirName, channel);
 
         webSocketServerThread.sendLine(channel, "T,Welcome to WebSandboxMC, "+theirName+"!");
 
@@ -127,8 +134,7 @@ public class WebPlayerBridge {
         webSocketServerThread.broadcastLineExcept(channel.id(), "P,"+entity.getEntityId()+","+webSocketServerThread.playersBridge.encodeLocation(location));
     }
 
-    public void clientDisconnected(ChannelHandlerContext ctx) {
-        Channel channel = ctx.channel();
+    public void clientDisconnected(Channel channel) {
         String name = webSocketServerThread.webPlayerBridge.channelId2name.get(channel.id());
 
         if (name == null) {
@@ -136,19 +142,41 @@ public class WebPlayerBridge {
             return;
         }
 
-        webSocketServerThread.webPlayerBridge.channelId2name.remove(channel.id());
+        channelId2name.remove(channel.id());
 
         webSocketServerThread.log(Level.FINEST, "web client disconnected: " + name);
         // TODO: should this go to Bukkit chat, too/instead? make configurable?
         webSocketServerThread.broadcastLine("T," + name + " has disconnected.");
 
-        Entity entity = webSocketServerThread.webPlayerBridge.channelId2Entity.get(channel.id());
+        Entity entity = channelId2Entity.get(channel.id());
         if (entity != null) {
             webSocketServerThread.broadcastLineExcept(channel.id(), "D,"+entity.getEntityId());
 
-            webSocketServerThread.webPlayerBridge.channelId2Entity.remove(entity);
+            channelId2Entity.remove(entity);
 
             entity.remove();
+        }
+
+        name2channel.remove(name);
+    }
+
+    public void notifyDied(String username, EntityDamageEvent.DamageCause cause) {
+        webSocketServerThread.log(Level.INFO, "web user "+username+"'s entity died from "+cause);
+
+        Channel channel = name2channel.get(username);
+        if (channel != null) {
+            String message = "T,You died from "+(cause == null ? "unknown causes" : cause);
+
+            if (!dieDisconnect) {
+                message += ", but remain connected to the server as a ghost";
+            }
+
+            webSocketServerThread.sendLine(channel, message);
+
+            if (dieDisconnect) {
+                channel.close();
+                clientDisconnected(channel);
+            }
         }
     }
 }

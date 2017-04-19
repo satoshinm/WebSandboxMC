@@ -86,7 +86,7 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
         webSocketServerThread.scheduleSyncTask(new Runnable() {
             @Override
             public void run() {
-                webSocketServerThread.webPlayerBridge.clientDisconnected(ctx);
+                webSocketServerThread.webPlayerBridge.clientDisconnected(ctx.channel());
             }
         });
     }

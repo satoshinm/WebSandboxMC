@@ -53,6 +53,7 @@ Configures what part of your world to expose:
 * `entity_disable_gravity` (true): disable gravity for the spawned entities if true
 * `entity_disable_ai` (true): disable AI for the spawned living entities if true, otherwise they may move on their own
 * `entity_move_sandbox` (true): constrain the web player entity's movement to within the sandbox, otherwise they can go anywhere
+* `entity_die_disconnect` (false): disconnect the web player when their entity dies, otherwise they remain connected invisibly
 * `debug` (false): if true, enables vast amounts of additional logging with FINEST log level
 
 ### nc
