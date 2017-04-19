@@ -33,7 +33,7 @@ public class WebPlayerBridge {
 
     public WebPlayerBridge(WebSocketServerThread webSocketServerThread, boolean setCustomNames,
                            boolean disableGravity, boolean disableAI,
-                           String entityClassName, boolean constranToSandbox) {
+                           String entityClassName, boolean constrainToSandbox) {
         this.webSocketServerThread = webSocketServerThread;
         this.setCustomNames = setCustomNames;
         this.disableGravity = disableGravity;
@@ -54,7 +54,7 @@ public class WebPlayerBridge {
             }
         }
 
-        this.constrainToSandbox = constranToSandbox;
+        this.constrainToSandbox = constrainToSandbox;
 
         this.lastPlayerID = 0;
         this.channelId2name = new HashMap<ChannelId, String>();
