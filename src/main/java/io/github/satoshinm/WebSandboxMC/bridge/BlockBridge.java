@@ -25,10 +25,12 @@ public class BlockBridge {
     private boolean allowSigns;
     private Map<Material, Integer> blocksToWeb;
     private int blocksToWebMissing = 16; // unknown/unsupported becomes cloud, if key missing
+    private boolean warnMissing;
 
     public BlockBridge(WebSocketServerThread webSocketServerThread,
                        String world, int x_center, int y_center, int z_center, int radius, int y_offset,
-                       boolean allowBreakPlaceBlocks, boolean allowSigns, Map<String, Object> blocksToWeb) {
+                       boolean allowBreakPlaceBlocks, boolean allowSigns, Map<String, Object> blocksToWeb,
+                       boolean warnMissing) {
         this.webSocketServerThread = webSocketServerThread;
 
         this.x_center = x_center;
@@ -83,6 +85,8 @@ public class BlockBridge {
                 this.webSocketServerThread.log(Level.FINEST, "blocks_to_web: " + material + " = " + n);
             }
         }
+
+        this.warnMissing = warnMissing;
     }
 
     // Send the client the initial section of the world when they join
@@ -221,6 +225,13 @@ public class BlockBridge {
         // Send to all web clients to let them know it changed using the "B," command
         int type = toWebBlockType(material, data);
 
+        if (type == -1) {
+            if (warnMissing) {
+                webSocketServerThread.log(Level.WARNING, "Block type missing from blocks_to_web: " + material + " at " + location);
+            }
+            type = blocksToWebMissing;
+        }
+
         int x = toWebLocationBlockX(location);
         int y = toWebLocationBlockY(location);
         int z = toWebLocationBlockZ(location);
@@ -293,9 +304,7 @@ public class BlockBridge {
     // TODO: refactor to remove all bukkit dependency in this class (enums strings?), generalize to can support others
     private int toWebBlockType(Material material, byte data) {
         if (!blocksToWeb.containsKey(material)) {
-            webSocketServerThread.log(Level.WARNING, "unknown block type=" + material);
-            // TODO: log location where it was encountered, so server administrator can fix it
-            return blocksToWebMissing;
+            return -1;
         }
 
         int type = blocksToWeb.get(material);

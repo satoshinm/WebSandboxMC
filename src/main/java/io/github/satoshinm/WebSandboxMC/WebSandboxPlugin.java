@@ -58,6 +58,7 @@ public class WebSandboxPlugin extends JavaPlugin {
     private boolean seePlayers = true;
 
     private Map<String, Object> blocksToWeb = new HashMap<String, Object>();
+    private boolean warnMissing = true;
 
     @Override
     public void onDisable() {
@@ -153,6 +154,7 @@ public class WebSandboxPlugin extends JavaPlugin {
         // TODO: support more by default
 
         config.addDefault("nc.blocks_to_web", blocksToWeb);
+        config.addDefault("nc.warn_missing_blocks_to_web", warnMissing);
         
         httpPort = this.getConfig().getInt("http.port");
 
@@ -179,6 +181,7 @@ public class WebSandboxPlugin extends JavaPlugin {
         seeChat = this.getConfig().getBoolean("nc.see_chat");
         seePlayers = this.getConfig().getBoolean("nc.see_players");
         blocksToWeb = this.getConfig().getConfigurationSection("nc.blocks_to_web").getValues(false);
+        warnMissing = this.getConfig().getBoolean("nc.warn_missing_blocks_to_web");
 
         saveConfig();
 
@@ -192,7 +195,7 @@ public class WebSandboxPlugin extends JavaPlugin {
                 webSocketServerThread = new WebSocketServerThread(plugin, httpPort, debug);
 
                 webSocketServerThread.blockBridge = new BlockBridge(webSocketServerThread, world, x_center, y_center,
-                        z_center, radius, y_offset, allowBreakPlaceBlocks, allowSigns, blocksToWeb);
+                        z_center, radius, y_offset, allowBreakPlaceBlocks, allowSigns, blocksToWeb, warnMissing);
                 webSocketServerThread.playersBridge = new PlayersBridge(webSocketServerThread, allowChatting, seeChat, seePlayers);
                 webSocketServerThread.webPlayerBridge = new WebPlayerBridge(webSocketServerThread, setCustomNames,
                         disableGravity, disableAI, entityClassName, entityMoveSandbox, entityDieDisconnect);
