@@ -117,7 +117,7 @@ public class BlockBridge {
 
         // Move player on top of the new blocks
         int x_start = radius;
-        int y_start = world.getHighestBlockYAt(x_center, y_center) + 1 - radius - y_offset;
+        int y_start = world.getHighestBlockYAt(x_center, z_center) - radius - y_offset;
         int z_start = radius;
         int rotation_x = 0;
         int rotation_y = 0;
