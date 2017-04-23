@@ -7,6 +7,7 @@ import io.github.satoshinm.WebSandboxMC.bridge.WebPlayerBridge;
 import io.github.satoshinm.WebSandboxMC.bukkit.BlockListener;
 import io.github.satoshinm.WebSandboxMC.bukkit.EntityListener;
 import io.github.satoshinm.WebSandboxMC.bukkit.PlayersListener;
+import io.github.satoshinm.WebSandboxMC.bukkit.WsCommand;
 import io.github.satoshinm.WebSandboxMC.ws.WebSocketServerThread;
 import org.bukkit.Bukkit;
 import org.bukkit.Server;
@@ -220,8 +221,8 @@ public class WebSandboxPlugin extends JavaPlugin {
                 pm.registerEvents(new PlayersListener(webSocketServerThread.playersBridge), plugin);
                 pm.registerEvents(new EntityListener(webSocketServerThread.webPlayerBridge), plugin);
 
-                // TODO: Register our commands, what do we need?
-                //getCommand("websandbox").setExecutor(new WebsandboxCommand());
+                // Register our commands
+                getCommand("websandbox").setExecutor(new WsCommand(webSocketServerThread));
 
                 // Run the websocket server
                 webSocketServerThread.start();
