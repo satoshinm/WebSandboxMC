@@ -50,9 +50,9 @@ public class WebSandboxPlugin extends JavaPlugin {
 
     // Send blocks around this area in the Bukkit world
     private String world = "";
-    private int x_center = -85;
-    private int y_center = 78;
-    private int z_center = 93;
+    private int x_center = 0;
+    private int y_center = 75;
+    private int z_center = 0;
 
     // of this radius, +/-
     private int radius = 16;

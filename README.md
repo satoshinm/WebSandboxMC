@@ -45,9 +45,9 @@ Configures the HTTP and WebSocket server:
 ### mc
 Configures what part of your world to expose:
 
-* `x_center` (-85): specifies the center of the world from the web client's perspective, X coordinate
-* `y_center` (78): " ", Y coordinate
-* `z_center` (93): " ", Z coordinate
+* `x_center` (0): specifies the center of the world from the web client's perspective, X coordinate
+* `y_center` (75): " ", Y coordinate
+* `z_center` (0): " ", Z coordinate
 * `radius` (16): range out of the center to expose in each direction (cube), setting too high will slow down web client loading
 * `entity` ("Sheep"): name of entity class to spawn on server for web users, set to "" to disable
 * `entity_custom_names` (true): add web player names to the spawned entity's nametag if true
