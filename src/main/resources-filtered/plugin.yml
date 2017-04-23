@@ -1,3 +1,7 @@
 name: WebSandboxMC
 main: io.github.satoshinm.WebSandboxMC.WebSandboxPlugin
 version: ${version}
+commands:
+    websandbox:
+        description: Controls the WebSandbox WebGL HTML5 web interface.
+        usage: "Usage: /websandbox list|tp|kick"
