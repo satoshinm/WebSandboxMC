@@ -40,6 +40,7 @@ The settings are as follows:
 Configures the HTTP and WebSocket server:
 
 * `port` (4081): TCP port for the HTTP server to listen on
+* `unbind` (''): advanced experimetnal option to reuse the server port from Bukkit (ignoring `port`), called on `Bukkit.getServer()` before startup
 
 ### mc
 Configures what part of your world to expose:

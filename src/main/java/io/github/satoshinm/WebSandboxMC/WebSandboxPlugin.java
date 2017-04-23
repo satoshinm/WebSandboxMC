@@ -9,6 +9,7 @@ import io.github.satoshinm.WebSandboxMC.bukkit.EntityListener;
 import io.github.satoshinm.WebSandboxMC.bukkit.PlayersListener;
 import io.github.satoshinm.WebSandboxMC.ws.WebSocketServerThread;
 import org.bukkit.Bukkit;
+import org.bukkit.Server;
 import org.bukkit.configuration.Configuration;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -16,8 +17,12 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 
 /**
  * Bukkit plugin class for WebSandboxMC
@@ -32,6 +37,7 @@ public class WebSandboxPlugin extends JavaPlugin {
     private WebSocketServerThread webSocketServerThread;
 
     private int httpPort = 4081;
+    private String unbind = "";
 
     private boolean debug = false;
     private String entityClassName = "Sheep";
@@ -74,6 +80,7 @@ public class WebSandboxPlugin extends JavaPlugin {
         config.options().copyDefaults(true);
 
         config.addDefault("http.port", httpPort);
+        config.addDefault("http.unbind", unbind);
 
         config.addDefault("mc.debug", debug);
         config.addDefault("mc.entity", entityClassName);
@@ -159,6 +166,7 @@ public class WebSandboxPlugin extends JavaPlugin {
         config.addDefault("nc.warn_missing_blocks_to_web", warnMissing);
         
         httpPort = this.getConfig().getInt("http.port");
+        unbind = this.getConfig().getString("http.unbind");
 
         debug =  this.getConfig().getBoolean("mc.debug");
 
@@ -187,6 +195,8 @@ public class WebSandboxPlugin extends JavaPlugin {
         warnMissing = this.getConfig().getBoolean("nc.warn_missing_blocks_to_web");
 
         saveConfig();
+
+        checkUnbind(unbind);
 
         final Plugin plugin = this;
 
@@ -217,5 +227,52 @@ public class WebSandboxPlugin extends JavaPlugin {
                 webSocketServerThread.start();
             }
         });
+    }
+
+    private void checkUnbind(String unbind) {
+        if (unbind == null || unbind.equals("")) {
+            return;
+        }
+
+        Server server = Bukkit.getServer();
+
+        getLogger().log(Level.INFO, "Squatting on port "+server.getPort()+" for server and web, trying unbind: "+unbind);
+
+        String[] array = unbind.split("[.]");
+        if (array.length != 3) {
+            getLogger().log(Level.WARNING, "Bad 'unbind' option set to: "+unbind+", see source for details.");
+            return; // ignore it, they can read this source below for the format
+        }
+
+        // Reuse same port as Bukkit, repurposing it for our purposes
+        httpPort = server.getPort();
+
+        // Format is "field1Name.method2Name.method3Name", called on Bukkit.getServer() before startup
+        String field1Name = array[0];
+        String method2Name = array[1];
+        String method3Name = array[2];
+
+        // First, "unbind" the previous port
+        try {
+            Field field = server.getClass().getDeclaredField(field1Name);
+            field.setAccessible(true);
+            Object console = field.get(server);
+
+            Method method1 = console.getClass().getMethod(method2Name);
+            Object object2 = method1.invoke(console);
+
+            getLogger().log(Level.INFO, "Unbind server port...");
+            Method method2 = object2.getClass().getMethod(method3Name);
+            method2.invoke(object2);
+
+        } catch (NoSuchFieldException ex) {
+            ex.printStackTrace();
+        } catch (IllegalAccessException ex) {
+            ex.printStackTrace();
+        } catch (NoSuchMethodException ex) {
+            ex.printStackTrace();
+        } catch (InvocationTargetException ex) {
+            ex.printStackTrace();
+        }
     }
 }
