@@ -20,16 +20,7 @@ public class WsCommand implements CommandExecutor {
     }
 
     public boolean onCommand(CommandSender sender, Command command, String label, String[] split) {
-
-        if (split.length == 0) {
-            sender.sendMessage("/websandbox list -- list all web users connected");
-            sender.sendMessage("/websandbox tp <user> -- teleport to given web username");
-            sender.sendMessage("/websandbox kick <user> -- disconnect given web username");
-            // TODO: reload, reconfig commands
-            return true;
-        }
-
-        String subcommand = split[0];
+        String subcommand = split.length == 0 ? "help" : split[0];
 
         if (subcommand.equals("list")) {
             int size = webSocketServerThread.webPlayerBridge.name2channel.size();
@@ -84,9 +75,30 @@ public class WsCommand implements CommandExecutor {
             player.teleport(entity);
 
             webSocketServerThread.sendLine(channel, "T,"+player.getDisplayName()+" teleported to you");
-        }
+        } else if (subcommand.equals("kick")) {
+            if (split.length < 2) {
+                sender.sendMessage("Usage: /websandbox kick <user>");
+                return true;
+            }
+            String name = split[1];
 
-        return true;
+            Channel channel = webSocketServerThread.webPlayerBridge.name2channel.get(name);
+            if (channel == null) {
+                sender.sendMessage("No such web user: " + name);
+                return true;
+            }
+
+            sender.sendMessage("Kicking web client "+name);
+            webSocketServerThread.sendLine(channel,"T,You were kicked by "+sender.getName());
+            webSocketServerThread.webPlayerBridge.clientDisconnected(channel);
+            return true;
+        } else { // help
+            sender.sendMessage("/websandbox list -- list all web users connected");
+            sender.sendMessage("/websandbox tp <user> -- teleport to given web username");
+            sender.sendMessage("/websandbox kick <user> -- disconnect given web username");
+            // TODO: reload, reconfig commands
+        }
+        return false;
     }
 }
 
