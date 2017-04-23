@@ -152,7 +152,8 @@ public class WebPlayerBridge {
         if (entity != null) {
             webSocketServerThread.broadcastLineExcept(channel.id(), "D,"+entity.getEntityId());
 
-            channelId2Entity.remove(entity);
+            channelId2Entity.remove(channel.id());
+            entityId2Username.remove(entity.getEntityId());
 
             entity.remove();
         }
