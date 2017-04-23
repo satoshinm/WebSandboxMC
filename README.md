@@ -79,7 +79,7 @@ If not given, WebSandboxMC's embedded version of NetCraft will be served up inst
 ## Commands
 
 * `/websandbox`: show help
-* `/websandbox list`: list all web users connected
+* `/websandbox list [verbose]`: list all web users connected
 * `/websandbox tp <user>`: teleport to given web username
 * `/websandbox kick <user>`: disconnect given web username
 

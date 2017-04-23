@@ -26,6 +26,8 @@ public class WsCommand implements CommandExecutor {
             int size = webSocketServerThread.webPlayerBridge.name2channel.size();
             sender.sendMessage(size + " web player(s) connected:");
 
+            boolean verbose = split.length >= 2 && split[1].equals("verbose");
+
             int i = 1;
             for (String name: webSocketServerThread.webPlayerBridge.name2channel.keySet()) { // TODO: sort?
                 Channel channel = webSocketServerThread.webPlayerBridge.name2channel.get(name);
@@ -37,13 +39,16 @@ public class WsCommand implements CommandExecutor {
                 String entityInfo = "";
 
                 if (entity != null) {
-                    entityInfo += " entity "+entity.getEntityId()+" "+entity.getClass().getName();
-                    entityInfo += " at " + entity.getLocation();
+                    entityInfo += " entity "+entity.getEntityId();
+                    if (verbose) {
+                        entityInfo += " "+entity.getClass().getName() + " at " + entity.getLocation();
+                    }
                 }
 
                 sender.sendMessage(i + ". " + name + ", " + ip + entityInfo);
                 ++i;
             }
+            return true;
         } else if (subcommand.equals("tp")) {
             if (split.length < 2) {
                 sender.sendMessage("Usage: /websandbox tp <user>");
@@ -93,7 +98,7 @@ public class WsCommand implements CommandExecutor {
             webSocketServerThread.webPlayerBridge.clientDisconnected(channel);
             return true;
         } else { // help
-            sender.sendMessage("/websandbox list -- list all web users connected");
+            sender.sendMessage("/websandbox list [verbose] -- list all web users connected");
             sender.sendMessage("/websandbox tp <user> -- teleport to given web username");
             sender.sendMessage("/websandbox kick <user> -- disconnect given web username");
             // TODO: reload, reconfig commands
