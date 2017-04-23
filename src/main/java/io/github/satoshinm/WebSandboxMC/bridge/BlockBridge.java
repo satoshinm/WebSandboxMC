@@ -92,6 +92,8 @@ public class BlockBridge {
     // Send the client the initial section of the world when they join
     @SuppressWarnings("deprecation") // Block#getData()
     public void sendWorld(final Channel channel) {
+        boolean thereIsAWorld = false;
+        // TODO: bulk block update compressed, for efficiency (this is very efficient, but surprisingly works!)
         for (int i = -radius; i < radius; ++i) {
             for (int j = -radius; j < radius; ++j) {
                 for (int k = -radius; k < radius; ++k) {
@@ -99,12 +101,19 @@ public class BlockBridge {
                     //int type = toWebBlockType(block.getType(), block.getData());
 
                     //webSocketServerThread.sendLine(channel, "B,0,0," + (i + radius) + "," + (j + radius + y_offset) + "," + (k + radius) + "," + type);
-                    setBlockUpdate(block.getLocation(), block.getType(), block.getData());
+                    thereIsAWorld |= setBlockUpdate(block.getLocation(), block.getType(), block.getData());
                 }
             }
         }
         webSocketServerThread.sendLine(channel,"K,0,0,1");
         webSocketServerThread.sendLine(channel, "R,0,0");
+
+        if (!thereIsAWorld) {
+            webSocketServerThread.sendLine(channel, "T,No blocks sent (server misconfiguration)");
+            webSocketServerThread.log(Level.WARNING, "No valid blocks were found centered around ("+
+                x_center + "," + y_center + "," + z_center + ") radius " + radius +
+                    ", try changing these values or blocks_to_web in the configuration. All blocks were air or missing!");
+        }
 
         // Move player on top of the new blocks
         int x_start = radius;
@@ -221,15 +230,21 @@ public class BlockBridge {
     }
 
     @SuppressWarnings("deprecation") // for Block#getData
-    private void setBlockUpdate(Location location, Material material, byte data) {
+    private boolean setBlockUpdate(Location location, Material material, byte data) {
         // Send to all web clients to let them know it changed using the "B," command
         int type = toWebBlockType(material, data);
+        boolean substantial;
 
         if (type == -1) {
             if (warnMissing) {
                 webSocketServerThread.log(Level.WARNING, "Block type missing from blocks_to_web: " + material + " at " + location);
             }
             type = blocksToWebMissing;
+            substantial = false;
+        } else if (type == 0) {
+            substantial = false;
+        } else {
+            substantial = true;
         }
 
         int x = toWebLocationBlockX(location);
@@ -254,6 +269,8 @@ public class BlockBridge {
         }
 
         webSocketServerThread.log(Level.FINEST, "notified block update: ("+x+","+y+","+z+") to "+type);
+
+        return substantial; // was something "real" set? (not air, not missing)
     }
 
     private int toWebLighting(Material material, byte data) {
