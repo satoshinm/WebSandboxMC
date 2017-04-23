@@ -163,7 +163,14 @@ public class WebSandboxPlugin extends JavaPlugin {
         blocksToWeb.put("TORCH", 21); // sunflower, looks kinda like a torch
         blocksToWeb.put("REDSTONE_TORCH_OFF", 19);
         blocksToWeb.put("REDSTONE_TORCH_ON", 19); // red flower, vaguely a torch
-        // TODO: support more by default
+
+        // Liquids - currently using color blocks as placeholders since they appear too often
+        blocksToWeb.put("STATIONARY_WATER", 56); // aqua color block
+        blocksToWeb.put("WATER", 56);
+        blocksToWeb.put("STATIONARY_LAVA", 54); // light orange
+        blocksToWeb.put("LAVA", 54); // light orange
+
+        // TODO: support more blocks by default
 
         config.addDefault("nc.blocks_to_web", blocksToWeb);
         config.addDefault("nc.warn_missing_blocks_to_web", warnMissing);

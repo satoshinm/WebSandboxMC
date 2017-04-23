@@ -109,7 +109,7 @@ public class BlockBridge {
         webSocketServerThread.sendLine(channel, "R,0,0");
 
         if (!thereIsAWorld) {
-            webSocketServerThread.sendLine(channel, "T,No blocks sent (server misconfiguration)");
+            webSocketServerThread.sendLine(channel, "T,No blocks sent (server misconfiguration, check x/y/z_center)");
             webSocketServerThread.log(Level.WARNING, "No valid blocks were found centered around ("+
                 x_center + "," + y_center + "," + z_center + ") radius " + radius +
                     ", try changing these values or blocks_to_web in the configuration. All blocks were air or missing!");
