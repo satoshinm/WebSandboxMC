@@ -51,7 +51,14 @@ public class WsCommand implements CommandExecutor {
             return true;
         } else if (subcommand.equals("tp")) {
             if (split.length < 2) {
-                sender.sendMessage("Usage: /websandbox tp <user>");
+                Location spawnLocation = webSocketServerThread.blockBridge.spawnLocation;
+                if (sender instanceof Player) {
+                    Player player = (Player) sender;
+                    player.sendMessage("Taking you to web spawn location, " + spawnLocation);
+                    player.teleport(spawnLocation);
+                } else {
+                    sender.sendMessage("Web spawn location is "+spawnLocation);
+                }
                 return true;
             }
             String name = split[1];
@@ -99,7 +106,7 @@ public class WsCommand implements CommandExecutor {
             return true;
         } else { // help
             sender.sendMessage("/websandbox list [verbose] -- list all web users connected");
-            sender.sendMessage("/websandbox tp <user> -- teleport to given web username");
+            sender.sendMessage("/websandbox tp [<user>] -- teleport to given web username, or web spawn location");
             sender.sendMessage("/websandbox kick <user> -- disconnect given web username");
             // TODO: reload, reconfig commands
         }
