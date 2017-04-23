@@ -71,6 +71,8 @@ public class WebSandboxPlugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        webSocketServerThread.webPlayerBridge.deleteAllEntities();
+
         webSocketServerThread.interrupt();
     }
 

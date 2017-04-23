@@ -161,6 +161,12 @@ public class WebPlayerBridge {
         name2channel.remove(name);
     }
 
+    public void deleteAllEntities() {
+        for (Entity entity: channelId2Entity.values()) {
+            entity.remove();
+        }
+    }
+
     public void notifyDied(String username, EntityDamageEvent.DamageCause cause) {
         webSocketServerThread.log(Level.INFO, "web user "+username+"'s entity died from "+cause);
 
