@@ -76,6 +76,13 @@ Newer versions of NetCraft can be installed without upgrading the plugin, or the
 by placing the saving files in the plugin's data directory: craft.html (main page), craft.js, craft.html.mem.
 If not given, WebSandboxMC's embedded version of NetCraft will be served up instead.
 
+## Commands
+
+* `/websandbox`: show help
+* `/websandbox list`: list all web users connected
+* `/websandbox tp <user>`: teleport to given web username
+* `/websandbox kick <user>`: disconnect given web username
+
 ## Compatibility
 
 WebSandboxMC uses the [Bukkit API from Spigot](https://hub.spigotmc.org/javadocs/bukkit/) with the aim of maximizing
