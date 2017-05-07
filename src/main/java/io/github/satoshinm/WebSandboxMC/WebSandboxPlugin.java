@@ -155,7 +155,7 @@ public class WebSandboxPlugin extends JavaPlugin {
         blocksToWeb.put("SIGN_POST", 8); // plank TODO",  sign post model
 
         // Light sources (nonzero toWebLighting()) TODO",  different textures? + allow placement, distinct blocks
-        blocksToWeb.put("GLOWSTONE", 32); // #define COLOR_00 // 32 yellow
+        blocksToWeb.put("GLOWSTONE", 64); // #define GLOWING_STONE
         blocksToWeb.put("SEA_LANTERN", 58); // #define COLOR_26 // 58 light blue
         blocksToWeb.put("JACK_O_LANTERN", 53); // #define COLOR_21 // 53 orange
         blocksToWeb.put("REDSTONE_LAMP_ON", 34);

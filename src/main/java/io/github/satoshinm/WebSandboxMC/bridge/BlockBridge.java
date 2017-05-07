@@ -412,6 +412,7 @@ public class BlockBridge {
             case 21: material = Material.DOUBLE_PLANT; break; // sunflower
             //case 22: material = Material.white flower
             //case 23: material = Material.blue flower
+            case 64: material = Material.GLOWSTONE; break;
             default:
                 webSocketServerThread.log(Level.WARNING, "untranslated web block id "+type);
                 material = Material.DIAMOND_ORE; // placeholder TODO fix
