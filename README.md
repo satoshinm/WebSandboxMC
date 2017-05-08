@@ -40,7 +40,8 @@ The settings are as follows:
 Configures the HTTP and WebSocket server:
 
 * `port` (4081): TCP port for the HTTP server to listen on
-* `unbind` (''): advanced experimetnal option to reuse the server port from Bukkit (ignoring `port`), called on `Bukkit.getServer()` before startup
+* `takeover` (false): advanced experimental option to reuse the server port from Bukkit (ignoring `port`) before startup, allowing this plugin to be used on hosts where only one port is allowed
+* `unbind_method` ('console.getServerConnection.b'): if `takeover` enabled, this method is called on `Bukkit.getServer()`, may need to change depending on your Bukkit server implementation
 
 ### mc
 Configures what part of your world to expose:

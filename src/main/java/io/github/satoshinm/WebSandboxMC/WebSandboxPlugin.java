@@ -38,7 +38,8 @@ public class WebSandboxPlugin extends JavaPlugin {
     private WebSocketServerThread webSocketServerThread;
 
     private int httpPort = 4081;
-    private String unbind = "";
+    private boolean takeover = false;
+    private String unbindMethod = "console.getServerConnection.b";
 
     private boolean debug = false;
     private String entityClassName = "Sheep";
@@ -83,7 +84,8 @@ public class WebSandboxPlugin extends JavaPlugin {
         config.options().copyDefaults(true);
 
         config.addDefault("http.port", httpPort);
-        config.addDefault("http.unbind", unbind);
+        config.addDefault("http.takeover", takeover);
+        config.addDefault("http.unbind_method", unbindMethod);
 
         config.addDefault("mc.debug", debug);
         config.addDefault("mc.entity", entityClassName);
@@ -176,7 +178,8 @@ public class WebSandboxPlugin extends JavaPlugin {
         config.addDefault("nc.warn_missing_blocks_to_web", warnMissing);
         
         httpPort = this.getConfig().getInt("http.port");
-        unbind = this.getConfig().getString("http.unbind");
+        takeover = this.getConfig().getBoolean("http.takeover");
+        unbindMethod = this.getConfig().getString("http.unbind_method");
 
         debug =  this.getConfig().getBoolean("mc.debug");
 
@@ -206,7 +209,7 @@ public class WebSandboxPlugin extends JavaPlugin {
 
         saveConfig();
 
-        checkUnbind(unbind);
+        checkUnbind(takeover, unbindMethod);
 
         final Plugin plugin = this;
 
@@ -239,8 +242,13 @@ public class WebSandboxPlugin extends JavaPlugin {
         });
     }
 
-    private void checkUnbind(String unbind) {
+    private void checkUnbind(boolean takeover, String unbind) {
+        if (!takeover) {
+            return;
+        }
+
         if (unbind == null || unbind.equals("")) {
+            getLogger().log(Level.WARNING, "Port takeover is enabled but unbind_method is not set; ignoring");
             return;
         }
 
