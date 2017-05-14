@@ -209,7 +209,11 @@ public class WebSandboxPlugin extends JavaPlugin {
         seeChat = this.getConfig().getBoolean("nc.see_chat");
         seePlayers = this.getConfig().getBoolean("nc.see_players");
         ConfigurationSection section = this.getConfig().getConfigurationSection("nc.blocks_to_web");
-        blocksToWeb = section != null ? section.getValues(false) : blocksToWeb;
+        if (section != null) {
+            for (Map.Entry<String, Object> entry : section.getValues(false).entrySet()) {
+                blocksToWeb.put(entry.getKey(), entry.getValue());
+            }
+        }
         warnMissing = this.getConfig().getBoolean("nc.warn_missing_blocks_to_web");
 
         saveConfig();
