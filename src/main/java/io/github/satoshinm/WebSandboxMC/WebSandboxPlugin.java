@@ -173,6 +173,11 @@ public class WebSandboxPlugin extends JavaPlugin {
         blocksToWeb.put("LAVA", 54); // light orange
 
         // TODO: support more blocks by default
+        blocksToWeb.put("BEDROCK", 65);
+        blocksToWeb.put("GRAVEL", 66);
+        blocksToWeb.put("IRON_BLOCK", 67);
+        blocksToWeb.put("GOLD_BLOCK", 68);
+        blocksToWeb.put("DIAMOND_BLOCK", 69);
 
         config.addDefault("nc.blocks_to_web", blocksToWeb);
         config.addDefault("nc.warn_missing_blocks_to_web", warnMissing);
