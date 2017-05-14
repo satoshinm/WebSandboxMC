@@ -180,6 +180,7 @@ public class WebSandboxPlugin extends JavaPlugin {
         blocksToWeb.put("IRON_BLOCK", 67);
         blocksToWeb.put("GOLD_BLOCK", 68);
         blocksToWeb.put("DIAMOND_BLOCK", 69);
+        blocksToWeb.put("SANDSTONE", 75);
 
         config.addDefault("nc.blocks_to_web", blocksToWeb);
         config.addDefault("nc.warn_missing_blocks_to_web", warnMissing);
