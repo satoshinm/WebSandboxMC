@@ -114,16 +114,18 @@ public class WebSandboxPlugin extends JavaPlugin {
         blocksToWeb.put("BRICK", 4);
         blocksToWeb.put("LOG", 5);
         blocksToWeb.put("LOG_2", 5); // wood
-        // TODO: ores, for now, showing as stone
-        blocksToWeb.put("COAL_ORE", 6);
-        blocksToWeb.put("IRON_ORE", 6);
+
+        blocksToWeb.put("GOLD_ORE", 70);
+        blocksToWeb.put("IRON_ORE", 71);
+        blocksToWeb.put("COAL_ORE", 72);
+        blocksToWeb.put("LAPIS_ORE", 73);
+        blocksToWeb.put("LAPIS_BLOCK", 74);
+        // TODO: more ores, for now, showing as stone
         blocksToWeb.put("DIAMOND_ORE", 6);
         blocksToWeb.put("EMERALD_ORE", 6);
         blocksToWeb.put("REDSTONE_ORE", 6);
         blocksToWeb.put("GLOWING_REDSTONE_ORE", 6);
-        blocksToWeb.put("LAPIS_ORE", 6);
         blocksToWeb.put("QUARTZ_ORE", 6);
-        blocksToWeb.put("GOLD_ORE", 6);
         blocksToWeb.put("STONE", 6); // cement, close enough
 
         blocksToWeb.put("GRAVEL", 7);
