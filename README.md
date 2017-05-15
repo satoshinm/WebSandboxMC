@@ -63,6 +63,7 @@ Configures the NetCraft web client:
 
 * `y_offset` (20): height to shift the web client blocks upwards, to distinguish from the pre-generated landscape
 * `allow_break_place_blocks` (true): allow web users to break/place blocks, set to false for view-only (see also `allow_signs`)
+* `unbreakable_blocks` (`BEDROCK`): list of block types to deny the client from breaking or placing
 * `allow_signs` (true): allow web users to place signs (by typing backquote followed by the text)
 * `allow_chatting` (true): allow web users to send chat messages to the server
 * `see_chat` (true): allow web users to receive chat messages from the server

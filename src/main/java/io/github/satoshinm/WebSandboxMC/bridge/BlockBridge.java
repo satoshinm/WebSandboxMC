@@ -8,7 +8,9 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 
@@ -26,11 +28,12 @@ public class BlockBridge {
     private Map<Material, Integer> blocksToWeb;
     private int blocksToWebMissing = 16; // unknown/unsupported becomes cloud, if key missing
     private boolean warnMissing;
+    private List<Material> unbreakableBlocks;
 
     public BlockBridge(WebSocketServerThread webSocketServerThread,
                        String world, int x_center, int y_center, int z_center, int radius, int y_offset,
                        boolean allowBreakPlaceBlocks, boolean allowSigns, Map<String, Object> blocksToWeb,
-                       boolean warnMissing) {
+                       boolean warnMissing, List<String> unbreakableBlocks) {
         this.webSocketServerThread = webSocketServerThread;
 
         this.x_center = x_center;
@@ -87,6 +90,16 @@ public class BlockBridge {
         }
 
         this.warnMissing = warnMissing;
+
+        this.unbreakableBlocks = new ArrayList<Material>();
+        for (String materialString : unbreakableBlocks) {
+            Material material = Material.getMaterial(materialString);
+            if (material == null) {
+                webSocketServerThread.log(Level.WARNING, "unbreakable_blocks invalid material ignored: " + materialString);
+                continue;
+            }
+            this.unbreakableBlocks.add(material);
+        }
     }
 
     // Send the client the initial section of the world when they join
@@ -193,6 +206,23 @@ public class BlockBridge {
             webSocketServerThread.sendLine(ctx.channel(), "B,0,0,"+ox+","+oy+","+oz+",0");
             webSocketServerThread.sendLine(ctx.channel(), "R,0,0");
             */
+            return;
+        }
+
+        Block previousBlock = location.getBlock();
+        Material previousMaterial = previousBlock.getType();
+        if (unbreakableBlocks.contains(previousMaterial) || unbreakableBlocks.contains(material)) {
+            webSocketServerThread.log(Level.FINEST, "client tried to change or place unbreakable block at " +
+                    location + " of type previousMaterial="+previousMaterial+" to material="+material);
+            if (unbreakableBlocks.contains(previousMaterial)) {
+                webSocketServerThread.sendLine(ctx.channel(), "T,You cannot break blocks of type " + previousMaterial);
+            } else if (unbreakableBlocks.contains(material)) {
+                webSocketServerThread.sendLine(ctx.channel(), "T,You cannot place blocks of type " + material);
+            }
+            // Revert on client
+            int previousType = toWebBlockType(previousMaterial, (byte) 0);
+            webSocketServerThread.sendLine(ctx.channel(), "B,0,0,"+x+","+y+","+z+","+previousType);
+            webSocketServerThread.sendLine(ctx.channel(), "R,0,0");
             return;
         }
 

@@ -21,7 +21,9 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 
@@ -62,6 +64,7 @@ public class WebSandboxPlugin extends JavaPlugin {
     private int y_offset = 20;
 
     private boolean allowBreakPlaceBlocks = true;
+    private List<String> unbreakableBlocks = new ArrayList<String>();
     private boolean allowSigns = true;
     private boolean allowChatting = true;
     private boolean seeChat = true;
@@ -102,6 +105,8 @@ public class WebSandboxPlugin extends JavaPlugin {
 
         config.addDefault("nc.y_offset", y_offset);
         config.addDefault("nc.allow_break_place_blocks", allowBreakPlaceBlocks);
+        unbreakableBlocks.add("BEDROCK");
+        config.addDefault("nc.unbreakable_blocks", unbreakableBlocks);
         config.addDefault("nc.allow_signs", allowSigns);
         config.addDefault("nc.allow_chatting", allowChatting);
         config.addDefault("nc.see_chat", seeChat);
@@ -207,6 +212,7 @@ public class WebSandboxPlugin extends JavaPlugin {
         y_offset = this.getConfig().getInt("nc.y_offset");
 
         allowBreakPlaceBlocks = this.getConfig().getBoolean("nc.allow_break_place_blocks");
+        unbreakableBlocks = this.getConfig().getStringList("nc.unbreakable_blocks");
         allowSigns = this.getConfig().getBoolean("nc.allow_signs");
         allowChatting = this.getConfig().getBoolean("nc.allow_chatting");
         seeChat = this.getConfig().getBoolean("nc.see_chat");
@@ -233,7 +239,8 @@ public class WebSandboxPlugin extends JavaPlugin {
                 webSocketServerThread = new WebSocketServerThread(plugin, httpPort, debug);
 
                 webSocketServerThread.blockBridge = new BlockBridge(webSocketServerThread, world, x_center, y_center,
-                        z_center, radius, y_offset, allowBreakPlaceBlocks, allowSigns, blocksToWeb, warnMissing);
+                        z_center, radius, y_offset, allowBreakPlaceBlocks, allowSigns, blocksToWeb, warnMissing,
+                        unbreakableBlocks);
                 webSocketServerThread.playersBridge = new PlayersBridge(webSocketServerThread, allowChatting, seeChat, seePlayers);
                 webSocketServerThread.webPlayerBridge = new WebPlayerBridge(webSocketServerThread, setCustomNames,
                         disableGravity, disableAI, entityClassName, entityMoveSandbox, entityDieDisconnect);
