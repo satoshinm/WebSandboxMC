@@ -356,56 +356,56 @@ public class BlockBridge {
 
         int type = blocksToWeb.get(material);
 
-        if (type == 61) { // special case for wool / color block, not yet configurable
+        if (type == 32) { // special case for wool / color block, not yet configurable
             switch (data) {
                 case 0: // white
-                    type = 61; // #define COLOR_29 // 61 white
+                    type = 32;
                     break;
                 case 1: // orange
-                    type = 53;
+                    type = 33;
                     break;
                 case 2: // magenta
-                    type = 43; // #define COLOR_11 // 43 crimson
+                    type = 34;
                     break;
                 case 3: // light blue
-                    type = 58; // #define COLOR_26 // 58 light blue
+                    type = 35;
                     break;
                 case 4: // yellow
-                    type = 32; // #define COLOR_00 // 32 yellow
+                    type = 36;
                     break;
                 case 5: // lime
-                    type = 46; // #define COLOR_14 // 46 puke green
+                    type = 37;
                     break;
                 case 6: // pink
-                    type = 45; // #define COLOR_13 // 45 pink
+                    type = 38;
                     break;
                 case 7: // gray
-                    type = 41; // #define COLOR_09 // 41 darker gray
+                    type = 39;
                     break;
                 case 8: // light gray
-                    type = 50; // #define COLOR_18 // 50 medium gray
+                    type = 40;
                     break;
                 case 9: // cyan
-                    type = 59; // #define COLOR_27 // 59 foam green
+                    type = 41;
                     break;
                 case 10: // purple
-                    type = 39; // #define COLOR_07 // 39 purple
+                    type = 42;
                     break;
                 case 11: // blue
-                    type = 57; // #define COLOR_25 // 57 blue
+                    type = 43;
                     break;
                 case 12: // brown
-                    type = 47; // #define COLOR_15 // 47 poop brown
+                    type = 44;
                     break;
                 case 13: // green
-                    type = 34; // #define COLOR_02 // 34 green
+                    type = 45;
                     break;
                 case 14: // red
-                    type = 44; // #define COLOR_12 // 44 salmon
+                    type = 46;
                     break;
                 default:
                 case 15: // black
-                    type = 48; // #define COLOR_16 // 48 black
+                    type = 47;
                     break;
             }
         }

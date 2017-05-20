@@ -125,11 +125,11 @@ public class WebSandboxPlugin extends JavaPlugin {
         blocksToWeb.put("COAL_ORE", 72);
         blocksToWeb.put("LAPIS_ORE", 73);
         blocksToWeb.put("LAPIS_BLOCK", 74);
+        blocksToWeb.put("DIAMOND_ORE", 48);
+        blocksToWeb.put("REDSTONE_ORE", 49);
+        blocksToWeb.put("REDSTONE_ORE", 49);
         // TODO: more ores, for now, showing as stone
-        blocksToWeb.put("DIAMOND_ORE", 6);
         blocksToWeb.put("EMERALD_ORE", 6);
-        blocksToWeb.put("REDSTONE_ORE", 6);
-        blocksToWeb.put("GLOWING_REDSTONE_ORE", 6);
         blocksToWeb.put("QUARTZ_ORE", 6);
         blocksToWeb.put("STONE", 6); // cement, close enough
 
@@ -158,26 +158,26 @@ public class WebSandboxPlugin extends JavaPlugin {
         // TODO",  white flower (22));
         // TODO",  blue flower (23));
 
-        blocksToWeb.put("WOOL", 61); // note: special case
+        blocksToWeb.put("WOOL", 32); // note: special case
 
         blocksToWeb.put("WALL_SIGN", 0); // air, since text is written on block behind it
         blocksToWeb.put("SIGN_POST", 8); // plank TODO",  sign post model
 
         // Light sources (nonzero toWebLighting()) TODO",  different textures? + allow placement, distinct blocks
         blocksToWeb.put("GLOWSTONE", 64); // #define GLOWING_STONE
-        blocksToWeb.put("SEA_LANTERN", 58); // #define COLOR_26 // 58 light blue
-        blocksToWeb.put("JACK_O_LANTERN", 53); // #define COLOR_21 // 53 orange
-        blocksToWeb.put("REDSTONE_LAMP_ON", 34);
-        blocksToWeb.put("REDSTONE_LAMP_OFF", 34); // // #define COLOR_12 // 44 salmon
+        blocksToWeb.put("SEA_LANTERN", 35); // light blue wool
+        blocksToWeb.put("JACK_O_LANTERN", 33); // orange wool
+        blocksToWeb.put("REDSTONE_LAMP_ON", 46); // red wool
+        blocksToWeb.put("REDSTONE_LAMP_OFF", 46); // red wool
         blocksToWeb.put("TORCH", 21); // sunflower, looks kinda like a torch
         blocksToWeb.put("REDSTONE_TORCH_OFF", 19);
         blocksToWeb.put("REDSTONE_TORCH_ON", 19); // red flower, vaguely a torch
 
         // Liquids - currently using color blocks as placeholders since they appear too often
-        blocksToWeb.put("STATIONARY_WATER", 56); // aqua color block
-        blocksToWeb.put("WATER", 56);
-        blocksToWeb.put("STATIONARY_LAVA", 54); // light orange
-        blocksToWeb.put("LAVA", 54); // light orange
+        blocksToWeb.put("STATIONARY_WATER", 35); // light blue wool
+        blocksToWeb.put("WATER", 35); // light blue wool
+        blocksToWeb.put("STATIONARY_LAVA", 35); // orange wool
+        blocksToWeb.put("LAVA", 35); // orange wool
 
         // TODO: support more blocks by default
         blocksToWeb.put("BEDROCK", 65);
@@ -186,6 +186,20 @@ public class WebSandboxPlugin extends JavaPlugin {
         blocksToWeb.put("GOLD_BLOCK", 68);
         blocksToWeb.put("DIAMOND_BLOCK", 69);
         blocksToWeb.put("SANDSTONE", 75);
+        blocksToWeb.put("BOOKSHELF", 50);
+        blocksToWeb.put("MOSSY_COBBLESTONE", 51);
+        blocksToWeb.put("OBSIDIAN", 52);
+        blocksToWeb.put("WORKBENCH", 53);
+        blocksToWeb.put("FURNACE", 54);
+        blocksToWeb.put("BURNING_FURNACE", 55);
+        blocksToWeb.put("MOB_SPAWNER", 56);
+        blocksToWeb.put("SNOW_BLOCK", 57);
+        blocksToWeb.put("ICE", 58);
+        blocksToWeb.put("CLAY", 59);
+        blocksToWeb.put("JUKEBOX", 60);
+        blocksToWeb.put("CACTUS", 61);
+        blocksToWeb.put("MYCEL", 62);
+        blocksToWeb.put("NETHERRACK", 63);
 
         config.addDefault("nc.blocks_to_web", blocksToWeb);
         config.addDefault("nc.warn_missing_blocks_to_web", warnMissing);
@@ -217,12 +231,14 @@ public class WebSandboxPlugin extends JavaPlugin {
         allowChatting = this.getConfig().getBoolean("nc.allow_chatting");
         seeChat = this.getConfig().getBoolean("nc.see_chat");
         seePlayers = this.getConfig().getBoolean("nc.see_players");
+        /* ignore
         ConfigurationSection section = this.getConfig().getConfigurationSection("nc.blocks_to_web");
         if (section != null) {
             for (Map.Entry<String, Object> entry : section.getValues(false).entrySet()) {
                 blocksToWeb.put(entry.getKey(), entry.getValue());
             }
         }
+        */
         warnMissing = this.getConfig().getBoolean("nc.warn_missing_blocks_to_web");
 
         saveConfig();
