@@ -32,7 +32,7 @@ public class BlockBridge {
 
     public BlockBridge(WebSocketServerThread webSocketServerThread,
                        String world, int x_center, int y_center, int z_center, int radius, int y_offset,
-                       boolean allowBreakPlaceBlocks, boolean allowSigns, Map<String, Object> blocksToWeb,
+                       boolean allowBreakPlaceBlocks, boolean allowSigns, Map<String, Object> blocksToWebOverride,
                        boolean warnMissing, List<String> unbreakableBlocks) {
         this.webSocketServerThread = webSocketServerThread;
 
@@ -60,8 +60,120 @@ public class BlockBridge {
         this.allowSigns = allowSigns;
 
         this.blocksToWeb = new HashMap<Material, Integer>();
-        for (String materialString : blocksToWeb.keySet()) {
-            Object object = blocksToWeb.get(materialString);
+        Map<String, Integer> blocksToWebDefault = new HashMap<String, Integer>();
+
+        blocksToWebDefault.put("missing", 16); // unknown/unsupported becomes cloud
+        blocksToWebDefault.put("AIR", 0);
+        blocksToWebDefault.put("GRASS", 1);
+        blocksToWebDefault.put("SAND", 2);
+        blocksToWebDefault.put("SMOOTH_BRICK", 3);
+        blocksToWebDefault.put("BRICK", 4);
+        blocksToWebDefault.put("LOG", 5);
+        blocksToWebDefault.put("LOG_2", 5); // wood
+
+        blocksToWebDefault.put("GOLD_ORE", 70);
+        blocksToWebDefault.put("IRON_ORE", 71);
+        blocksToWebDefault.put("COAL_ORE", 72);
+        blocksToWebDefault.put("LAPIS_ORE", 73);
+        blocksToWebDefault.put("LAPIS_BLOCK", 74);
+        blocksToWebDefault.put("DIAMOND_ORE", 48);
+        blocksToWebDefault.put("REDSTONE_ORE", 49);
+        blocksToWebDefault.put("REDSTONE_ORE", 49);
+        // TODO: more ores, for now, showing as stone
+        blocksToWebDefault.put("EMERALD_ORE", 6);
+        blocksToWebDefault.put("QUARTZ_ORE", 6);
+        blocksToWebDefault.put("STONE", 6); // cement, close enough
+
+        blocksToWebDefault.put("GRAVEL", 7);
+        blocksToWebDefault.put("DIRT", 7);
+
+        blocksToWebDefault.put("WOOD", 8); // plank
+
+        blocksToWebDefault.put("SNOW", 9);
+        blocksToWebDefault.put("SNOW_BLOCK", 9);
+
+        blocksToWebDefault.put("GLASS", 10);
+        blocksToWebDefault.put("COBBLESTONE", 11);
+        // TODO",  light stone (12));
+        // TODO",  dark stone (13));
+        blocksToWebDefault.put("CHEST", 14);
+        blocksToWebDefault.put("LEAVES", 15);
+        blocksToWebDefault.put("LEAVES_2", 15);
+        // TODO",  cloud (16));
+        blocksToWebDefault.put("DOUBLE_PLANT", 17);  // TODO: other double plants, but a lot look like longer long grass
+        blocksToWebDefault.put("LONG_GRASS", 17); // tall grass
+        blocksToWebDefault.put("YELLOW_FLOWER", 18);
+        blocksToWebDefault.put("RED_ROSE", 19);
+        blocksToWebDefault.put("CHORUS_FLOWER", 20);
+        // TODO",  sunflower (21));
+        // TODO",  white flower (22));
+        // TODO",  blue flower (23));
+
+        blocksToWebDefault.put("WOOL", 32); // note: special case
+
+        blocksToWebDefault.put("WALL_SIGN", 0); // air, since text is written on block behind it
+        blocksToWebDefault.put("SIGN_POST", 8); // plank TODO",  sign post model
+
+        // Light sources (nonzero toWebLighting()) TODO",  different textures? + allow placement, distinct blocks
+        blocksToWebDefault.put("GLOWSTONE", 64); // #define GLOWING_STONE
+        blocksToWebDefault.put("SEA_LANTERN", 35); // light blue wool
+        blocksToWebDefault.put("JACK_O_LANTERN", 33); // orange wool
+        blocksToWebDefault.put("REDSTONE_LAMP_ON", 46); // red wool
+        blocksToWebDefault.put("REDSTONE_LAMP_OFF", 46); // red wool
+        blocksToWebDefault.put("TORCH", 21); // sunflower, looks kinda like a torch
+        blocksToWebDefault.put("REDSTONE_TORCH_OFF", 19);
+        blocksToWebDefault.put("REDSTONE_TORCH_ON", 19); // red flower, vaguely a torch
+
+        // Liquids - currently using color blocks as placeholders since they appear too often
+        blocksToWebDefault.put("STATIONARY_WATER", 35); // light blue wool
+        blocksToWebDefault.put("WATER", 35); // light blue wool
+        blocksToWebDefault.put("STATIONARY_LAVA", 35); // orange wool
+        blocksToWebDefault.put("LAVA", 35); // orange wool
+
+        // TODO: support more blocks by default
+        blocksToWebDefault.put("BEDROCK", 65);
+        blocksToWebDefault.put("GRAVEL", 66);
+        blocksToWebDefault.put("IRON_BLOCK", 67);
+        blocksToWebDefault.put("GOLD_BLOCK", 68);
+        blocksToWebDefault.put("DIAMOND_BLOCK", 69);
+        blocksToWebDefault.put("SANDSTONE", 75);
+        blocksToWebDefault.put("BOOKSHELF", 50);
+        blocksToWebDefault.put("MOSSY_COBBLESTONE", 51);
+        blocksToWebDefault.put("OBSIDIAN", 52);
+        blocksToWebDefault.put("WORKBENCH", 53);
+        blocksToWebDefault.put("FURNACE", 54);
+        blocksToWebDefault.put("BURNING_FURNACE", 55);
+        blocksToWebDefault.put("MOB_SPAWNER", 56);
+        blocksToWebDefault.put("SNOW_BLOCK", 57);
+        blocksToWebDefault.put("ICE", 58);
+        blocksToWebDefault.put("CLAY", 59);
+        blocksToWebDefault.put("JUKEBOX", 60);
+        blocksToWebDefault.put("CACTUS", 61);
+        blocksToWebDefault.put("MYCEL", 62);
+        blocksToWebDefault.put("NETHERRACK", 63);
+
+        // First setup the defaults from above - don't loudly log failures here since they are either my fault, an error
+        // during development, or unsupported materials from an older/newer version of Bukkit
+        for (String materialString : blocksToWebDefault.keySet()) {
+            int n = ((Integer) blocksToWebDefault.get(materialString)).intValue();
+
+            Material material = Material.getMaterial(materialString);
+            if (materialString.equals("missing")) {
+                this.blocksToWebMissing = n;
+            } else {
+                if (material == null) {
+                    // maybe server doesn't have this material
+                    webSocketServerThread.log(Level.FINEST, "(internal) blocks_to_web invalid material ignored: " + materialString);
+                    continue;
+                }
+
+                this.blocksToWeb.put(material, n);
+            }
+        }
+
+        // Then override from config, if any
+        for (String materialString : blocksToWebOverride.keySet()) {
+            Object object = blocksToWebOverride.get(materialString);
 
             int n = 0;
             if (object instanceof String) {
@@ -69,7 +181,7 @@ public class BlockBridge {
             } else if (object instanceof Integer) {
                 n = (Integer) object;
             } else {
-                webSocketServerThread.log(Level.WARNING, "blocks_to_web invalid integer ignored: "+n+", in "+object);
+                webSocketServerThread.log(Level.WARNING, "blocks_to_web_override invalid integer ignored: "+n+", in "+object);
                 continue;
             }
 
@@ -77,15 +189,15 @@ public class BlockBridge {
             Material material = Material.getMaterial(materialString);
             if (materialString.equals("missing")) {
                 this.blocksToWebMissing = n;
-                this.webSocketServerThread.log(Level.FINEST, "blocks_to_web missing value to set to: "+n);
+                this.webSocketServerThread.log(Level.FINEST, "blocks_to_web_override missing value to set to: "+n);
             } else {
                 if (material == null) {
-                    webSocketServerThread.log(Level.WARNING, "blocks_to_web invalid material ignored: " + materialString);
+                    webSocketServerThread.log(Level.WARNING, "blocks_to_web_override invalid material ignored: " + materialString);
                     continue;
                 }
 
                 this.blocksToWeb.put(material, n);
-                this.webSocketServerThread.log(Level.FINEST, "blocks_to_web: " + material + " = " + n);
+                this.webSocketServerThread.log(Level.FINEST, "blocks_to_web_override: " + material + " = " + n);
             }
         }
 

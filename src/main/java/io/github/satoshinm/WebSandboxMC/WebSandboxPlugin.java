@@ -70,7 +70,7 @@ public class WebSandboxPlugin extends JavaPlugin {
     private boolean seeChat = true;
     private boolean seePlayers = true;
 
-    private Map<String, Object> blocksToWeb = new HashMap<String, Object>();
+    private Map<String, Object> blocksToWebOverride = new HashMap<String, Object>();
     private boolean warnMissing = true;
 
     @Override
@@ -111,97 +111,8 @@ public class WebSandboxPlugin extends JavaPlugin {
         config.addDefault("nc.allow_chatting", allowChatting);
         config.addDefault("nc.see_chat", seeChat);
         config.addDefault("nc.see_players", seePlayers);
-        blocksToWeb.put("missing", 16); // unknown/unsupported becomes cloud
-        blocksToWeb.put("AIR", 0);
-        blocksToWeb.put("GRASS", 1);
-        blocksToWeb.put("SAND", 2);
-        blocksToWeb.put("SMOOTH_BRICK", 3);
-        blocksToWeb.put("BRICK", 4);
-        blocksToWeb.put("LOG", 5);
-        blocksToWeb.put("LOG_2", 5); // wood
 
-        blocksToWeb.put("GOLD_ORE", 70);
-        blocksToWeb.put("IRON_ORE", 71);
-        blocksToWeb.put("COAL_ORE", 72);
-        blocksToWeb.put("LAPIS_ORE", 73);
-        blocksToWeb.put("LAPIS_BLOCK", 74);
-        blocksToWeb.put("DIAMOND_ORE", 48);
-        blocksToWeb.put("REDSTONE_ORE", 49);
-        blocksToWeb.put("REDSTONE_ORE", 49);
-        // TODO: more ores, for now, showing as stone
-        blocksToWeb.put("EMERALD_ORE", 6);
-        blocksToWeb.put("QUARTZ_ORE", 6);
-        blocksToWeb.put("STONE", 6); // cement, close enough
-
-        blocksToWeb.put("GRAVEL", 7);
-        blocksToWeb.put("DIRT", 7);
-
-        blocksToWeb.put("WOOD", 8); // plank
-
-        blocksToWeb.put("SNOW", 9);
-        blocksToWeb.put("SNOW_BLOCK", 9);
-
-        blocksToWeb.put("GLASS", 10);
-        blocksToWeb.put("COBBLESTONE", 11);
-        // TODO",  light stone (12));
-        // TODO",  dark stone (13));
-        blocksToWeb.put("CHEST", 14);
-        blocksToWeb.put("LEAVES", 15);
-        blocksToWeb.put("LEAVES_2", 15);
-        // TODO",  cloud (16));
-        blocksToWeb.put("DOUBLE_PLANT", 17);  // TODO: other double plants, but a lot look like longer long grass
-        blocksToWeb.put("LONG_GRASS", 17); // tall grass
-        blocksToWeb.put("YELLOW_FLOWER", 18);
-        blocksToWeb.put("RED_ROSE", 19);
-        blocksToWeb.put("CHORUS_FLOWER", 20);
-        // TODO",  sunflower (21));
-        // TODO",  white flower (22));
-        // TODO",  blue flower (23));
-
-        blocksToWeb.put("WOOL", 32); // note: special case
-
-        blocksToWeb.put("WALL_SIGN", 0); // air, since text is written on block behind it
-        blocksToWeb.put("SIGN_POST", 8); // plank TODO",  sign post model
-
-        // Light sources (nonzero toWebLighting()) TODO",  different textures? + allow placement, distinct blocks
-        blocksToWeb.put("GLOWSTONE", 64); // #define GLOWING_STONE
-        blocksToWeb.put("SEA_LANTERN", 35); // light blue wool
-        blocksToWeb.put("JACK_O_LANTERN", 33); // orange wool
-        blocksToWeb.put("REDSTONE_LAMP_ON", 46); // red wool
-        blocksToWeb.put("REDSTONE_LAMP_OFF", 46); // red wool
-        blocksToWeb.put("TORCH", 21); // sunflower, looks kinda like a torch
-        blocksToWeb.put("REDSTONE_TORCH_OFF", 19);
-        blocksToWeb.put("REDSTONE_TORCH_ON", 19); // red flower, vaguely a torch
-
-        // Liquids - currently using color blocks as placeholders since they appear too often
-        blocksToWeb.put("STATIONARY_WATER", 35); // light blue wool
-        blocksToWeb.put("WATER", 35); // light blue wool
-        blocksToWeb.put("STATIONARY_LAVA", 35); // orange wool
-        blocksToWeb.put("LAVA", 35); // orange wool
-
-        // TODO: support more blocks by default
-        blocksToWeb.put("BEDROCK", 65);
-        blocksToWeb.put("GRAVEL", 66);
-        blocksToWeb.put("IRON_BLOCK", 67);
-        blocksToWeb.put("GOLD_BLOCK", 68);
-        blocksToWeb.put("DIAMOND_BLOCK", 69);
-        blocksToWeb.put("SANDSTONE", 75);
-        blocksToWeb.put("BOOKSHELF", 50);
-        blocksToWeb.put("MOSSY_COBBLESTONE", 51);
-        blocksToWeb.put("OBSIDIAN", 52);
-        blocksToWeb.put("WORKBENCH", 53);
-        blocksToWeb.put("FURNACE", 54);
-        blocksToWeb.put("BURNING_FURNACE", 55);
-        blocksToWeb.put("MOB_SPAWNER", 56);
-        blocksToWeb.put("SNOW_BLOCK", 57);
-        blocksToWeb.put("ICE", 58);
-        blocksToWeb.put("CLAY", 59);
-        blocksToWeb.put("JUKEBOX", 60);
-        blocksToWeb.put("CACTUS", 61);
-        blocksToWeb.put("MYCEL", 62);
-        blocksToWeb.put("NETHERRACK", 63);
-
-        config.addDefault("nc.blocks_to_web", blocksToWeb);
+        config.addDefault("nc.blocks_to_web_override", blocksToWebOverride);
         config.addDefault("nc.warn_missing_blocks_to_web", warnMissing);
         
         httpPort = this.getConfig().getInt("http.port");
@@ -231,14 +142,16 @@ public class WebSandboxPlugin extends JavaPlugin {
         allowChatting = this.getConfig().getBoolean("nc.allow_chatting");
         seeChat = this.getConfig().getBoolean("nc.see_chat");
         seePlayers = this.getConfig().getBoolean("nc.see_players");
-        /* ignore
-        ConfigurationSection section = this.getConfig().getConfigurationSection("nc.blocks_to_web");
+        if (this.getConfig().getConfigurationSection("nc.blocks_to_web") != null) {
+            getLogger().log(Level.WARNING, "blocks_to_web is now ignored, you can remove it or add to blocks_to_web_override instead");
+        }
+
+        ConfigurationSection section = this.getConfig().getConfigurationSection("nc.blocks_to_web_override");
         if (section != null) {
             for (Map.Entry<String, Object> entry : section.getValues(false).entrySet()) {
-                blocksToWeb.put(entry.getKey(), entry.getValue());
+                blocksToWebOverride.put(entry.getKey(), entry.getValue());
             }
         }
-        */
         warnMissing = this.getConfig().getBoolean("nc.warn_missing_blocks_to_web");
 
         saveConfig();
@@ -255,7 +168,7 @@ public class WebSandboxPlugin extends JavaPlugin {
                 webSocketServerThread = new WebSocketServerThread(plugin, httpPort, debug);
 
                 webSocketServerThread.blockBridge = new BlockBridge(webSocketServerThread, world, x_center, y_center,
-                        z_center, radius, y_offset, allowBreakPlaceBlocks, allowSigns, blocksToWeb, warnMissing,
+                        z_center, radius, y_offset, allowBreakPlaceBlocks, allowSigns, blocksToWebOverride, warnMissing,
                         unbreakableBlocks);
                 webSocketServerThread.playersBridge = new PlayersBridge(webSocketServerThread, allowChatting, seeChat, seePlayers);
                 webSocketServerThread.webPlayerBridge = new WebPlayerBridge(webSocketServerThread, setCustomNames,
