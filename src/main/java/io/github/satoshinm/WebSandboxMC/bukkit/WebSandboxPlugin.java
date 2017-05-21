@@ -1,5 +1,5 @@
 
-package io.github.satoshinm.WebSandboxMC;
+package io.github.satoshinm.WebSandboxMC.bukkit;
 
 import io.github.satoshinm.WebSandboxMC.bridge.BlockBridge;
 import io.github.satoshinm.WebSandboxMC.bridge.PlayersBridge;
