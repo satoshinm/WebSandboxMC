@@ -79,6 +79,10 @@ Newer versions of NetCraft can be installed without upgrading the plugin, or the
 by placing the saving files in the plugin's data directory: craft.html (main page), craft.js, craft.html.mem.
 If not given, WebSandboxMC's embedded version of NetCraft will be served up instead.
 
+If the plugin folder contains a file named textures.zip, then it will be sent as a custom texture pack
+to the client. This archive must contain a `terrain.png` with a texture atlas. For details on
+texture pack compatibility, see [NetCraft#textures](https://github.com/satoshinm/NetCraft#textures).
+
 ## Commands
 
 * `/websandbox`: show help

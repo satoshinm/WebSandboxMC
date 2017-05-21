@@ -34,10 +34,7 @@ import io.netty.util.CharsetUtil;
 import java.io.*;
 
 import static io.netty.handler.codec.http.HttpMethod.GET;
-import static io.netty.handler.codec.http.HttpResponseStatus.BAD_REQUEST;
-import static io.netty.handler.codec.http.HttpResponseStatus.FORBIDDEN;
-import static io.netty.handler.codec.http.HttpResponseStatus.NOT_FOUND;
-import static io.netty.handler.codec.http.HttpResponseStatus.OK;
+import static io.netty.handler.codec.http.HttpResponseStatus.*;
 import static io.netty.handler.codec.http.HttpVersion.HTTP_1_1;
 
 /**
@@ -135,6 +132,14 @@ public class WebSocketIndexPageHandler extends SimpleChannelInboundHandler<FullH
         } else if ("/craft.wasm".equals(req.uri())) {
             // TODO: test WebAssembly, it is a supported build target: https://github.com/satoshinm/NetCraft/issues/1)
             sendBinaryResource("/craft.wasm", "application/octet-stream", req, ctx);
+        } else if ("/textures.zip".equals(req.uri())) {
+            File file = new File(this.pluginDataFolder, "textures.zip");
+            if (file.exists()) {
+                sendBinaryResource("/textures.zip", "application/octet-stream", req, ctx);
+            } else {
+                System.out.println("request for /textures.zip but does not exist in plugin data folder");
+                sendHttpResponse(ctx, req, new DefaultFullHttpResponse(HTTP_1_1, PRECONDITION_FAILED));
+            }
         } else {
             sendHttpResponse(ctx, req, new DefaultFullHttpResponse(HTTP_1_1, NOT_FOUND));
         }

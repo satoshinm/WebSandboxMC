@@ -18,6 +18,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -72,6 +73,7 @@ public class WebSandboxPlugin extends JavaPlugin {
 
     private Map<String, Object> blocksToWebOverride = new HashMap<String, Object>();
     private boolean warnMissing = true;
+    private String textureURL = null;
 
     @Override
     public void onDisable() {
@@ -153,6 +155,13 @@ public class WebSandboxPlugin extends JavaPlugin {
             }
         }
         warnMissing = this.getConfig().getBoolean("nc.warn_missing_blocks_to_web");
+        File file = new File(this.getDataFolder(), "textures.zip");
+        if (file.exists()) {
+            //textureURL = this.getConfig().getString("nc.texture_url");
+            // Although arbitrary URLs could be configured, due to access control checks this becomes confusing, so
+            // only allow auto-configuring as this special case to connect back to ourselves in /textures.zip.
+            textureURL = "-";
+        }
 
         saveConfig();
 
@@ -169,7 +178,7 @@ public class WebSandboxPlugin extends JavaPlugin {
 
                 webSocketServerThread.blockBridge = new BlockBridge(webSocketServerThread, world, x_center, y_center,
                         z_center, radius, y_offset, allowBreakPlaceBlocks, allowSigns, blocksToWebOverride, warnMissing,
-                        unbreakableBlocks);
+                        unbreakableBlocks, textureURL);
                 webSocketServerThread.playersBridge = new PlayersBridge(webSocketServerThread, allowChatting, seeChat, seePlayers);
                 webSocketServerThread.webPlayerBridge = new WebPlayerBridge(webSocketServerThread, setCustomNames,
                         disableGravity, disableAI, entityClassName, entityMoveSandbox, entityDieDisconnect);

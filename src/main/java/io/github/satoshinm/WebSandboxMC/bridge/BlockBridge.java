@@ -29,11 +29,12 @@ public class BlockBridge {
     private int blocksToWebMissing = 16; // unknown/unsupported becomes cloud, if key missing
     private boolean warnMissing;
     private List<Material> unbreakableBlocks;
+    private String textureURL;
 
     public BlockBridge(WebSocketServerThread webSocketServerThread,
                        String world, int x_center, int y_center, int z_center, int radius, int y_offset,
                        boolean allowBreakPlaceBlocks, boolean allowSigns, Map<String, Object> blocksToWebOverride,
-                       boolean warnMissing, List<String> unbreakableBlocks) {
+                       boolean warnMissing, List<String> unbreakableBlocks, String textureURL) {
         this.webSocketServerThread = webSocketServerThread;
 
         this.x_center = x_center;
@@ -212,11 +213,17 @@ public class BlockBridge {
             }
             this.unbreakableBlocks.add(material);
         }
+
+        this.textureURL = textureURL;
     }
 
     // Send the client the initial section of the world when they join
     @SuppressWarnings("deprecation") // Block#getData()
     public void sendWorld(final Channel channel) {
+        if (textureURL != null) {
+            webSocketServerThread.sendLine(channel, "t," + textureURL);
+        }
+
         boolean thereIsAWorld = false;
         // TODO: bulk block update compressed, for efficiency (this is very efficient, but surprisingly works!)
         for (int i = -radius; i < radius; ++i) {
