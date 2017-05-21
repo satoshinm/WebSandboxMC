@@ -39,8 +39,6 @@ public class WebSandboxSpongePlugin {
     @Inject
     private Game game;
 
-    private ConfigurationNode rootNode;
-
     @Listener
     public void onServerStart(GameStartedServerEvent event) {
         logger.info("WebSandboxMC/Sponge starting");
@@ -49,6 +47,8 @@ public class WebSandboxSpongePlugin {
         URL jarConfigFile = Sponge.getAssetManager().getAsset("defaultConfig.conf").get().getUrl();
         ConfigurationLoader<CommentedConfigurationNode> loader =
                 HoconConfigurationLoader.builder().setURL(jarConfigFile).build();
-        rootNode = loader.createEmptyNode(ConfigurationOptions.defaults());
+        ConfigurationNode rootNode = loader.createEmptyNode(ConfigurationOptions.defaults());
+
+        //TODO rootNode.getNode
     }
 }
