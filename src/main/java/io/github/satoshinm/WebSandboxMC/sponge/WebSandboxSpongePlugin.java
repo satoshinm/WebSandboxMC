@@ -46,7 +46,9 @@ public class WebSandboxSpongePlugin {
         logger.info("WebSandboxMC/Sponge starting");
         logger.info("config path: " + configDir);
 
-        ConfigurationLoader<CommentedConfigurationNode> loader = HoconConfigurationLoader.builder().setPath(defaultConfig).build();
+        URL jarConfigFile = Sponge.getAssetManager().getAsset("defaultConfig.conf").get().getUrl();
+        ConfigurationLoader<CommentedConfigurationNode> loader =
+                HoconConfigurationLoader.builder().setURL(jarConfigFile).build();
         rootNode = loader.createEmptyNode(ConfigurationOptions.defaults());
     }
 }
