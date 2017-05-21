@@ -15,6 +15,10 @@
       <id>spigot-repo</id>
       <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
     </repository>
+    <repository>
+      <id>sponge-repo</id>
+      <url>https://repo.spongepowered.org/Sponge/maven/</url>
+    </repository>
   </repositories>
 
   <properties>
@@ -31,6 +35,11 @@
       <version>1.11-R0.1-SNAPSHOT</version>
       <type>jar</type>
       <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.spongepowered</groupId>
+      <artifactId>spongeapi</artifactId>
+      <version>6.0.0</version>
     </dependency>
     <dependency>
       <groupId>io.netty</groupId>
