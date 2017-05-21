@@ -153,6 +153,7 @@ public class BlockBridge {
         blocksToWebDefault.put("MYCEL", 62);
         blocksToWebDefault.put("NETHERRACK", 63);
         blocksToWebDefault.put("SPONGE", 24);
+        blocksToWebDefault.put("MELON_BLOCK", 25);
 
         // First setup the defaults from above - don't loudly log failures here since they are either my fault, an error
         // during development, or unsupported materials from an older/newer version of Bukkit
