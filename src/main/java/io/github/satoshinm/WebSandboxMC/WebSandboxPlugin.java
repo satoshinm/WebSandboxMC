@@ -45,6 +45,7 @@ public class WebSandboxPlugin extends JavaPlugin {
     private String unbindMethod = "console.getServerConnection.b";
 
     private boolean debug = false;
+    private boolean usePermissions = false;
     private String entityClassName = "Sheep";
     private boolean setCustomNames = true;
     private boolean disableGravity = true;
@@ -93,6 +94,7 @@ public class WebSandboxPlugin extends JavaPlugin {
         config.addDefault("http.unbind_method", unbindMethod);
 
         config.addDefault("mc.debug", debug);
+        config.addDefault("mc.use_permissions", usePermissions);
         config.addDefault("mc.entity", entityClassName);
         config.addDefault("mc.entity_custom_names", setCustomNames);
         config.addDefault("mc.entity_disable_gravity", disableGravity);
@@ -121,7 +123,8 @@ public class WebSandboxPlugin extends JavaPlugin {
         takeover = this.getConfig().getBoolean("http.takeover");
         unbindMethod = this.getConfig().getString("http.unbind_method");
 
-        debug =  this.getConfig().getBoolean("mc.debug");
+        debug = this.getConfig().getBoolean("mc.debug");
+        usePermissions = this.getConfig().getBoolean("mc.use_permissions");
 
         entityClassName = this.getConfig().getString("mc.entity");
         setCustomNames = this.getConfig().getBoolean("mc.entity_custom_names");
@@ -191,7 +194,7 @@ public class WebSandboxPlugin extends JavaPlugin {
                 pm.registerEvents(new EntityListener(webSocketServerThread.webPlayerBridge), plugin);
 
                 // Register our commands
-                getCommand("websandbox").setExecutor(new WsCommand(webSocketServerThread));
+                getCommand("websandbox").setExecutor(new WsCommand(webSocketServerThread, usePermissions));
 
                 // Run the websocket server
                 webSocketServerThread.start();

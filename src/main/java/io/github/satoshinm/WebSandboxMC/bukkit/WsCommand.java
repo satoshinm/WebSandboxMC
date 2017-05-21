@@ -6,6 +6,7 @@ import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerShearEntityEvent;
@@ -14,13 +15,30 @@ import java.net.InetSocketAddress;
 
 public class WsCommand implements CommandExecutor {
     private WebSocketServerThread webSocketServerThread;
+    private boolean usePermissions;
 
-    public WsCommand(WebSocketServerThread webSocketServerThread) {
+    public WsCommand(WebSocketServerThread webSocketServerThread, boolean usePermissions) {
         this.webSocketServerThread = webSocketServerThread;
+        this.usePermissions = usePermissions;
     }
 
     public boolean onCommand(CommandSender sender, Command command, String label, String[] split) {
         String subcommand = split.length == 0 ? "help" : split[0];
+
+        if (sender instanceof Player) {
+            Player player = (Player) sender;
+            if (!usePermissions) {
+                if (!player.isOp()) {
+                    sender.sendMessage("/websandbox requires op");
+                    return true;
+                }
+            } else {
+                if (!player.hasPermission("websandbox.command." + subcommand)) {
+                    sender.sendMessage("/websandbox " + subcommand + " denied by permission");
+                    return true;
+                }
+            }
+        }
 
         if (subcommand.equals("list")) {
             int size = webSocketServerThread.webPlayerBridge.name2channel.size();

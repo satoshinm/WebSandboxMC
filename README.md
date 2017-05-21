@@ -46,6 +46,8 @@ Configures the HTTP and WebSocket server:
 ### mc
 Configures what part of your world to expose:
 
+* `debug` (false): if true, enables vast amounts of additional logging with FINEST log level
+* `use_permissions` (false): if false, `/websandbox` command requires op; if true, checks for `websandbox.command.`+subcommand permission node
 * `x_center` (0): specifies the center of the world from the web client's perspective, X coordinate
 * `y_center` (75): " ", Y coordinate
 * `z_center` (0): " ", Z coordinate
@@ -56,7 +58,6 @@ Configures what part of your world to expose:
 * `entity_disable_ai` (true): disable AI for the spawned living entities if true, otherwise they may move on their own
 * `entity_move_sandbox` (true): constrain the web player entity's movement to within the sandbox, otherwise they can go anywhere
 * `entity_die_disconnect` (false): disconnect the web player when their entity dies, otherwise they remain connected invisibly
-* `debug` (false): if true, enables vast amounts of additional logging with FINEST log level
 
 ### nc
 Configures the NetCraft web client:
