@@ -1,7 +1,6 @@
 package io.github.satoshinm.WebSandboxMC.sponge;
 
 import com.google.inject.Inject;
-import com.sun.javafx.beans.annotations.Default;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.ConfigurationOptions;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
@@ -9,15 +8,12 @@ import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
 import org.slf4j.Logger;
 import org.spongepowered.api.Game;
-import org.spongepowered.api.Sponge;
 import org.spongepowered.api.config.ConfigDir;
 import org.spongepowered.api.config.DefaultConfig;
 import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.game.state.GameStartedServerEvent;
 import org.spongepowered.api.plugin.Plugin;
 
-import java.io.File;
-import java.net.URL;
 import java.nio.file.Path;
 
 @Plugin(id = "websandboxmc", name = "WebSandboxMC", version = "1.6.0")
