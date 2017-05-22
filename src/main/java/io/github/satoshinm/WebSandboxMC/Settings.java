@@ -1,11 +1,14 @@
 package io.github.satoshinm.WebSandboxMC;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 
-public class Settings {
+abstract public class Settings {
+    // User configurable settings
     public int httpPort = 4081;
     public boolean takeover = false;
     public String unbindMethod = "console.getServerConnection.b";
@@ -40,5 +43,12 @@ public class Settings {
 
     public Map<String, Object> blocksToWebOverride = new HashMap<String, Object>();
     public boolean warnMissing = true;
+
+    // Automatic settings
     public String textureURL = null;
+    public File pluginDataFolder = null;
+
+    // Implementation-defined utility methods
+    abstract public void log(Level level, String message);
+    abstract public void scheduleSyncTask(Runnable runnable);
 }
