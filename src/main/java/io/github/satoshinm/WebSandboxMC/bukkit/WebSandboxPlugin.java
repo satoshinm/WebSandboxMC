@@ -145,18 +145,11 @@ public class WebSandboxPlugin extends JavaPlugin {
             @Override
             public void run() {
 
-                webSocketServerThread = new WebSocketServerThread(plugin, settings.httpPort, settings.debug);
+                webSocketServerThread = new WebSocketServerThread(plugin, settings);
 
-                webSocketServerThread.blockBridge = new BlockBridge(webSocketServerThread,
-                        settings.world, settings.x_center, settings.y_center,
-                        settings.z_center, settings.radius, settings.y_offset,
-                        settings.allowBreakPlaceBlocks, settings.allowSigns, settings.blocksToWebOverride,
-                        settings.warnMissing, settings.unbreakableBlocks, settings.textureURL);
-                webSocketServerThread.playersBridge = new PlayersBridge(webSocketServerThread, settings.allowChatting,
-                        settings.seeChat, settings.seePlayers);
-                webSocketServerThread.webPlayerBridge = new WebPlayerBridge(webSocketServerThread,
-                        settings.setCustomNames, settings.disableGravity, settings.disableAI, settings.entityClassName,
-                        settings.entityMoveSandbox, settings.entityDieDisconnect);
+                webSocketServerThread.blockBridge = new BlockBridge(webSocketServerThread, settings);
+                webSocketServerThread.playersBridge = new PlayersBridge(webSocketServerThread, settings);
+                webSocketServerThread.webPlayerBridge = new WebPlayerBridge(webSocketServerThread, settings);
 
                 // Register our events
                 PluginManager pm = getServer().getPluginManager();

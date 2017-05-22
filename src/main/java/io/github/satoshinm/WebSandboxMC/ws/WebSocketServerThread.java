@@ -15,6 +15,7 @@
  */
 package io.github.satoshinm.WebSandboxMC.ws;
 
+import io.github.satoshinm.WebSandboxMC.Settings;
 import io.github.satoshinm.WebSandboxMC.bridge.BlockBridge;
 import io.github.satoshinm.WebSandboxMC.bridge.WebPlayerBridge;
 import io.github.satoshinm.WebSandboxMC.bridge.PlayersBridge;
@@ -73,10 +74,10 @@ public final class WebSocketServerThread extends Thread {
     private Plugin plugin;
     private boolean debug;
 
-    public WebSocketServerThread(Plugin plugin, int port, boolean debug) {
+    public WebSocketServerThread(Plugin plugin, Settings settings) {
         this.plugin = plugin;
 
-        this.PORT = port;
+        this.PORT = settings.httpPort;
         this.SSL = false; // TODO: support ssl?
 
         this.blockBridge = null;
@@ -85,7 +86,7 @@ public final class WebSocketServerThread extends Thread {
 
         this.allUsersGroup = new DefaultChannelGroup(ImmediateEventExecutor.INSTANCE);
 
-        this.debug = debug;
+        this.debug = settings.debug;
     }
 
     public void log(Level level, String message) {

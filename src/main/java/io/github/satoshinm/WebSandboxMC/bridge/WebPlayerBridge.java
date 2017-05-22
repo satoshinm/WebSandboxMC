@@ -1,5 +1,6 @@
 package io.github.satoshinm.WebSandboxMC.bridge;
 
+import io.github.satoshinm.WebSandboxMC.Settings;
 import io.github.satoshinm.WebSandboxMC.ws.WebSocketServerThread;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -34,32 +35,29 @@ public class WebPlayerBridge {
     private boolean constrainToSandbox;
     private boolean dieDisconnect;
 
-    public WebPlayerBridge(WebSocketServerThread webSocketServerThread, boolean setCustomNames,
-                           boolean disableGravity, boolean disableAI,
-                           String entityClassName, boolean constrainToSandbox,
-                           boolean dieDisconnect) {
+    public WebPlayerBridge(WebSocketServerThread webSocketServerThread, Settings settings) {
         this.webSocketServerThread = webSocketServerThread;
-        this.setCustomNames = setCustomNames;
-        this.disableGravity = disableGravity;
-        this.disableAI = disableAI;
+        this.setCustomNames = settings.setCustomNames;
+        this.disableGravity = settings.disableGravity;
+        this.disableAI = settings.disableAI;
 
-        if (entityClassName == null || "".equals(entityClassName)) {
+        if (settings.entityClassName == null || "".equals(settings.entityClassName)) {
             this.entityClass = null;
         } else {
             try {
-                this.entityClass = Class.forName("org.bukkit.entity." + entityClassName);
+                this.entityClass = Class.forName("org.bukkit.entity." + settings.entityClassName);
             } catch (ClassNotFoundException ex) {
                 ex.printStackTrace();
 
                 // HumanEntity.class fails on Glowstone with https://gist.github.com/satoshinm/ebc87cdf1d782ba91b893fe24cd8ffd2
                 // so use sheep instead for now. TODO: spawn ala GlowNPC: https://github.com/satoshinm/WebSandboxMC/issues/13
-                webSocketServerThread.log(Level.WARNING, "No such entity class " + entityClassName + ", falling back to Sheep");
+                webSocketServerThread.log(Level.WARNING, "No such entity class " + settings.entityClassName + ", falling back to Sheep");
                 this.entityClass = Sheep.class;
             }
         }
 
-        this.constrainToSandbox = constrainToSandbox;
-        this.dieDisconnect = dieDisconnect;
+        this.constrainToSandbox = settings.entityMoveSandbox;
+        this.dieDisconnect = settings.entityDieDisconnect;
 
         this.lastPlayerID = 0;
         this.channelId2name = new HashMap<ChannelId, String>();
