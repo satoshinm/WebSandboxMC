@@ -24,7 +24,7 @@ import org.spongepowered.api.plugin.Plugin;
 import java.io.IOException;
 import java.nio.file.Path;
 
-@Plugin(id = "websandboxmc", name = "WebSandboxMC", version = "1.6.0")
+@Plugin(id = "websandboxmc", name = "WebSandboxMC", version = "1.7.0")
 public class WebSandboxSpongePlugin {
 
     @Inject
