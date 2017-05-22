@@ -52,7 +52,90 @@ public class WebSandboxPlugin extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        settings.loadBukkitConfig(this);
+        // Configuration
+        final FileConfiguration config = getConfig();
+        config.options().copyDefaults(true);
+
+
+        config.addDefault("http.port", settings.httpPort);
+        config.addDefault("http.takeover", settings.takeover);
+        config.addDefault("http.unbind_method", settings.unbindMethod);
+
+        config.addDefault("mc.debug", settings.debug);
+        config.addDefault("mc.use_permissions", settings.usePermissions);
+        config.addDefault("mc.entity", settings.entityClassName);
+        config.addDefault("mc.entity_custom_names", settings.setCustomNames);
+        config.addDefault("mc.entity_disable_gravity", settings.disableGravity);
+        config.addDefault("mc.entity_disable_ai", settings.disableAI);
+        config.addDefault("mc.entity_move_sandbox", settings.entityMoveSandbox);
+        config.addDefault("mc.entity_die_disconnect", settings.entityDieDisconnect);
+        config.addDefault("mc.world", settings.world);
+        config.addDefault("mc.x_center", settings.x_center);
+        config.addDefault("mc.y_center", settings.y_center);
+        config.addDefault("mc.z_center", settings.z_center);
+        config.addDefault("mc.radius", settings.radius);
+
+        config.addDefault("nc.y_offset", settings.y_offset);
+        config.addDefault("nc.allow_break_place_blocks", settings.allowBreakPlaceBlocks);
+        settings.unbreakableBlocks.add("BEDROCK");
+        config.addDefault("nc.unbreakable_blocks", settings.unbreakableBlocks);
+        config.addDefault("nc.allow_signs", settings.allowSigns);
+        config.addDefault("nc.allow_chatting", settings.allowChatting);
+        config.addDefault("nc.see_chat", settings.seeChat);
+        config.addDefault("nc.see_players", settings.seePlayers);
+
+        config.addDefault("nc.blocks_to_web_override", settings.blocksToWebOverride);
+        config.addDefault("nc.warn_missing_blocks_to_web", settings.warnMissing);
+
+        settings.httpPort = this.getConfig().getInt("http.port");
+        settings.takeover = this.getConfig().getBoolean("http.takeover");
+        settings.unbindMethod = this.getConfig().getString("http.unbind_method");
+
+        settings.debug = this.getConfig().getBoolean("mc.debug");
+        settings.usePermissions = this.getConfig().getBoolean("mc.use_permissions");
+
+        settings.entityClassName = this.getConfig().getString("mc.entity");
+        settings.setCustomNames = this.getConfig().getBoolean("mc.entity_custom_names");
+        settings.disableGravity = this.getConfig().getBoolean("mc.entity_disable_gravity");
+        settings.disableAI = this.getConfig().getBoolean("mc.entity_disable_ai");
+        settings.entityMoveSandbox = this.getConfig().getBoolean("mc.entity_move_sandbox");
+        settings.entityDieDisconnect = this.getConfig().getBoolean("mc.entity_die_disconnect");
+
+        settings.world = this.getConfig().getString("mc.world");
+        settings.x_center = this.getConfig().getInt("mc.x_center");
+        settings.y_center = this.getConfig().getInt("mc.y_center");
+        settings.z_center = this.getConfig().getInt("mc.z_center");
+        settings.radius = this.getConfig().getInt("mc.radius");
+
+        settings.y_offset = this.getConfig().getInt("nc.y_offset");
+
+        settings.allowBreakPlaceBlocks = this.getConfig().getBoolean("nc.allow_break_place_blocks");
+        settings.unbreakableBlocks = this.getConfig().getStringList("nc.unbreakable_blocks");
+        settings.allowSigns = this.getConfig().getBoolean("nc.allow_signs");
+        settings.allowChatting = this.getConfig().getBoolean("nc.allow_chatting");
+        settings.seeChat = this.getConfig().getBoolean("nc.see_chat");
+        settings.seePlayers = this.getConfig().getBoolean("nc.see_players");
+        if (this.getConfig().getConfigurationSection("nc.blocks_to_web") != null) {
+            getLogger().log(Level.WARNING, "blocks_to_web is now ignored, you can remove it or add to blocks_to_web_override instead");
+        }
+
+        ConfigurationSection section = this.getConfig().getConfigurationSection("nc.blocks_to_web_override");
+        if (section != null) {
+            for (Map.Entry<String, Object> entry : section.getValues(false).entrySet()) {
+                settings.blocksToWebOverride.put(entry.getKey(), entry.getValue());
+            }
+        }
+        settings.warnMissing = this.getConfig().getBoolean("nc.warn_missing_blocks_to_web");
+        File file = new File(this.getDataFolder(), "textures.zip");
+        if (file.exists()) {
+            //textureURL = this.getConfig().getString("nc.texture_url");
+            // Although arbitrary URLs could be configured, due to access control checks this becomes confusing, so
+            // only allow auto-configuring as this special case to connect back to ourselves in /textures.zip.
+            settings.textureURL = "-";
+        }
+
+        saveConfig();
+
         checkUnbind(settings.takeover, settings.unbindMethod);
 
         final Plugin plugin = this;
