@@ -18,6 +18,7 @@ import org.spongepowered.api.event.Listener;
 import org.spongepowered.api.event.game.state.GameStartedServerEvent;
 import org.spongepowered.api.plugin.Plugin;
 
+import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Path;
 
@@ -52,8 +53,13 @@ public class WebSandboxSpongePlugin {
         URL jarConfigFile = Sponge.getAssetManager().getAsset(this,"defaultConfig.conf").get().getUrl();
         ConfigurationLoader<CommentedConfigurationNode> loader =
                 HoconConfigurationLoader.builder().setURL(jarConfigFile).build();
-        ConfigurationNode rootNode = loader.createEmptyNode(ConfigurationOptions.defaults());
-
+        ConfigurationNode rootNode;
+        try {
+            rootNode = loader.load();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return;
+        }
 
         settings.httpPort = rootNode.getNode("http", "port").getInt(settings.httpPort);
         settings.takeover = rootNode.getNode("http", "takeover").getBoolean(settings.takeover);
@@ -89,5 +95,11 @@ public class WebSandboxSpongePlugin {
         settings.seePlayers = rootNode.getNode("nc", "see_players").getBoolean(settings.seePlayers);
 
         logger.info("debug? " + settings.debug);
+
+        try {
+            configManager.save(rootNode);
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
     }
 }
