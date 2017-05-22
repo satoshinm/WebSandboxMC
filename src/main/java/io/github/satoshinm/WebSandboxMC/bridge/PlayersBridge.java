@@ -1,5 +1,6 @@
 package io.github.satoshinm.WebSandboxMC.bridge;
 
+import io.github.satoshinm.WebSandboxMC.Settings;
 import io.github.satoshinm.WebSandboxMC.ws.WebSocketServerThread;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -25,11 +26,11 @@ public class PlayersBridge {
     private boolean seeChat;
     private boolean seePlayers;
 
-    public PlayersBridge(WebSocketServerThread webSocketServerThread, boolean allowChatting, boolean seeChat, boolean seePlayers) {
+    public PlayersBridge(WebSocketServerThread webSocketServerThread, Settings settings) {
         this.webSocketServerThread = webSocketServerThread;
-        this.allowChatting = allowChatting;
-        this.seeChat = seeChat;
-        this.seePlayers = seePlayers;
+        this.allowChatting = settings.allowChatting;
+        this.seeChat = settings.seeChat;
+        this.seePlayers = settings.seePlayers;
 
         this.playersInSandbox = new HashSet<Integer>();
     }

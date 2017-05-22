@@ -1,5 +1,6 @@
 package io.github.satoshinm.WebSandboxMC.bridge;
 
+import io.github.satoshinm.WebSandboxMC.Settings;
 import io.github.satoshinm.WebSandboxMC.ws.WebSocketServerThread;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -31,34 +32,31 @@ public class BlockBridge {
     private List<Material> unbreakableBlocks;
     private String textureURL;
 
-    public BlockBridge(WebSocketServerThread webSocketServerThread,
-                       String world, int x_center, int y_center, int z_center, int radius, int y_offset,
-                       boolean allowBreakPlaceBlocks, boolean allowSigns, Map<String, Object> blocksToWebOverride,
-                       boolean warnMissing, List<String> unbreakableBlocks, String textureURL) {
+    public BlockBridge(WebSocketServerThread webSocketServerThread, Settings settings) {
         this.webSocketServerThread = webSocketServerThread;
 
-        this.x_center = x_center;
-        this.y_center = y_center;
-        this.z_center = z_center;
+        this.x_center = settings.x_center;
+        this.y_center = settings.y_center;
+        this.z_center = settings.z_center;
 
-        this.radius = radius;
+        this.radius = settings.radius;
 
-        this.y_offset = y_offset;
+        this.y_offset = settings.y_offset;
 
-        if (world == null || "".equals(world)) {
+        if (settings.world == null || "".equals(settings.world)) {
             this.world = Bukkit.getWorlds().get(0);
         } else {
-            this.world = Bukkit.getWorld(world);
+            this.world = Bukkit.getWorld(settings.world);
         }
         if (this.world == null) {
-            throw new IllegalArgumentException("World not found: " + world);
+            throw new IllegalArgumentException("World not found: " + settings.world);
         }
 
         // TODO: configurable spawn within range of sandbox, right now, it is the center of the sandbox
         this.spawnLocation = new Location(this.world, this.x_center, this.y_center, this.z_center);
 
-        this.allowBreakPlaceBlocks = allowBreakPlaceBlocks;
-        this.allowSigns = allowSigns;
+        this.allowBreakPlaceBlocks = settings.allowBreakPlaceBlocks;
+        this.allowSigns = settings.allowSigns;
 
         this.blocksToWeb = new HashMap<Material, Integer>();
         Map<String, Integer> blocksToWebDefault = new HashMap<String, Integer>();
@@ -176,8 +174,8 @@ public class BlockBridge {
         }
 
         // Then override from config, if any
-        for (String materialString : blocksToWebOverride.keySet()) {
-            Object object = blocksToWebOverride.get(materialString);
+        for (String materialString : settings.blocksToWebOverride.keySet()) {
+            Object object = settings.blocksToWebOverride.get(materialString);
 
             int n = 0;
             if (object instanceof String) {
@@ -208,7 +206,7 @@ public class BlockBridge {
         this.warnMissing = warnMissing;
 
         this.unbreakableBlocks = new ArrayList<Material>();
-        for (String materialString : unbreakableBlocks) {
+        for (String materialString : settings.unbreakableBlocks) {
             Material material = Material.getMaterial(materialString);
             if (material == null) {
                 webSocketServerThread.log(Level.WARNING, "unbreakable_blocks invalid material ignored: " + materialString);
@@ -217,7 +215,7 @@ public class BlockBridge {
             this.unbreakableBlocks.add(material);
         }
 
-        this.textureURL = textureURL;
+        this.textureURL = settings.textureURL;
     }
 
     // Send the client the initial section of the world when they join

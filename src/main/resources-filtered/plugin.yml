@@ -1,5 +1,5 @@
 name: WebSandboxMC
-main: io.github.satoshinm.WebSandboxMC.WebSandboxPlugin
+main: io.github.satoshinm.WebSandboxMC.bukkit.WebSandboxPlugin
 version: ${version}
 commands:
     websandbox:

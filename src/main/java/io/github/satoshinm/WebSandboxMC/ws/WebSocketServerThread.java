@@ -15,6 +15,7 @@
  */
 package io.github.satoshinm.WebSandboxMC.ws;
 
+import io.github.satoshinm.WebSandboxMC.Settings;
 import io.github.satoshinm.WebSandboxMC.bridge.BlockBridge;
 import io.github.satoshinm.WebSandboxMC.bridge.WebPlayerBridge;
 import io.github.satoshinm.WebSandboxMC.bridge.PlayersBridge;
@@ -70,13 +71,10 @@ public final class WebSocketServerThread extends Thread {
     public BlockBridge blockBridge;
     public PlayersBridge playersBridge;
     public WebPlayerBridge webPlayerBridge;
-    private Plugin plugin;
-    private boolean debug;
+    private Settings settings;
 
-    public WebSocketServerThread(Plugin plugin, int port, boolean debug) {
-        this.plugin = plugin;
-
-        this.PORT = port;
+    public WebSocketServerThread(Settings settings) {
+        this.PORT = settings.httpPort;
         this.SSL = false; // TODO: support ssl?
 
         this.blockBridge = null;
@@ -85,23 +83,15 @@ public final class WebSocketServerThread extends Thread {
 
         this.allUsersGroup = new DefaultChannelGroup(ImmediateEventExecutor.INSTANCE);
 
-        this.debug = debug;
+        this.settings = settings;
     }
 
     public void log(Level level, String message) {
-        if (level == Level.FINEST && !debug) {
-            return;
-        }
-        plugin.getLogger().log(level, message);
+        settings.log(level, message);
     }
 
     public void scheduleSyncTask(Runnable runnable) {
-        if (!plugin.isEnabled()) {
-            // When we are shutting down, the Netty channels go inactive, but we cannot schedule tasks when
-            // the plugin is disabled so just return.
-            return;
-        }
-        Bukkit.getScheduler().scheduleSyncDelayedTask(this.plugin, runnable);
+        settings.scheduleSyncTask(runnable);
     }
 
     @Override
@@ -124,7 +114,7 @@ public final class WebSocketServerThread extends Thread {
                         .channel(NioServerSocketChannel.class)
                         .handler(new LoggingHandler(LogLevel.INFO))
                         .childHandler(new WebSocketServerInitializer(sslCtx, this,
-                                this.plugin.getDataFolder()));
+                                settings.pluginDataFolder));
 
                 Channel ch = b.bind(PORT).sync().channel();
 
