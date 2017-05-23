@@ -226,7 +226,7 @@ public class BlockBridge {
             }
         }
 
-        this.warnMissing = warnMissing;
+        this.warnMissing = settings.warnMissing;
 
         this.unbreakableBlocks = new ArrayList<Material>();
         for (String materialString : settings.unbreakableBlocks) {
