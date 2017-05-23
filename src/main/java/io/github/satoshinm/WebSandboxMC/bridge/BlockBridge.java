@@ -65,7 +65,12 @@ public class BlockBridge {
         blocksToWebDefault.put("AIR", 0);
         blocksToWebDefault.put("GRASS", 1);
         blocksToWebDefault.put("SAND", 2);
-        blocksToWebDefault.put("SMOOTH_BRICK", 3);
+        blocksToWebDefault.put("SMOOTH_BRICK", 3); // stone brick :0
+        //blocksToWebDefault.put(, 76); // TODO: mossy stone brick, :1
+        //blocksToWebDefault.put(, 77); // TODO: cracked stone brick, :2
+
+
+
         blocksToWebDefault.put("BRICK", 4);
         blocksToWebDefault.put("LOG", 5);
         blocksToWebDefault.put("LOG_2", 5); // wood
@@ -101,9 +106,13 @@ public class BlockBridge {
         // TODO",  cloud (16));
         blocksToWebDefault.put("DOUBLE_PLANT", 17);  // TODO: other double plants, but a lot look like longer long grass
         blocksToWebDefault.put("LONG_GRASS", 17); // tall grass
+        //blocksToWebDefault.put(, 29); // TODO: fern
         blocksToWebDefault.put("YELLOW_FLOWER", 18);
         blocksToWebDefault.put("RED_ROSE", 19);
-        blocksToWebDefault.put("CHORUS_FLOWER", 20);
+        //TODO blocksToWebDefault.put("CHORUS_FLOWER", 20);
+        blocksToWebDefault.put("SAPLING", 20); // oak sapling
+        //blocksToWebDefault.put(, 30); // TODO: spruce sapling
+        //blocksToWebDefault.put(, 31); // TODO: birch saplingg
         // TODO",  sunflower (21));
         // TODO",  white flower (22));
         // TODO",  blue flower (23));
@@ -153,6 +162,20 @@ public class BlockBridge {
         blocksToWebDefault.put("SPONGE", 24);
         blocksToWebDefault.put("MELON_BLOCK", 25);
         blocksToWebDefault.put("ENDER_STONE", 26);
+        blocksToWebDefault.put("TNT", 27);
+        blocksToWebDefault.put("EMERALD_BLOCK", 28);
+        blocksToWebDefault.put("PUMPKIN", 78); // TODO: face
+        blocksToWebDefault.put("JACK_O_LANTERN", 79); // TODO: face side
+        blocksToWebDefault.put("HUGE_MUSHROOM_1", 80); // brown TODO: data
+        blocksToWebDefault.put("HUGE_MUSHROOM_2", 81); // red TODO: data
+        blocksToWebDefault.put("COMMAND", 82);
+        blocksToWebDefault.put("EMERALD_ORE", 83);
+        blocksToWebDefault.put("SOUL_SAND", 84);
+        blocksToWebDefault.put("NETHER_BRICK", 85);
+        blocksToWebDefault.put("SOIL", 86); // wet farmland TODO: dry farmland (87)
+        blocksToWebDefault.put("REDSTONE_LAMP_OFF", 88);
+        blocksToWebDefault.put("REDSTONE_LAMP_ON", 89);
+
 
         // First setup the defaults from above - don't loudly log failures here since they are either my fault, an error
         // during development, or unsupported materials from an older/newer version of Bukkit
