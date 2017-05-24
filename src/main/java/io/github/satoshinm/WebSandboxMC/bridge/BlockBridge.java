@@ -702,8 +702,8 @@ public class BlockBridge {
         }
 
         Block block = location.getWorld().getBlockAt(location);
-        block.setType(Material.WALL_SIGN);
-        block.setData(data);
+        boolean applyPhysics = false;
+        block.setTypeIdAndData(Material.WALL_SIGN.getId(), data, applyPhysics);
         webSocketServerThread.log(Level.FINEST, "setting sign at "+location+" data="+data);
         BlockState blockState = block.getState();
         if (!(blockState instanceof Sign)) {
