@@ -27,7 +27,7 @@ public class BlockBridge {
     private boolean allowBreakPlaceBlocks;
     private boolean allowSigns;
     private Map<Material, Integer> blocksToWeb;
-    private int blocksToWebMissing = 16; // unknown/unsupported becomes cloud, if key missing
+    private int blocksToWebMissing; // unknown/unsupported becomes cloud, if key missing
     private boolean warnMissing;
     private List<Material> unbreakableBlocks;
     private String textureURL;
@@ -59,144 +59,9 @@ public class BlockBridge {
         this.allowSigns = settings.allowSigns;
 
         this.blocksToWeb = new HashMap<Material, Integer>();
-        Map<String, Integer> blocksToWebDefault = new HashMap<String, Integer>();
+        this.blocksToWebMissing = 16; // unknown/unsupported becomes cloud
 
-        blocksToWebDefault.put("missing", 16); // unknown/unsupported becomes cloud
-        blocksToWebDefault.put("AIR", 0);
-        blocksToWebDefault.put("GRASS", 1);
-        blocksToWebDefault.put("SAND", 2);
-        blocksToWebDefault.put("SMOOTH_BRICK", 3); // stone brick :0
-        //blocksToWebDefault.put(, 76); // TODO: mossy stone brick, :1
-        //blocksToWebDefault.put(, 77); // TODO: cracked stone brick, :2
-
-
-
-        blocksToWebDefault.put("BRICK", 4);
-        blocksToWebDefault.put("LOG", 5);
-        blocksToWebDefault.put("LOG_2", 5); // wood
-
-        blocksToWebDefault.put("GOLD_ORE", 70);
-        blocksToWebDefault.put("IRON_ORE", 71);
-        blocksToWebDefault.put("COAL_ORE", 72);
-        blocksToWebDefault.put("LAPIS_ORE", 73);
-        blocksToWebDefault.put("LAPIS_BLOCK", 74);
-        blocksToWebDefault.put("DIAMOND_ORE", 48);
-        blocksToWebDefault.put("REDSTONE_ORE", 49);
-        blocksToWebDefault.put("REDSTONE_ORE", 49);
-        // TODO: more ores, for now, showing as stone
-        blocksToWebDefault.put("EMERALD_ORE", 6);
-        blocksToWebDefault.put("QUARTZ_ORE", 6);
-        blocksToWebDefault.put("STONE", 6); // cement, close enough
-
-        blocksToWebDefault.put("GRAVEL", 7);
-        blocksToWebDefault.put("DIRT", 7);
-
-        blocksToWebDefault.put("WOOD", 8); // plank
-
-        blocksToWebDefault.put("SNOW", 9);
-        blocksToWebDefault.put("SNOW_BLOCK", 9);
-
-        blocksToWebDefault.put("GLASS", 10);
-        blocksToWebDefault.put("COBBLESTONE", 11);
-        // TODO",  light stone (12));
-        // TODO",  dark stone (13));
-        blocksToWebDefault.put("CHEST", 14);
-        blocksToWebDefault.put("LEAVES", 15);
-        blocksToWebDefault.put("LEAVES_2", 15);
-        // TODO",  cloud (16));
-        blocksToWebDefault.put("DOUBLE_PLANT", 17);  // TODO: other double plants, but a lot look like longer long grass
-        blocksToWebDefault.put("LONG_GRASS", 17); // tall grass
-        //blocksToWebDefault.put(, 29); // TODO: fern
-        blocksToWebDefault.put("YELLOW_FLOWER", 18);
-        blocksToWebDefault.put("RED_ROSE", 19);
-        //TODO blocksToWebDefault.put("CHORUS_FLOWER", 20);
-        blocksToWebDefault.put("SAPLING", 20); // oak sapling
-        //blocksToWebDefault.put(, 30); // TODO: spruce sapling
-        //blocksToWebDefault.put(, 31); // TODO: birch saplingg
-        // TODO",  sunflower (21));
-        // TODO",  white flower (22));
-        // TODO",  blue flower (23));
-
-        blocksToWebDefault.put("WOOL", 32); // note: special case
-
-        blocksToWebDefault.put("WALL_SIGN", 0); // air, since text is written on block behind it
-        blocksToWebDefault.put("SIGN_POST", 8); // plank TODO",  sign post model
-
-        // Light sources (nonzero toWebLighting()) TODO",  different textures? + allow placement, distinct blocks
-        blocksToWebDefault.put("GLOWSTONE", 64); // #define GLOWING_STONE
-        blocksToWebDefault.put("SEA_LANTERN", 35); // light blue wool
-        blocksToWebDefault.put("JACK_O_LANTERN", 33); // orange wool
-        blocksToWebDefault.put("REDSTONE_LAMP_ON", 46); // red wool
-        blocksToWebDefault.put("REDSTONE_LAMP_OFF", 46); // red wool
-        blocksToWebDefault.put("TORCH", 21); // sunflower, looks kinda like a torch
-        blocksToWebDefault.put("REDSTONE_TORCH_OFF", 19);
-        blocksToWebDefault.put("REDSTONE_TORCH_ON", 19); // red flower, vaguely a torch
-
-        // Liquids - currently using color blocks as placeholders since they appear too often
-        blocksToWebDefault.put("STATIONARY_WATER", 35); // light blue wool
-        blocksToWebDefault.put("WATER", 35); // light blue wool
-        blocksToWebDefault.put("STATIONARY_LAVA", 35); // orange wool
-        blocksToWebDefault.put("LAVA", 35); // orange wool
-
-        // TODO: support more blocks by default
-        blocksToWebDefault.put("BEDROCK", 65);
-        blocksToWebDefault.put("GRAVEL", 66);
-        blocksToWebDefault.put("IRON_BLOCK", 67);
-        blocksToWebDefault.put("GOLD_BLOCK", 68);
-        blocksToWebDefault.put("DIAMOND_BLOCK", 69);
-        blocksToWebDefault.put("SANDSTONE", 75);
-        blocksToWebDefault.put("BOOKSHELF", 50);
-        blocksToWebDefault.put("MOSSY_COBBLESTONE", 51);
-        blocksToWebDefault.put("OBSIDIAN", 52);
-        blocksToWebDefault.put("WORKBENCH", 53);
-        blocksToWebDefault.put("FURNACE", 54);
-        blocksToWebDefault.put("BURNING_FURNACE", 55);
-        blocksToWebDefault.put("MOB_SPAWNER", 56);
-        blocksToWebDefault.put("SNOW_BLOCK", 57);
-        blocksToWebDefault.put("ICE", 58);
-        blocksToWebDefault.put("CLAY", 59);
-        blocksToWebDefault.put("JUKEBOX", 60);
-        blocksToWebDefault.put("CACTUS", 61);
-        blocksToWebDefault.put("MYCEL", 62);
-        blocksToWebDefault.put("NETHERRACK", 63);
-        blocksToWebDefault.put("SPONGE", 24);
-        blocksToWebDefault.put("MELON_BLOCK", 25);
-        blocksToWebDefault.put("ENDER_STONE", 26);
-        blocksToWebDefault.put("TNT", 27);
-        blocksToWebDefault.put("EMERALD_BLOCK", 28);
-        blocksToWebDefault.put("PUMPKIN", 78); // TODO: face
-        blocksToWebDefault.put("JACK_O_LANTERN", 79); // TODO: face side
-        blocksToWebDefault.put("HUGE_MUSHROOM_1", 80); // brown TODO: data
-        blocksToWebDefault.put("HUGE_MUSHROOM_2", 81); // red TODO: data
-        blocksToWebDefault.put("COMMAND", 82);
-        blocksToWebDefault.put("EMERALD_ORE", 83);
-        blocksToWebDefault.put("SOUL_SAND", 84);
-        blocksToWebDefault.put("NETHER_BRICK", 85);
-        blocksToWebDefault.put("SOIL", 86); // wet farmland TODO: dry farmland (87)
-        blocksToWebDefault.put("REDSTONE_LAMP_OFF", 88);
-        blocksToWebDefault.put("REDSTONE_LAMP_ON", 89);
-
-
-        // First setup the defaults from above - don't loudly log failures here since they are either my fault, an error
-        // during development, or unsupported materials from an older/newer version of Bukkit
-        for (String materialString : blocksToWebDefault.keySet()) {
-            int n = ((Integer) blocksToWebDefault.get(materialString)).intValue();
-
-            Material material = Material.getMaterial(materialString);
-            if (materialString.equals("missing")) {
-                this.blocksToWebMissing = n;
-            } else {
-                if (material == null) {
-                    // maybe server doesn't have this material
-                    webSocketServerThread.log(Level.FINEST, "(internal) blocks_to_web invalid material ignored: " + materialString);
-                    continue;
-                }
-
-                this.blocksToWeb.put(material, n);
-            }
-        }
-
-        // Then override from config, if any
+        // Overrides from config, if any
         for (String materialString : settings.blocksToWebOverride.keySet()) {
             Object object = settings.blocksToWebOverride.get(materialString);
 
@@ -493,67 +358,137 @@ public class BlockBridge {
     // Translate web<->bukkit blocks
     // TODO: refactor to remove all bukkit dependency in this class (enums strings?), generalize to can support others
     private int toWebBlockType(Material material, byte data) {
-        if (!blocksToWeb.containsKey(material)) {
-            return -1;
+        if (blocksToWeb.containsKey(material)) {
+            return blocksToWeb.get(material);
         }
 
-        int type = blocksToWeb.get(material);
+        switch (material) {
+            case AIR: return 0;
+            case GRASS: return 1;
+            case SAND: return 2;
+            case SMOOTH_BRICK: return 3; // stone brick :0
+            //blocksToWebDefault.put(, 76; // TODO: mossy stone brick, :1
+            //blocksToWebDefault.put(, 77; // TODO: cracked stone brick, :2
 
-        if (type == 32) { // special case for wool / color block, not yet configurable
-            switch (data) {
-                case 0: // white
-                    type = 32;
-                    break;
-                case 1: // orange
-                    type = 33;
-                    break;
-                case 2: // magenta
-                    type = 34;
-                    break;
-                case 3: // light blue
-                    type = 35;
-                    break;
-                case 4: // yellow
-                    type = 36;
-                    break;
-                case 5: // lime
-                    type = 37;
-                    break;
-                case 6: // pink
-                    type = 38;
-                    break;
-                case 7: // gray
-                    type = 39;
-                    break;
-                case 8: // light gray
-                    type = 40;
-                    break;
-                case 9: // cyan
-                    type = 41;
-                    break;
-                case 10: // purple
-                    type = 42;
-                    break;
-                case 11: // blue
-                    type = 43;
-                    break;
-                case 12: // brown
-                    type = 44;
-                    break;
-                case 13: // green
-                    type = 45;
-                    break;
-                case 14: // red
-                    type = 46;
-                    break;
-                default:
-                case 15: // black
-                    type = 47;
-                    break;
+
+
+            case BRICK: return 4;
+            case LOG: return 5;
+            case LOG_2: return 5; // wood
+
+            case GOLD_ORE: return 70;
+            case IRON_ORE: return 71;
+            case COAL_ORE: return 72;
+            case LAPIS_ORE: return 73;
+            case LAPIS_BLOCK: return 74;
+            case DIAMOND_ORE: return 48;
+            case REDSTONE_ORE: return 49;
+            // TODO: more ores, for now, showing as stone
+            case QUARTZ_ORE: return 6;
+            case STONE: return 6;
+            case DIRT: return 7;
+            case WOOD: return 8; // plank
+            case SNOW: return 9;
+
+            case GLASS: return 10;
+            case COBBLESTONE: return 11;
+            // TODO: return  light stone (12);
+            // TODO: return  dark stone (13);
+            case CHEST: return 14;
+            case LEAVES: return 15;
+            case LEAVES_2: return 15;
+            // TODO: return  cloud (16);
+            case DOUBLE_PLANT: return 17;  // TODO: other double plants, but a lot look like longer long grass
+            case LONG_GRASS: return 17; // tall grass
+            //blocksToWebDefault.put(, 29; // TODO: fern
+            case YELLOW_FLOWER: return 18;
+            case RED_ROSE: return 19;
+            //TODO case CHORUS_FLOWER: return 20;
+            case SAPLING: return 20; // oak sapling
+            //blocksToWebDefault.put(, 30; // TODO: spruce sapling
+            //blocksToWebDefault.put(, 31; // TODO: birch saplingg
+            // TODO: return  sunflower (21);
+            // TODO: return  white flower (22);
+            // TODO: return  blue flower (23);
+
+            case WOOL:
+            {
+                switch (data) {
+                    case 0: return 32; // white
+                    case 1: return 33; // orange
+                    case 2: return 34; // magenta
+                    case 3: return 35; // light blue
+                    case 4: return 36; // yellow
+                    case 5: return 37; // lime
+                    case 6: return 38; // pink
+                    case 7: return 39; // gray
+                    case 8: return 40; // light gray
+                    case 9: return 41; // cyan
+                    case 10: return 42; // purple
+                    case 11: return 43; // blue
+                    case 12: return 44; // brown
+                    case 13: return 45; // green
+                    case 14: return 46; // red
+                    default:
+                    case 15: return 47; // black
+                }
             }
-        }
 
-        return type;
+            case WALL_SIGN: return 0; // air, since text is written on block behind it
+            case SIGN_POST: return 8; // plank TODO: return  sign post model
+
+            // Light sources (nonzero toWebLighting()) TODO: return  different textures? + allow placement, distinct blocks
+            case GLOWSTONE: return 64; // #define GLOWING_STONE
+            case SEA_LANTERN: return 35; // light blue wool
+            case TORCH: return 21; // sunflower, looks kinda like a torch
+            case REDSTONE_TORCH_OFF: return 19;
+            case REDSTONE_TORCH_ON: return 19; // red flower, vaguely a torch
+
+            // Liquids - currently using color blocks as placeholders since they appear too often
+            case STATIONARY_WATER: return 35; // light blue wool
+            case WATER: return 35; // light blue wool
+            case STATIONARY_LAVA: return 35; // orange wool
+            case LAVA: return 35; // orange wool
+
+            // TODO: support more blocks by default
+            case BEDROCK: return 65;
+            case GRAVEL: return 66;
+            case IRON_BLOCK: return 67;
+            case GOLD_BLOCK: return 68;
+            case DIAMOND_BLOCK: return 69;
+            case SANDSTONE: return 75;
+            case BOOKSHELF: return 50;
+            case MOSSY_COBBLESTONE: return 51;
+            case OBSIDIAN: return 52;
+            case WORKBENCH: return 53;
+            case FURNACE: return 54;
+            case BURNING_FURNACE: return 55;
+            case MOB_SPAWNER: return 56;
+            case SNOW_BLOCK: return 57;
+            case ICE: return 58;
+            case CLAY: return 59;
+            case JUKEBOX: return 60;
+            case CACTUS: return 61;
+            case MYCEL: return 62;
+            case NETHERRACK: return 63;
+            case SPONGE: return 24;
+            case MELON_BLOCK: return 25;
+            case ENDER_STONE: return 26;
+            case TNT: return 27;
+            case EMERALD_BLOCK: return 28;
+            case PUMPKIN: return 78; // TODO: face
+            case JACK_O_LANTERN: return 79; // TODO: face side
+            case HUGE_MUSHROOM_1: return 80; // brown TODO: data
+            case HUGE_MUSHROOM_2: return 81; // red TODO: data
+            case COMMAND: return 82;
+            case EMERALD_ORE: return 83;
+            case SOUL_SAND: return 84;
+            case NETHER_BRICK: return 85;
+            case SOIL: return 86; // wet farmland TODO: dry farmland (87)
+            case REDSTONE_LAMP_OFF: return 88;
+            case REDSTONE_LAMP_ON: return 89;
+            default: return this.blocksToWebMissing;
+        }
     }
 
     private Material toBukkitBlockType(int type) {
