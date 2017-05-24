@@ -537,64 +537,28 @@ public class BlockBridge {
             case 46:
             case 47:
                 material = Material.WOOL;
-                DyeColor color = null;
+                DyeColor color;
                 switch (type) {
-                    // Craft has 32 color block types, but MC only 16 - not 1:1, but try to get close enough
-                    // TODO: ^ no longer true, fix
-                    case 32: // #define COLOR_00 // 32 yellow
-                        color = DyeColor.YELLOW; break;
-                    case 33: // #define COLOR_01 // 33 light green
-                    case 34: // #define COLOR_02 // 34 green
-                    case 35: // #define COLOR_03 // 35 sea green
-                        color = DyeColor.GREEN; break;
-                    case 36: // #define COLOR_04 // 36 light brown
-                    case 37: // #define COLOR_05 // 37 medium brown
-                    case 38: // #define COLOR_06 // 38 dark brown
-                        color = DyeColor.BROWN; break;
-                    case 39: // #define COLOR_07 // 39 purple
-                        color = DyeColor.PURPLE; break;
-                    case 40: // #define COLOR_08 // 40 dark gray
-                    case 41: // #define COLOR_09 // 41 darker gray
-                        color = DyeColor.GRAY; break;
-                    case 42: // #define COLOR_10 // 42 light purple
-                        color = DyeColor.PURPLE; break;
-                    case 43: // #define COLOR_11 // 43 crimson
-                        color = DyeColor.MAGENTA; break;
-                    case 44: // #define COLOR_12 // 44 salmon
-                        color = DyeColor.RED; break;
-                    case 45: // #define COLOR_13 // 45 pink
-                        color = DyeColor.PINK; break;
-                    case 46: // #define COLOR_14 // 46 puke green
-                        color = DyeColor.LIME; break;
-                    case 47: // #define COLOR_15 // 47 poop brown
-                        color = DyeColor.BROWN; break;
-                    case 48: // #define COLOR_16 // 48 black
-                        color = DyeColor.BLACK; break;
-                    case 49: // #define COLOR_17 // 49 dark gray
-                        color = DyeColor.GRAY; break;
-                    case 50: // #define COLOR_18 // 50 medium gray
-                        color = DyeColor.SILVER; break;
-                    case 51: // #define COLOR_19 // 51 leather
-                    case 52: // #define COLOR_20 // 52 tan
-                    case 53: // #define COLOR_21 // 53 orange
-                    case 54: // #define COLOR_22 // 54 light orange
-                    case 55: // #define COLOR_23 // 55 sand
-                        color = DyeColor.ORANGE; break;
-                    case 56: // #define COLOR_24 // 56 aqua
-                    case 57: // #define COLOR_25 // 57 blue
-                        color = DyeColor.BLUE; break;
-                    case 58: // #define COLOR_26 // 58 light blue
-                        color = DyeColor.LIGHT_BLUE; break;
-                    case 59: // #define COLOR_27 // 59 foam green
-                        color = DyeColor.CYAN; break;
-                    case 60: // #define COLOR_28 // 60 cloud
-                    case 61: // #define COLOR_29 // 61 white
-                    case 62: // #define COLOR_30 // 62 offwhite
-                        color = DyeColor.WHITE; break;
-                    case 63: // #define COLOR_31 // 63 gray
-                        color = DyeColor.GRAY; break;
+                    default:
+                    case 32: color = DyeColor.WHITE; break;
+                    case 33: color = DyeColor.ORANGE; break;
+                    case 34: color = DyeColor.MAGENTA; break;
+                    case 35: color = DyeColor.LIGHT_BLUE; break;
+                    case 36: color = DyeColor.YELLOW; break;
+                    case 37: color = DyeColor.LIME; break;
+                    case 38: color = DyeColor.PINK; break;
+                    case 39: color = DyeColor.GRAY; break;
+                    case 40: color = DyeColor.SILVER; break; // light gray
+                    case 41: color = DyeColor.CYAN; break;
+                    case 42: color = DyeColor.PURPLE; break;
+                    case 43: color = DyeColor.BLUE; break;
+                    case 44: color = DyeColor.BROWN; break;
+                    case 45: color = DyeColor.GREEN; break;
+                    case 46: color = DyeColor.RED; break;
+                    case 47: color = DyeColor.BLACK; break;
                 }
                 materialData = new Wool(color);
+                break;
 
             case 64: material = Material.GLOWSTONE; break;
             default:
