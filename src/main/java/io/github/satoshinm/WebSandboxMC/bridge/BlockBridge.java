@@ -298,7 +298,7 @@ public class BlockBridge {
             if (blockState instanceof Sign) {
                 Sign sign = (Sign) blockState;
 
-                notifySignChange(block.getLocation(), block.getType(), block.getData(), sign.getLines());
+                notifySignChange(block.getLocation(), block.getType(), block.getState(), sign.getLines());
             }
         }
 
@@ -594,11 +594,11 @@ public class BlockBridge {
         return -1;
     }
 
-    public void notifySignChange(Location location, Material material, byte data, String[] lines) {
+    public void notifySignChange(Location location, Material material, BlockState blockState, String[] lines) {
         int x = toWebLocationBlockX(location);
         int y = toWebLocationBlockY(location);
         int z = toWebLocationBlockZ(location);
-
+        byte data = blockState.getData().getData();
 
         // data is packed bitfield, see http://minecraft.gamepedia.com/Sign#Block_data
         // Craft's faces:
@@ -728,6 +728,6 @@ public class BlockBridge {
         sign.update();
 
         // SignChangeEvent not posted when signs created programmatically; notify web clients ourselves
-        notifySignChange(location, block.getType(), block.getData(), sign.getLines());
+        notifySignChange(location, block.getType(), block.getState(), sign.getLines());
     }
 }

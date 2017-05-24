@@ -38,7 +38,7 @@ public class BlockListener implements Listener {
     public void onSignChange(SignChangeEvent event) {
         Block block = event.getBlock();
 
-        blockBridge.notifySignChange(block.getLocation(), block.getType(), block.getData(), event.getLines());
+        blockBridge.notifySignChange(block.getLocation(), block.getType(), block.getState(), event.getLines());
     }
 
     // TODO: BlockBurnEvent
