@@ -9,6 +9,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
+import org.bukkit.event.block.BlockDamageEvent;
 import org.bukkit.material.MaterialData;
 import org.bukkit.material.Wool;
 
@@ -591,7 +592,14 @@ public class BlockBridge {
         BlockFace blockFace = BlockFace.NORTH;
         if (blockState.getData() instanceof org.bukkit.material.Sign) {
             org.bukkit.material.Sign sign = (org.bukkit.material.Sign) blockState.getData();
-            blockFace = sign.getFacing();
+            if (sign != null) {
+                try {
+                    blockFace = sign.getFacing();
+                } catch (Exception ex) {
+                    webSocketServerThread.log(Level.WARNING, "Exception occurred while getting sign state at "+location);
+                    ex.printStackTrace();
+                }
+            }
         }
 
         int face = 7;
@@ -672,25 +680,28 @@ public class BlockBridge {
             return;
         }
 
-        byte data = 0;
+        BlockFace blockFace;
         switch (face) {
             case 0: // west
-                data = 4; // west
+                blockFace = BlockFace.WEST;
                 x -= 1;
                 break;
             case 1: // east
-                data = 5; // east
+                blockFace = BlockFace.EAST;
                 x += 1;
                 break;
+            default:
             case 2: // north
-                data = 2; // north
+                blockFace = BlockFace.NORTH;
                 z -= 1;
                 break;
             case 3: // south
-                data = 3; // south
+                blockFace = BlockFace.SOUTH;
                 z += 1;
                 break;
         }
+        org.bukkit.material.Sign signDirection = new org.bukkit.material.Sign();
+        signDirection.setFacingDirection(blockFace);
 
         Location location = toBukkitLocation(x, y, z);
         if (!withinSandboxRange(location)) {
@@ -698,11 +709,18 @@ public class BlockBridge {
             return;
         }
 
+        // Create the sign
         Block block = location.getWorld().getBlockAt(location);
-        block.setType(Material.WALL_SIGN);
-        block.setData(data);
-        webSocketServerThread.log(Level.FINEST, "setting sign at "+location+" data="+data);
         BlockState blockState = block.getState();
+        blockState.setType(Material.WALL_SIGN);
+        blockState.setData(signDirection);
+        boolean force = true;
+        boolean applyPhysics = false;
+        blockState.update(force, applyPhysics);
+        webSocketServerThread.log(Level.FINEST, "setting sign at "+location+" blockFace="+blockFace);
+
+        // Set the sign text
+        blockState = block.getState();
         if (!(blockState instanceof Sign)) {
             webSocketServerThread.log(Level.WARNING, "failed to place sign at "+location);
             return;
@@ -711,7 +729,8 @@ public class BlockBridge {
 
         // TODO: text lines by 15 characters into 5 lines
         sign.setLine(0, text);
-        sign.update();
+        sign.update(force, applyPhysics);
+        System.out.println("set sign text="+text+", signDirection="+signDirection+", blockFace="+blockFace+", block="+block+", face="+face);
 
         // SignChangeEvent not posted when signs created programmatically; notify web clients ourselves
         notifySignChange(location, block.getType(), block.getState(), sign.getLines());
