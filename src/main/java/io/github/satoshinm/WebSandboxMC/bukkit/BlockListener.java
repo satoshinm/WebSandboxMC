@@ -23,7 +23,7 @@ public class BlockListener implements Listener {
     public void onBlockBreak(BlockBreakEvent event) {
         Block block = event.getBlock();
         Location location = block.getLocation();
-        blockBridge.notifyBlockUpdate(location, Material.AIR, (byte) 0);
+        blockBridge.notifyBlockUpdate(location, Material.AIR, null);
     }
 
     @EventHandler(ignoreCancelled = true)
@@ -31,7 +31,7 @@ public class BlockListener implements Listener {
     public void onBlockPlace(BlockPlaceEvent event) {
         Block block = event.getBlock();
 
-        blockBridge.notifyBlockUpdate(block.getLocation(), block.getType(), block.getData());
+        blockBridge.notifyBlockUpdate(block.getLocation(), block.getType(), block.getState());
     }
     @EventHandler(ignoreCancelled = true)
     @SuppressWarnings("deprecation") // Block#getData

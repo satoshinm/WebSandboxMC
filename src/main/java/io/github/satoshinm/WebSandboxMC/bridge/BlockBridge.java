@@ -121,7 +121,7 @@ public class BlockBridge {
                     //int type = toWebBlockType(block.getType(), block.getData());
 
                     //webSocketServerThread.sendLine(channel, "B,0,0," + (i + radius) + "," + (j + radius + y_offset) + "," + (k + radius) + "," + type);
-                    thereIsAWorld |= setBlockUpdate(block.getLocation(), block.getType(), block.getData());
+                    thereIsAWorld |= setBlockUpdate(block.getLocation(), block.getType(), block.getState());
                 }
             }
         }
@@ -226,7 +226,7 @@ public class BlockBridge {
                 webSocketServerThread.sendLine(ctx.channel(), "T,You cannot place blocks of type " + material);
             }
             // Revert on client
-            int previousType = toWebBlockType(previousMaterial, (byte) 0);
+            int previousType = toWebBlockType(previousMaterial, null);
             webSocketServerThread.sendLine(ctx.channel(), "B,0,0,"+x+","+y+","+z+","+previousType);
             webSocketServerThread.sendLine(ctx.channel(), "R,0,0");
             return;
@@ -252,7 +252,7 @@ public class BlockBridge {
 
 
     // Handle the bukkit world changing a block, tell all web clients and refresh
-    public void notifyBlockUpdate(Location location, Material material, byte data) {
+    public void notifyBlockUpdate(Location location, Material material, BlockState blockState) {
         webSocketServerThread.log(Level.FINEST, "bukkit block at "+location+" was set to "+material);
 
         if (!withinSandboxRange(location)) {
@@ -260,14 +260,14 @@ public class BlockBridge {
             return;
         }
 
-        setBlockUpdate(location, material, data);
+        setBlockUpdate(location, material, blockState);
 
         webSocketServerThread.broadcastLine("R,0,0");
     }
 
-    private boolean setBlockUpdate(Location location, Material material, byte data) {
+    private boolean setBlockUpdate(Location location, Material material, BlockState blockState) {
         // Send to all web clients to let them know it changed using the "B," command
-        int type = toWebBlockType(material, data);
+        int type = toWebBlockType(material, blockState);
         boolean substantial;
 
         if (type == -1) {
@@ -288,14 +288,13 @@ public class BlockBridge {
 
         webSocketServerThread.broadcastLine("B,0,0,"+x+","+y+","+z+","+type);
 
-        int light_level = toWebLighting(material, data);
+        int light_level = toWebLighting(material, blockState);
         if (light_level != 0) {
             webSocketServerThread.broadcastLine("L,0,0,"+x+","+y+","+z+"," + light_level);
         }
 
         if (material == Material.WALL_SIGN || material == material.SIGN_POST) {
             Block block = location.getWorld().getBlockAt(location);
-            BlockState blockState = block.getState();
             if (blockState instanceof Sign) {
                 Sign sign = (Sign) blockState;
 
@@ -308,7 +307,7 @@ public class BlockBridge {
         return substantial; // was something "real" set? (not air, not missing)
     }
 
-    private int toWebLighting(Material material, byte data) {
+    private int toWebLighting(Material material, BlockState blockState) {
         // See http://minecraft.gamepedia.com/Light#Blocks
         // Note not all of these may be fully supported yet
         switch (material) {
@@ -354,7 +353,14 @@ public class BlockBridge {
 
     // Translate web<->bukkit blocks
     // TODO: refactor to remove all bukkit dependency in this class (enums strings?), generalize to can support others
-    private int toWebBlockType(Material material, byte data) {
+    private int toWebBlockType(Material material, BlockState blockState) {
+        byte data = 0;
+        if (blockState != null) {
+            if (blockState.getData() != null) {
+                data = blockState.getData().getData();
+            }
+        }
+
         if (blocksToWeb.containsKey(material)) {
             return blocksToWeb.get(material);
         }
