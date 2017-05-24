@@ -294,7 +294,7 @@ public class BlockBridge {
             webSocketServerThread.broadcastLine("L,0,0,"+x+","+y+","+z+"," + light_level);
         }
 
-        if (material == Material.WALL_SIGN || material == material.SIGN_POST) {
+        if (material == Material.WALL_SIGN || material == Material.SIGN_POST) {
             Block block = location.getWorld().getBlockAt(location);
             if (blockState instanceof Sign) {
                 Sign sign = (Sign) blockState;
