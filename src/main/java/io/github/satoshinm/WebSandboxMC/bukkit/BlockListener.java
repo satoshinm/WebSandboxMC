@@ -27,14 +27,12 @@ public class BlockListener implements Listener {
     }
 
     @EventHandler(ignoreCancelled = true)
-    @SuppressWarnings("deprecation") // Block#getData
     public void onBlockPlace(BlockPlaceEvent event) {
         Block block = event.getBlock();
 
         blockBridge.notifyBlockUpdate(block.getLocation(), block.getType(), block.getState());
     }
     @EventHandler(ignoreCancelled = true)
-    @SuppressWarnings("deprecation") // Block#getData
     public void onSignChange(SignChangeEvent event) {
         Block block = event.getBlock();
 
