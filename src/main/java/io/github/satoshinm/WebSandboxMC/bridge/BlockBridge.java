@@ -347,9 +347,9 @@ public class BlockBridge {
             case DRAGON_EGG:
             case ENDER_PORTAL_FRAME:
                 return 1;
+            default:
+                return 0;
         }
-
-        return 0;
     }
 
     // Translate web<->bukkit blocks
