@@ -9,6 +9,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.material.MaterialData;
+import org.bukkit.material.Sapling;
 import org.bukkit.material.Wool;
 
 import java.util.ArrayList;
@@ -354,6 +355,8 @@ public class BlockBridge {
             return blocksToWeb.get(material);
         }
 
+        MaterialData materialData = blockState != null ? blockState.getData() : null;
+
         switch (material) {
             case AIR: return 0;
             case GRASS: return 1;
@@ -395,17 +398,26 @@ public class BlockBridge {
             case YELLOW_FLOWER: return 18;
             case RED_ROSE: return 19;
             //TODO case CHORUS_FLOWER: return 20;
-            case SAPLING: return 20; // oak sapling
-            //blocksToWebDefault.put(, 30; // TODO: spruce sapling
-            //blocksToWebDefault.put(, 31; // TODO: birch saplingg
+            case SAPLING: {
+                if (materialData instanceof Sapling) {
+                    Sapling sapling = (Sapling) materialData;
+                    switch (sapling.getSpecies()) {
+                        default:
+                        case GENERIC: return 20; // oak sapling
+                        case REDWOOD: return 30; // spruce sapling ("darker barked/leaves tree species")
+                        case BIRCH: return 31; // birch sapling
+                    }
+                }
+                return 20; // oak sapling
+            }
             // TODO: return  sunflower (21);
             // TODO: return  white flower (22);
             // TODO: return  blue flower (23);
 
             case WOOL:
             {
-                if (blockState.getData() instanceof Wool) {
-                    Wool wool = (Wool) blockState.getData();
+                if (materialData instanceof Wool) {
+                    Wool wool = (Wool) materialData;
                     switch (wool.getColor()) {
                         case WHITE: return 32;
                         case ORANGE: return 33;
