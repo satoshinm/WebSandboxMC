@@ -3,7 +3,6 @@ package io.github.satoshinm.WebSandboxMC.bridge;
 import io.github.satoshinm.WebSandboxMC.Settings;
 import io.github.satoshinm.WebSandboxMC.ws.WebSocketServerThread;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelId;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
@@ -31,7 +30,7 @@ public class WebPlayerBridge {
     private boolean setCustomNames;
     private boolean disableGravity;
     private boolean disableAI;
-    private Class entityClass;
+    private Class<?> entityClass;
     private boolean constrainToSandbox;
     private boolean dieDisconnect;
 
@@ -78,7 +77,7 @@ public class WebPlayerBridge {
         if (this.entityClass != null) {
             // Spawn an entity in the web user's place
             Location location = webSocketServerThread.blockBridge.spawnLocation;
-            Entity entity = webSocketServerThread.blockBridge.world.spawn(location, this.entityClass);
+            Entity entity = webSocketServerThread.blockBridge.world.spawn(location, (Class) this.entityClass);
             if (setCustomNames) {
                 entity.setCustomName(theirName); // name tag
                 entity.setCustomNameVisible(true);

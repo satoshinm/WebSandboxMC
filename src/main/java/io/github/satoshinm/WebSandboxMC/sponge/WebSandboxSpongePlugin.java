@@ -1,19 +1,11 @@
 package io.github.satoshinm.WebSandboxMC.sponge;
 
-import com.google.common.reflect.TypeToken;
 import com.google.inject.Inject;
 import io.github.satoshinm.WebSandboxMC.Settings;
-import io.github.satoshinm.WebSandboxMC.bridge.BlockBridge;
-import io.github.satoshinm.WebSandboxMC.bridge.PlayersBridge;
-import io.github.satoshinm.WebSandboxMC.bridge.WebPlayerBridge;
 import io.github.satoshinm.WebSandboxMC.ws.WebSocketServerThread;
-import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.commented.CommentedConfigurationNode;
-import ninja.leaping.configurate.hocon.HoconConfigurationLoader;
 import ninja.leaping.configurate.loader.ConfigurationLoader;
-import ninja.leaping.configurate.objectmapping.ObjectMappingException;
 import org.slf4j.Logger;
-import org.spongepowered.api.Game;
 import org.spongepowered.api.config.ConfigDir;
 import org.spongepowered.api.config.DefaultConfig;
 import org.spongepowered.api.event.Listener;
@@ -21,10 +13,12 @@ import org.spongepowered.api.event.game.state.GameInitializationEvent;
 import org.spongepowered.api.event.game.state.GameStartingServerEvent;
 import org.spongepowered.api.plugin.Plugin;
 
-import java.io.IOException;
 import java.nio.file.Path;
 
-@Plugin(id = "websandboxmc", name = "WebSandboxMC", version = "1.7.0")
+@Plugin(id = "websandboxmc",
+        name = "WebSandboxMC",
+        description = "Web-based client providing an interactive glimpse of a part of your server using WebGL/HTML5",
+        version = "1.8.0")
 public class WebSandboxSpongePlugin {
 
     @Inject
@@ -42,8 +36,8 @@ public class WebSandboxSpongePlugin {
     @ConfigDir(sharedRoot = false)
     private Path configDir;
 
-    @Inject
-    private Game game;
+    //@Inject
+    //private Game game;
 
     private Settings settings;
 

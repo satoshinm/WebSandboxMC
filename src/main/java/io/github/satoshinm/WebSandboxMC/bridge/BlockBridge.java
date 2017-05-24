@@ -8,6 +8,8 @@ import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
+import org.bukkit.material.MaterialData;
+import org.bukkit.material.Wool;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,7 +29,7 @@ public class BlockBridge {
     private boolean allowBreakPlaceBlocks;
     private boolean allowSigns;
     private Map<Material, Integer> blocksToWeb;
-    private int blocksToWebMissing = 16; // unknown/unsupported becomes cloud, if key missing
+    private int blocksToWebMissing; // unknown/unsupported becomes cloud, if key missing
     private boolean warnMissing;
     private List<Material> unbreakableBlocks;
     private String textureURL;
@@ -59,144 +61,9 @@ public class BlockBridge {
         this.allowSigns = settings.allowSigns;
 
         this.blocksToWeb = new HashMap<Material, Integer>();
-        Map<String, Integer> blocksToWebDefault = new HashMap<String, Integer>();
+        this.blocksToWebMissing = 16; // unknown/unsupported becomes cloud
 
-        blocksToWebDefault.put("missing", 16); // unknown/unsupported becomes cloud
-        blocksToWebDefault.put("AIR", 0);
-        blocksToWebDefault.put("GRASS", 1);
-        blocksToWebDefault.put("SAND", 2);
-        blocksToWebDefault.put("SMOOTH_BRICK", 3); // stone brick :0
-        //blocksToWebDefault.put(, 76); // TODO: mossy stone brick, :1
-        //blocksToWebDefault.put(, 77); // TODO: cracked stone brick, :2
-
-
-
-        blocksToWebDefault.put("BRICK", 4);
-        blocksToWebDefault.put("LOG", 5);
-        blocksToWebDefault.put("LOG_2", 5); // wood
-
-        blocksToWebDefault.put("GOLD_ORE", 70);
-        blocksToWebDefault.put("IRON_ORE", 71);
-        blocksToWebDefault.put("COAL_ORE", 72);
-        blocksToWebDefault.put("LAPIS_ORE", 73);
-        blocksToWebDefault.put("LAPIS_BLOCK", 74);
-        blocksToWebDefault.put("DIAMOND_ORE", 48);
-        blocksToWebDefault.put("REDSTONE_ORE", 49);
-        blocksToWebDefault.put("REDSTONE_ORE", 49);
-        // TODO: more ores, for now, showing as stone
-        blocksToWebDefault.put("EMERALD_ORE", 6);
-        blocksToWebDefault.put("QUARTZ_ORE", 6);
-        blocksToWebDefault.put("STONE", 6); // cement, close enough
-
-        blocksToWebDefault.put("GRAVEL", 7);
-        blocksToWebDefault.put("DIRT", 7);
-
-        blocksToWebDefault.put("WOOD", 8); // plank
-
-        blocksToWebDefault.put("SNOW", 9);
-        blocksToWebDefault.put("SNOW_BLOCK", 9);
-
-        blocksToWebDefault.put("GLASS", 10);
-        blocksToWebDefault.put("COBBLESTONE", 11);
-        // TODO",  light stone (12));
-        // TODO",  dark stone (13));
-        blocksToWebDefault.put("CHEST", 14);
-        blocksToWebDefault.put("LEAVES", 15);
-        blocksToWebDefault.put("LEAVES_2", 15);
-        // TODO",  cloud (16));
-        blocksToWebDefault.put("DOUBLE_PLANT", 17);  // TODO: other double plants, but a lot look like longer long grass
-        blocksToWebDefault.put("LONG_GRASS", 17); // tall grass
-        //blocksToWebDefault.put(, 29); // TODO: fern
-        blocksToWebDefault.put("YELLOW_FLOWER", 18);
-        blocksToWebDefault.put("RED_ROSE", 19);
-        //TODO blocksToWebDefault.put("CHORUS_FLOWER", 20);
-        blocksToWebDefault.put("SAPLING", 20); // oak sapling
-        //blocksToWebDefault.put(, 30); // TODO: spruce sapling
-        //blocksToWebDefault.put(, 31); // TODO: birch saplingg
-        // TODO",  sunflower (21));
-        // TODO",  white flower (22));
-        // TODO",  blue flower (23));
-
-        blocksToWebDefault.put("WOOL", 32); // note: special case
-
-        blocksToWebDefault.put("WALL_SIGN", 0); // air, since text is written on block behind it
-        blocksToWebDefault.put("SIGN_POST", 8); // plank TODO",  sign post model
-
-        // Light sources (nonzero toWebLighting()) TODO",  different textures? + allow placement, distinct blocks
-        blocksToWebDefault.put("GLOWSTONE", 64); // #define GLOWING_STONE
-        blocksToWebDefault.put("SEA_LANTERN", 35); // light blue wool
-        blocksToWebDefault.put("JACK_O_LANTERN", 33); // orange wool
-        blocksToWebDefault.put("REDSTONE_LAMP_ON", 46); // red wool
-        blocksToWebDefault.put("REDSTONE_LAMP_OFF", 46); // red wool
-        blocksToWebDefault.put("TORCH", 21); // sunflower, looks kinda like a torch
-        blocksToWebDefault.put("REDSTONE_TORCH_OFF", 19);
-        blocksToWebDefault.put("REDSTONE_TORCH_ON", 19); // red flower, vaguely a torch
-
-        // Liquids - currently using color blocks as placeholders since they appear too often
-        blocksToWebDefault.put("STATIONARY_WATER", 35); // light blue wool
-        blocksToWebDefault.put("WATER", 35); // light blue wool
-        blocksToWebDefault.put("STATIONARY_LAVA", 35); // orange wool
-        blocksToWebDefault.put("LAVA", 35); // orange wool
-
-        // TODO: support more blocks by default
-        blocksToWebDefault.put("BEDROCK", 65);
-        blocksToWebDefault.put("GRAVEL", 66);
-        blocksToWebDefault.put("IRON_BLOCK", 67);
-        blocksToWebDefault.put("GOLD_BLOCK", 68);
-        blocksToWebDefault.put("DIAMOND_BLOCK", 69);
-        blocksToWebDefault.put("SANDSTONE", 75);
-        blocksToWebDefault.put("BOOKSHELF", 50);
-        blocksToWebDefault.put("MOSSY_COBBLESTONE", 51);
-        blocksToWebDefault.put("OBSIDIAN", 52);
-        blocksToWebDefault.put("WORKBENCH", 53);
-        blocksToWebDefault.put("FURNACE", 54);
-        blocksToWebDefault.put("BURNING_FURNACE", 55);
-        blocksToWebDefault.put("MOB_SPAWNER", 56);
-        blocksToWebDefault.put("SNOW_BLOCK", 57);
-        blocksToWebDefault.put("ICE", 58);
-        blocksToWebDefault.put("CLAY", 59);
-        blocksToWebDefault.put("JUKEBOX", 60);
-        blocksToWebDefault.put("CACTUS", 61);
-        blocksToWebDefault.put("MYCEL", 62);
-        blocksToWebDefault.put("NETHERRACK", 63);
-        blocksToWebDefault.put("SPONGE", 24);
-        blocksToWebDefault.put("MELON_BLOCK", 25);
-        blocksToWebDefault.put("ENDER_STONE", 26);
-        blocksToWebDefault.put("TNT", 27);
-        blocksToWebDefault.put("EMERALD_BLOCK", 28);
-        blocksToWebDefault.put("PUMPKIN", 78); // TODO: face
-        blocksToWebDefault.put("JACK_O_LANTERN", 79); // TODO: face side
-        blocksToWebDefault.put("HUGE_MUSHROOM_1", 80); // brown TODO: data
-        blocksToWebDefault.put("HUGE_MUSHROOM_2", 81); // red TODO: data
-        blocksToWebDefault.put("COMMAND", 82);
-        blocksToWebDefault.put("EMERALD_ORE", 83);
-        blocksToWebDefault.put("SOUL_SAND", 84);
-        blocksToWebDefault.put("NETHER_BRICK", 85);
-        blocksToWebDefault.put("SOIL", 86); // wet farmland TODO: dry farmland (87)
-        blocksToWebDefault.put("REDSTONE_LAMP_OFF", 88);
-        blocksToWebDefault.put("REDSTONE_LAMP_ON", 89);
-
-
-        // First setup the defaults from above - don't loudly log failures here since they are either my fault, an error
-        // during development, or unsupported materials from an older/newer version of Bukkit
-        for (String materialString : blocksToWebDefault.keySet()) {
-            int n = ((Integer) blocksToWebDefault.get(materialString)).intValue();
-
-            Material material = Material.getMaterial(materialString);
-            if (materialString.equals("missing")) {
-                this.blocksToWebMissing = n;
-            } else {
-                if (material == null) {
-                    // maybe server doesn't have this material
-                    webSocketServerThread.log(Level.FINEST, "(internal) blocks_to_web invalid material ignored: " + materialString);
-                    continue;
-                }
-
-                this.blocksToWeb.put(material, n);
-            }
-        }
-
-        // Then override from config, if any
+        // Overrides from config, if any
         for (String materialString : settings.blocksToWebOverride.keySet()) {
             Object object = settings.blocksToWebOverride.get(materialString);
 
@@ -242,7 +109,6 @@ public class BlockBridge {
     }
 
     // Send the client the initial section of the world when they join
-    @SuppressWarnings("deprecation") // Block#getData()
     public void sendWorld(final Channel channel) {
         if (textureURL != null) {
             webSocketServerThread.sendLine(channel, "t," + textureURL);
@@ -257,7 +123,7 @@ public class BlockBridge {
                     //int type = toWebBlockType(block.getType(), block.getData());
 
                     //webSocketServerThread.sendLine(channel, "B,0,0," + (i + radius) + "," + (j + radius + y_offset) + "," + (k + radius) + "," + type);
-                    thereIsAWorld |= setBlockUpdate(block.getLocation(), block.getType(), block.getData());
+                    thereIsAWorld |= setBlockUpdate(block.getLocation(), block.getType(), block.getState());
                 }
             }
         }
@@ -329,7 +195,6 @@ public class BlockBridge {
     public double toWebLocationEntityZ(Location location) { return location.getZ() - (-radius + z_center); }
 
     // Handle the web client changing a block, update the bukkit world
-    @SuppressWarnings("deprecation") // for Block#setTypeIdAndData
     public void clientBlockUpdate(ChannelHandlerContext ctx, int x, int y, int z, int type) {
         if (!allowBreakPlaceBlocks) {
             webSocketServerThread.sendLine(ctx.channel(), "T,Breaking/placing blocks not allowed");
@@ -337,8 +202,6 @@ public class BlockBridge {
             return;
         }
 
-        Material material = toBukkitBlockType(type);
-        int blockdata = toBukkitBlockData(type);
         Location location = toBukkitLocation(x, y, z);
 
         if (!withinSandboxRange(location)) {
@@ -354,16 +217,14 @@ public class BlockBridge {
 
         Block previousBlock = location.getBlock();
         Material previousMaterial = previousBlock.getType();
-        if (unbreakableBlocks.contains(previousMaterial) || unbreakableBlocks.contains(material)) {
-            webSocketServerThread.log(Level.FINEST, "client tried to change or place unbreakable block at " +
-                    location + " of type previousMaterial="+previousMaterial+" to material="+material);
-            if (unbreakableBlocks.contains(previousMaterial)) {
-                webSocketServerThread.sendLine(ctx.channel(), "T,You cannot break blocks of type " + previousMaterial);
-            } else if (unbreakableBlocks.contains(material)) {
-                webSocketServerThread.sendLine(ctx.channel(), "T,You cannot place blocks of type " + material);
-            }
+        if (unbreakableBlocks.contains(previousMaterial)) {
+            webSocketServerThread.log(Level.FINEST, "client tried to change unbreakable block at " +
+                    location + " of type previousMaterial="+previousMaterial);
+
+            webSocketServerThread.sendLine(ctx.channel(), "T,You cannot break blocks of type " + previousMaterial);
+
             // Revert on client
-            int previousType = toWebBlockType(previousMaterial, (byte) 0);
+            int previousType = toWebBlockType(previousMaterial, null);
             webSocketServerThread.sendLine(ctx.channel(), "B,0,0,"+x+","+y+","+z+","+previousType);
             webSocketServerThread.sendLine(ctx.channel(), "R,0,0");
             return;
@@ -375,12 +236,10 @@ public class BlockBridge {
             return;
         }
 
-        webSocketServerThread.log(Level.FINEST, "setting block at "+location+" to "+material);
-        if (blockdata != -1) {
-            block.setTypeIdAndData(material.getId(), (byte) blockdata, true);
-        } else {
-            block.setType(material);
-        }
+        webSocketServerThread.log(Level.FINEST, "setting block at "+location);
+
+        BlockState blockState = block.getState();
+        toBukkitBlockType(type, blockState);
 
         // Notify other web clients - note they will have the benefit of seeing the untranslated block (feature or bug?)
         webSocketServerThread.broadcastLineExcept(ctx.channel().id(), "B,0,0," + x + "," + y + "," + z + "," + type);
@@ -389,7 +248,7 @@ public class BlockBridge {
 
 
     // Handle the bukkit world changing a block, tell all web clients and refresh
-    public void notifyBlockUpdate(Location location, Material material, byte data) {
+    public void notifyBlockUpdate(Location location, Material material, BlockState blockState) {
         webSocketServerThread.log(Level.FINEST, "bukkit block at "+location+" was set to "+material);
 
         if (!withinSandboxRange(location)) {
@@ -397,15 +256,14 @@ public class BlockBridge {
             return;
         }
 
-        setBlockUpdate(location, material, data);
+        setBlockUpdate(location, material, blockState);
 
         webSocketServerThread.broadcastLine("R,0,0");
     }
 
-    @SuppressWarnings("deprecation") // for Block#getData
-    private boolean setBlockUpdate(Location location, Material material, byte data) {
+    private boolean setBlockUpdate(Location location, Material material, BlockState blockState) {
         // Send to all web clients to let them know it changed using the "B," command
-        int type = toWebBlockType(material, data);
+        int type = toWebBlockType(material, blockState);
         boolean substantial;
 
         if (type == -1) {
@@ -426,18 +284,17 @@ public class BlockBridge {
 
         webSocketServerThread.broadcastLine("B,0,0,"+x+","+y+","+z+","+type);
 
-        int light_level = toWebLighting(material, data);
+        int light_level = toWebLighting(material, blockState);
         if (light_level != 0) {
             webSocketServerThread.broadcastLine("L,0,0,"+x+","+y+","+z+"," + light_level);
         }
 
-        if (material == Material.WALL_SIGN || material == material.SIGN_POST) {
+        if (material == Material.WALL_SIGN || material == Material.SIGN_POST) {
             Block block = location.getWorld().getBlockAt(location);
-            BlockState blockState = block.getState();
             if (blockState instanceof Sign) {
                 Sign sign = (Sign) blockState;
 
-                notifySignChange(block.getLocation(), block.getType(), block.getData(), sign.getLines());
+                notifySignChange(block.getLocation(), block.getType(), block.getState(), sign.getLines());
             }
         }
 
@@ -446,7 +303,7 @@ public class BlockBridge {
         return substantial; // was something "real" set? (not air, not missing)
     }
 
-    private int toWebLighting(Material material, byte data) {
+    private int toWebLighting(Material material, BlockState blockState) {
         // See http://minecraft.gamepedia.com/Light#Blocks
         // Note not all of these may be fully supported yet
         switch (material) {
@@ -485,81 +342,156 @@ public class BlockBridge {
             case DRAGON_EGG:
             case ENDER_PORTAL_FRAME:
                 return 1;
+            default:
+                return 0;
         }
-
-        return 0;
     }
 
     // Translate web<->bukkit blocks
     // TODO: refactor to remove all bukkit dependency in this class (enums strings?), generalize to can support others
-    private int toWebBlockType(Material material, byte data) {
-        if (!blocksToWeb.containsKey(material)) {
-            return -1;
+    private int toWebBlockType(Material material, BlockState blockState) {
+        if (blocksToWeb.containsKey(material)) {
+            return blocksToWeb.get(material);
         }
 
-        int type = blocksToWeb.get(material);
+        switch (material) {
+            case AIR: return 0;
+            case GRASS: return 1;
+            case SAND: return 2;
+            case SMOOTH_BRICK: return 3; // stone brick :0
+            //blocksToWebDefault.put(, 76; // TODO: mossy stone brick, :1
+            //blocksToWebDefault.put(, 77; // TODO: cracked stone brick, :2
 
-        if (type == 32) { // special case for wool / color block, not yet configurable
-            switch (data) {
-                case 0: // white
-                    type = 32;
-                    break;
-                case 1: // orange
-                    type = 33;
-                    break;
-                case 2: // magenta
-                    type = 34;
-                    break;
-                case 3: // light blue
-                    type = 35;
-                    break;
-                case 4: // yellow
-                    type = 36;
-                    break;
-                case 5: // lime
-                    type = 37;
-                    break;
-                case 6: // pink
-                    type = 38;
-                    break;
-                case 7: // gray
-                    type = 39;
-                    break;
-                case 8: // light gray
-                    type = 40;
-                    break;
-                case 9: // cyan
-                    type = 41;
-                    break;
-                case 10: // purple
-                    type = 42;
-                    break;
-                case 11: // blue
-                    type = 43;
-                    break;
-                case 12: // brown
-                    type = 44;
-                    break;
-                case 13: // green
-                    type = 45;
-                    break;
-                case 14: // red
-                    type = 46;
-                    break;
-                default:
-                case 15: // black
-                    type = 47;
-                    break;
+
+            case BRICK: return 4;
+            case LOG: return 5;
+            case LOG_2: return 5; // wood
+
+            case GOLD_ORE: return 70;
+            case IRON_ORE: return 71;
+            case COAL_ORE: return 72;
+            case LAPIS_ORE: return 73;
+            case LAPIS_BLOCK: return 74;
+            case DIAMOND_ORE: return 48;
+            case REDSTONE_ORE: return 49;
+            // TODO: more ores, for now, showing as stone
+            case QUARTZ_ORE: return 6;
+            case STONE: return 6;
+            case DIRT: return 7;
+            case WOOD: return 8; // plank
+            case SNOW: return 9;
+
+            case GLASS: return 10;
+            case COBBLESTONE: return 11;
+            // TODO: return  light stone (12);
+            // TODO: return  dark stone (13);
+            case CHEST: return 14;
+            case LEAVES: return 15;
+            case LEAVES_2: return 15;
+            // TODO: return  cloud (16);
+            case DOUBLE_PLANT: return 17;  // TODO: other double plants, but a lot look like longer long grass
+            case LONG_GRASS: return 17; // tall grass
+            //blocksToWebDefault.put(, 29; // TODO: fern
+            case YELLOW_FLOWER: return 18;
+            case RED_ROSE: return 19;
+            //TODO case CHORUS_FLOWER: return 20;
+            case SAPLING: return 20; // oak sapling
+            //blocksToWebDefault.put(, 30; // TODO: spruce sapling
+            //blocksToWebDefault.put(, 31; // TODO: birch saplingg
+            // TODO: return  sunflower (21);
+            // TODO: return  white flower (22);
+            // TODO: return  blue flower (23);
+
+            case WOOL:
+            {
+                if (blockState.getData() instanceof Wool) {
+                    Wool wool = (Wool) blockState.getData();
+                    switch (wool.getColor()) {
+                        case WHITE: return 32;
+                        case ORANGE: return 33;
+                        case MAGENTA: return 34;
+                        case LIGHT_BLUE: return 35;
+                        case YELLOW: return 36;
+                        case LIME: return 37;
+                        case PINK: return 38;
+                        case GRAY: return 39;
+                        case SILVER: return 40; // light gray
+                        case CYAN: return 41;
+                        case PURPLE: return 42;
+                        case BLUE: return 43;
+                        case BROWN: return 44;
+                        case GREEN: return 45;
+                        case RED: return 46;
+                        default:
+                        case BLACK: return 47;
+                    }
+                }
+                return 47;
+
             }
-        }
 
-        return type;
+            case WALL_SIGN: return 0; // air, since text is written on block behind it
+            case SIGN_POST: return 8; // plank TODO: return  sign post model
+
+            // Light sources (nonzero toWebLighting()) TODO: return  different textures? + allow placement, distinct blocks
+            case GLOWSTONE: return 64; // #define GLOWING_STONE
+            case SEA_LANTERN: return 35; // light blue wool
+            case TORCH: return 21; // sunflower, looks kinda like a torch
+            case REDSTONE_TORCH_OFF: return 19;
+            case REDSTONE_TORCH_ON: return 19; // red flower, vaguely a torch
+
+            // Liquids - currently using color blocks as placeholders since they appear too often
+            case STATIONARY_WATER: return 35; // light blue wool
+            case WATER: return 35; // light blue wool
+            case STATIONARY_LAVA: return 35; // orange wool
+            case LAVA: return 35; // orange wool
+
+            // TODO: support more blocks by default
+            case BEDROCK: return 65;
+            case GRAVEL: return 66;
+            case IRON_BLOCK: return 67;
+            case GOLD_BLOCK: return 68;
+            case DIAMOND_BLOCK: return 69;
+            case SANDSTONE: return 75;
+            case BOOKSHELF: return 50;
+            case MOSSY_COBBLESTONE: return 51;
+            case OBSIDIAN: return 52;
+            case WORKBENCH: return 53;
+            case FURNACE: return 54;
+            case BURNING_FURNACE: return 55;
+            case MOB_SPAWNER: return 56;
+            case SNOW_BLOCK: return 57;
+            case ICE: return 58;
+            case CLAY: return 59;
+            case JUKEBOX: return 60;
+            case CACTUS: return 61;
+            case MYCEL: return 62;
+            case NETHERRACK: return 63;
+            case SPONGE: return 24;
+            case MELON_BLOCK: return 25;
+            case ENDER_STONE: return 26;
+            case TNT: return 27;
+            case EMERALD_BLOCK: return 28;
+            case PUMPKIN: return 78; // TODO: face
+            case JACK_O_LANTERN: return 79; // TODO: face side
+            case HUGE_MUSHROOM_1: return 80; // brown TODO: data
+            case HUGE_MUSHROOM_2: return 81; // red TODO: data
+            case COMMAND: return 82;
+            case EMERALD_ORE: return 83;
+            case SOUL_SAND: return 84;
+            case NETHER_BRICK: return 85;
+            case SOIL: return 86; // wet farmland TODO: dry farmland (87)
+            case REDSTONE_LAMP_OFF: return 88;
+            case REDSTONE_LAMP_ON: return 89;
+            default: return this.blocksToWebMissing;
+        }
     }
 
-    private Material toBukkitBlockType(int type) {
-        Material material;
-        if (type >= 32 && type <= 63) return Material.WOOL;
-        // TODO: refactor reverse translation
+    // Mutate blockState to block of type type
+    private void toBukkitBlockType(int type, BlockState blockState) {
+        Material material = null;
+        MaterialData materialData = null;
+
         switch (type) {
             case 0: material = Material.AIR; break;
             case 1: material = Material.GRASS; break;
@@ -585,83 +517,77 @@ public class BlockBridge {
             case 21: material = Material.DOUBLE_PLANT; break; // sunflower
             case 22: material = Material.RED_ROSE; break; // TODO: white flower
             case 23: material = Material.YELLOW_FLOWER; break; // TODO: blue flower
+            // TODO: 24-31
+
+            case 32:
+            case 33:
+            case 34:
+            case 35:
+            case 36:
+            case 37:
+            case 38:
+            case 39:
+            case 40:
+            case 41:
+            case 42:
+            case 43:
+            case 44:
+            case 45:
+            case 46:
+            case 47:
+                material = Material.WOOL;
+                DyeColor color;
+                switch (type) {
+                    default:
+                    case 32: color = DyeColor.WHITE; break;
+                    case 33: color = DyeColor.ORANGE; break;
+                    case 34: color = DyeColor.MAGENTA; break;
+                    case 35: color = DyeColor.LIGHT_BLUE; break;
+                    case 36: color = DyeColor.YELLOW; break;
+                    case 37: color = DyeColor.LIME; break;
+                    case 38: color = DyeColor.PINK; break;
+                    case 39: color = DyeColor.GRAY; break;
+                    case 40: color = DyeColor.SILVER; break; // light gray
+                    case 41: color = DyeColor.CYAN; break;
+                    case 42: color = DyeColor.PURPLE; break;
+                    case 43: color = DyeColor.BLUE; break;
+                    case 44: color = DyeColor.BROWN; break;
+                    case 45: color = DyeColor.GREEN; break;
+                    case 46: color = DyeColor.RED; break;
+                    case 47: color = DyeColor.BLACK; break;
+                }
+                materialData = new Wool(color);
+                break;
+
             case 64: material = Material.GLOWSTONE; break;
             default:
                 webSocketServerThread.log(Level.WARNING, "untranslated web block id "+type);
                 material = Material.DIAMOND_ORE; // placeholder TODO fix
         }
-        return material;
+
+        if (unbreakableBlocks.contains(material)) {
+            webSocketServerThread.log(Level.WARNING, "client tried to place unplaceable block type "+type+ " from "+material);
+            return; // ignore, not reverting
+        }
+
+        if (material != null) {
+            blockState.setType(material);
+
+            if (materialData != null) {
+                blockState.setData(materialData);
+            }
+
+            boolean force = true;
+            boolean applyPhysics = false;
+            blockState.update(force, applyPhysics);
+        }
     }
 
-    @SuppressWarnings("deprecation") // DyeColor#getData()
-    private int toBukkitBlockData(int type) {
-        DyeColor color = null;
-        switch (type) {
-            // Craft has 32 color block types, but MC only 16 - not 1:1, but try to get close enough
-            case 32: // #define COLOR_00 // 32 yellow
-                color = DyeColor.YELLOW; break;
-            case 33: // #define COLOR_01 // 33 light green
-            case 34: // #define COLOR_02 // 34 green
-            case 35: // #define COLOR_03 // 35 sea green
-                color = DyeColor.GREEN; break;
-            case 36: // #define COLOR_04 // 36 light brown
-            case 37: // #define COLOR_05 // 37 medium brown
-            case 38: // #define COLOR_06 // 38 dark brown
-                color = DyeColor.BROWN; break;
-            case 39: // #define COLOR_07 // 39 purple
-                color = DyeColor.PURPLE; break;
-            case 40: // #define COLOR_08 // 40 dark gray
-            case 41: // #define COLOR_09 // 41 darker gray
-                color = DyeColor.GRAY; break;
-            case 42: // #define COLOR_10 // 42 light purple
-                color = DyeColor.PURPLE; break;
-            case 43: // #define COLOR_11 // 43 crimson
-                color = DyeColor.MAGENTA; break;
-            case 44: // #define COLOR_12 // 44 salmon
-                color = DyeColor.RED; break;
-            case 45: // #define COLOR_13 // 45 pink
-                color = DyeColor.PINK; break;
-            case 46: // #define COLOR_14 // 46 puke green
-                color = DyeColor.LIME; break;
-            case 47: // #define COLOR_15 // 47 poop brown
-                color = DyeColor.BROWN; break;
-            case 48: // #define COLOR_16 // 48 black
-                color = DyeColor.BLACK; break;
-            case 49: // #define COLOR_17 // 49 dark gray
-                color = DyeColor.GRAY; break;
-            case 50: // #define COLOR_18 // 50 medium gray
-                color = DyeColor.SILVER; break;
-            case 51: // #define COLOR_19 // 51 leather
-            case 52: // #define COLOR_20 // 52 tan
-            case 53: // #define COLOR_21 // 53 orange
-            case 54: // #define COLOR_22 // 54 light orange
-            case 55: // #define COLOR_23 // 55 sand
-                color = DyeColor.ORANGE; break;
-            case 56: // #define COLOR_24 // 56 aqua
-            case 57: // #define COLOR_25 // 57 blue
-                color = DyeColor.BLUE; break;
-            case 58: // #define COLOR_26 // 58 light blue
-                color = DyeColor.LIGHT_BLUE; break;
-            case 59: // #define COLOR_27 // 59 foam green
-                color = DyeColor.CYAN; break;
-            case 60: // #define COLOR_28 // 60 cloud
-            case 61: // #define COLOR_29 // 61 white
-            case 62: // #define COLOR_30 // 62 offwhite
-                color = DyeColor.WHITE; break;
-            case 63: // #define COLOR_31 // 63 gray
-                color = DyeColor.GRAY; break;
-        }
-        if (color != null) {
-            return color.getWoolData();
-        }
-        return -1;
-    }
-
-    public void notifySignChange(Location location, Material material, byte data, String[] lines) {
+    public void notifySignChange(Location location, Material material, BlockState blockState, String[] lines) {
         int x = toWebLocationBlockX(location);
         int y = toWebLocationBlockY(location);
         int z = toWebLocationBlockZ(location);
-
+        byte data = blockState.getData().getData();
 
         // data is packed bitfield, see http://minecraft.gamepedia.com/Sign#Block_data
         // Craft's faces:
@@ -742,7 +668,6 @@ public class BlockBridge {
         webSocketServerThread.broadcastLine("R,0,0");
     }
 
-    @SuppressWarnings("deprecation") // Block#setData()
     public void clientNewSign(ChannelHandlerContext ctx, int x, int y, int z, int face, String text) {
         if (!allowSigns) {
             webSocketServerThread.sendLine(ctx.channel(), "T,Writing on signs is not allowed");
@@ -777,8 +702,8 @@ public class BlockBridge {
         }
 
         Block block = location.getWorld().getBlockAt(location);
-        block.setType(Material.WALL_SIGN);
-        block.setData(data);
+        boolean applyPhysics = false;
+        block.setTypeIdAndData(Material.WALL_SIGN.getId(), data, applyPhysics);
         webSocketServerThread.log(Level.FINEST, "setting sign at "+location+" data="+data);
         BlockState blockState = block.getState();
         if (!(blockState instanceof Sign)) {
@@ -789,9 +714,9 @@ public class BlockBridge {
 
         // TODO: text lines by 15 characters into 5 lines
         sign.setLine(0, text);
-        sign.update();
+        sign.update(false, applyPhysics);
 
         // SignChangeEvent not posted when signs created programmatically; notify web clients ourselves
-        notifySignChange(location, block.getType(), block.getData(), sign.getLines());
+        notifySignChange(location, block.getType(), block.getState(), sign.getLines());
     }
 }

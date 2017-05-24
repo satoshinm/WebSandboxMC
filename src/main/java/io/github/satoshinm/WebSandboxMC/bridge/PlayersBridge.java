@@ -77,7 +77,7 @@ public class PlayersBridge {
             return Bukkit.getServer().getOnlinePlayers();
         } catch (NoSuchMethodError ex1) {
             // Older Bukkit servers return an array instead of collection
-            Class clazz = Bukkit.getServer().getClass();
+            Class<?> clazz = Bukkit.getServer().getClass();
             try {
                 Method method = clazz.getMethod("getOnlinePlayers");
                 Player players[] = (Player[]) method.invoke(Bukkit.getServer());

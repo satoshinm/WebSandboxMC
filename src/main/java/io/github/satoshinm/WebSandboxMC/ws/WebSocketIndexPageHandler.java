@@ -20,15 +20,12 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelPipeline;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.handler.codec.http.DefaultFullHttpResponse;
 import io.netty.handler.codec.http.FullHttpRequest;
 import io.netty.handler.codec.http.FullHttpResponse;
 import io.netty.handler.codec.http.HttpHeaderNames;
-import io.netty.handler.codec.http.HttpRequest;
 import io.netty.handler.codec.http.HttpUtil;
-import io.netty.handler.ssl.SslHandler;
 import io.netty.util.CharsetUtil;
 
 import java.io.*;
@@ -165,14 +162,5 @@ public class WebSocketIndexPageHandler extends SimpleChannelInboundHandler<FullH
         if (!HttpUtil.isKeepAlive(req) || res.status().code() != 200) {
             f.addListener(ChannelFutureListener.CLOSE);
         }
-    }
-
-    private static String getWebSocketLocation(ChannelPipeline cp, HttpRequest req, String path) {
-        String protocol = "ws";
-        if (cp.get(SslHandler.class) != null) {
-            // SSL in use so use Secure WebSockets
-            protocol = "wss";
-        }
-        return protocol + "://" + req.headers().get(HttpHeaderNames.HOST) + path;
     }
 }

@@ -23,22 +23,20 @@ public class BlockListener implements Listener {
     public void onBlockBreak(BlockBreakEvent event) {
         Block block = event.getBlock();
         Location location = block.getLocation();
-        blockBridge.notifyBlockUpdate(location, Material.AIR, (byte) 0);
+        blockBridge.notifyBlockUpdate(location, Material.AIR, null);
     }
 
     @EventHandler(ignoreCancelled = true)
-    @SuppressWarnings("deprecation") // Block#getData
     public void onBlockPlace(BlockPlaceEvent event) {
         Block block = event.getBlock();
 
-        blockBridge.notifyBlockUpdate(block.getLocation(), block.getType(), block.getData());
+        blockBridge.notifyBlockUpdate(block.getLocation(), block.getType(), block.getState());
     }
     @EventHandler(ignoreCancelled = true)
-    @SuppressWarnings("deprecation") // Block#getData
     public void onSignChange(SignChangeEvent event) {
         Block block = event.getBlock();
 
-        blockBridge.notifySignChange(block.getLocation(), block.getType(), block.getData(), event.getLines());
+        blockBridge.notifySignChange(block.getLocation(), block.getType(), block.getState(), event.getLines());
     }
 
     // TODO: BlockBurnEvent
