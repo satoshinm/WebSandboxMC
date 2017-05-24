@@ -8,6 +8,7 @@ import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
+import org.bukkit.material.Wool;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -354,13 +355,6 @@ public class BlockBridge {
     // Translate web<->bukkit blocks
     // TODO: refactor to remove all bukkit dependency in this class (enums strings?), generalize to can support others
     private int toWebBlockType(Material material, BlockState blockState) {
-        byte data = 0;
-        if (blockState != null) {
-            if (blockState.getData() != null) {
-                data = blockState.getData().getData();
-            }
-        }
-
         if (blocksToWeb.containsKey(material)) {
             return blocksToWeb.get(material);
         }
@@ -372,7 +366,6 @@ public class BlockBridge {
             case SMOOTH_BRICK: return 3; // stone brick :0
             //blocksToWebDefault.put(, 76; // TODO: mossy stone brick, :1
             //blocksToWebDefault.put(, 77; // TODO: cracked stone brick, :2
-
 
 
             case BRICK: return 4;
@@ -416,25 +409,30 @@ public class BlockBridge {
 
             case WOOL:
             {
-                switch (data) {
-                    case 0: return 32; // white
-                    case 1: return 33; // orange
-                    case 2: return 34; // magenta
-                    case 3: return 35; // light blue
-                    case 4: return 36; // yellow
-                    case 5: return 37; // lime
-                    case 6: return 38; // pink
-                    case 7: return 39; // gray
-                    case 8: return 40; // light gray
-                    case 9: return 41; // cyan
-                    case 10: return 42; // purple
-                    case 11: return 43; // blue
-                    case 12: return 44; // brown
-                    case 13: return 45; // green
-                    case 14: return 46; // red
-                    default:
-                    case 15: return 47; // black
+                if (blockState.getData() instanceof Wool) {
+                    Wool wool = (Wool) blockState.getData();
+                    switch (wool.getColor()) {
+                        case WHITE: return 32;
+                        case ORANGE: return 33;
+                        case MAGENTA: return 34;
+                        case LIGHT_BLUE: return 35;
+                        case YELLOW: return 36;
+                        case LIME: return 37;
+                        case PINK: return 38;
+                        case GRAY: return 39;
+                        case SILVER: return 40; // light gray
+                        case CYAN: return 41;
+                        case PURPLE: return 42;
+                        case BLUE: return 43;
+                        case BROWN: return 44;
+                        case GREEN: return 45;
+                        case RED: return 46;
+                        default:
+                        case BLACK: return 47;
+                    }
                 }
+                return 47;
+
             }
 
             case WALL_SIGN: return 0; // air, since text is written on block behind it
