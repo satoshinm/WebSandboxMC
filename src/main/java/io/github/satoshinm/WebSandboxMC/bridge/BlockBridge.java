@@ -107,7 +107,6 @@ public class BlockBridge {
     }
 
     // Send the client the initial section of the world when they join
-    @SuppressWarnings("deprecation") // Block#getData()
     public void sendWorld(final Channel channel) {
         if (textureURL != null) {
             webSocketServerThread.sendLine(channel, "t," + textureURL);
@@ -194,7 +193,6 @@ public class BlockBridge {
     public double toWebLocationEntityZ(Location location) { return location.getZ() - (-radius + z_center); }
 
     // Handle the web client changing a block, update the bukkit world
-    @SuppressWarnings("deprecation") // for Block#setTypeIdAndData
     public void clientBlockUpdate(ChannelHandlerContext ctx, int x, int y, int z, int type) {
         if (!allowBreakPlaceBlocks) {
             webSocketServerThread.sendLine(ctx.channel(), "T,Breaking/placing blocks not allowed");
@@ -267,7 +265,6 @@ public class BlockBridge {
         webSocketServerThread.broadcastLine("R,0,0");
     }
 
-    @SuppressWarnings("deprecation") // for Block#getData
     private boolean setBlockUpdate(Location location, Material material, byte data) {
         // Send to all web clients to let them know it changed using the "B," command
         int type = toWebBlockType(material, data);
@@ -528,7 +525,6 @@ public class BlockBridge {
         return material;
     }
 
-    @SuppressWarnings("deprecation") // DyeColor#getData()
     private int toBukkitBlockData(int type) {
         DyeColor color = null;
         switch (type) {
@@ -677,7 +673,6 @@ public class BlockBridge {
         webSocketServerThread.broadcastLine("R,0,0");
     }
 
-    @SuppressWarnings("deprecation") // Block#setData()
     public void clientNewSign(ChannelHandlerContext ctx, int x, int y, int z, int face, String text) {
         if (!allowSigns) {
             webSocketServerThread.sendLine(ctx.channel(), "T,Writing on signs is not allowed");
