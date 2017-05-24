@@ -6,7 +6,6 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import org.bukkit.*;
 import org.bukkit.block.Block;
-import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.material.MaterialData;
@@ -588,30 +587,35 @@ public class BlockBridge {
         int x = toWebLocationBlockX(location);
         int y = toWebLocationBlockY(location);
         int z = toWebLocationBlockZ(location);
-        BlockFace blockFace = BlockFace.NORTH;
-        if (blockState.getData() instanceof org.bukkit.material.Sign) {
-            org.bukkit.material.Sign sign = (org.bukkit.material.Sign) blockState.getData();
-            blockFace = sign.getFacing();
-        }
+        byte data = blockState.getData().getData();
 
+        // data is packed bitfield, see http://minecraft.gamepedia.com/Sign#Block_data
+        // Craft's faces:
+        // 0 - west
+        // 1 - east
+        // 2 - north
+        // 3 - south
+        // 4 - top, rotated 1
+        // 5 - top, rotated 2
+        // 6 - top, rotated 3
+        // 7 - top, rotated 4
         int face = 7;
         if (material == Material.WALL_SIGN) {
             // wallsigns, attached to block behind
-            switch (blockFace) {
-                default:
-                case NORTH:
+            switch (data) {
+                case 2: // north
                     face = 2; // north
                     z += 1;
                     break;
-                case SOUTH:
+                case 3: // south
                     face = 3; // south
                     z -= 1;
                     break;
-                case WEST:
+                case 4: // west
                     face = 0; // west
                     x += 1;
                     break;
-                case EAST:
+                case 5: // east
                     face = 1; // east
                     x -= 1;
                     break;
@@ -619,39 +623,38 @@ public class BlockBridge {
         } else if (material == Material.SIGN_POST) {
             // standing sign, on the block itself
             // TODO: support more fine-grained directions, right now Craft only four cardinal
-            switch (blockFace) {
-                case SOUTH:
-                case SOUTH_SOUTH_WEST:
-                case SOUTH_WEST:
+            switch (data) {
+                case 0: // south
+                case 1: // south-southwest
+                case 2: // southwest
                     face = 3; // south
                     break;
 
-                case WEST_SOUTH_WEST:
-                case WEST:
-                case WEST_NORTH_WEST:
-                case NORTH_WEST:
+                case 3: // west-southwest
+                case 4: // west
+                case 5: // west-northwest
+                case 6: // northwest
                     face = 0; // west
                     break;
 
-                default:
-                case NORTH_NORTH_WEST:
-                case NORTH:
-                case NORTH_NORTH_EAST:
-                case NORTH_EAST:
+                case 7: // north-northwest
+                case 8: // north
+                case 9: // north-northeast
+                case 10: // northeast
                     face = 2; // north
                     break;
 
-                case EAST_NORTH_EAST:
-                case EAST:
-                case EAST_SOUTH_EAST:
-                case SOUTH_EAST:
-                case SOUTH_SOUTH_EAST:
+                case 11: // east-northeast
+                case 12: // east
+                case 13: // east-southeast
+                case 14: // southeast
+                case 15: // south-southeast
                     face = 1; // east
                     break;
             }
         }
 
-        webSocketServerThread.log(Level.FINEST, "sign change: "+location+", blockFace="+blockFace);
+        webSocketServerThread.log(Level.FINEST, "sign change: "+location+", data="+data);
         String text = "";
         for (int i = 0; i < lines.length; ++i) {
             text += lines[i] + " "; // TODO: support explicit newlines; Craft wraps sign text lines automatically
