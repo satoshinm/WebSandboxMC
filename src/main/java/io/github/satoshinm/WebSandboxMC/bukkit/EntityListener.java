@@ -1,6 +1,5 @@
 package io.github.satoshinm.WebSandboxMC.bukkit;
 
-import io.github.satoshinm.WebSandboxMC.bridge.PlayersBridge;
 import io.github.satoshinm.WebSandboxMC.bridge.WebPlayerBridge;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;

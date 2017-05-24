@@ -36,10 +36,7 @@ import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
 import io.netty.util.concurrent.ImmediateEventExecutor;
-import org.bukkit.Bukkit;
-import org.bukkit.plugin.Plugin;
 
-import java.io.File;
 import java.util.logging.Level;
 
 /**
@@ -157,7 +154,7 @@ public final class WebSocketServerThread extends Thread {
 
         allUsersGroup.add(channel);
 
-        String theirName = webPlayerBridge.newPlayer(channel);
+        /*String theirName = */webPlayerBridge.newPlayer(channel);
         // TODO: join newPlayer _after_ sending world? since then they are really "in" the world, before, in-progress
 
     /* Send initial server messages on client connect here, example from Python server for comparison:

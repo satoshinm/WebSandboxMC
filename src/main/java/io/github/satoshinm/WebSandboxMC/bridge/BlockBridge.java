@@ -579,7 +579,7 @@ public class BlockBridge {
 
             boolean force = true;
             boolean applyPhysics = false;
-            blockState.update(true, false);
+            blockState.update(force, applyPhysics);
         }
     }
 

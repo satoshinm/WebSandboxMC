@@ -8,7 +8,6 @@ import org.bukkit.plugin.Plugin;
 
 import java.io.File;
 import java.util.Map;
-import java.util.Set;
 import java.util.logging.Level;
 
 public class SettingsBukkit extends Settings {
