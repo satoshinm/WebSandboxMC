@@ -7,6 +7,7 @@ import io.netty.channel.ChannelHandlerContext;
 import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
+import org.bukkit.block.Furnace;
 import org.bukkit.block.Sign;
 import org.bukkit.material.MaterialData;
 import org.bukkit.material.Sapling;
@@ -469,8 +470,38 @@ public class BlockBridge {
             case MOSSY_COBBLESTONE: return 51;
             case OBSIDIAN: return 52;
             case WORKBENCH: return 53;
-            case FURNACE: return 54;
-            case BURNING_FURNACE: return 55;
+            case FURNACE: {
+                if (materialData instanceof org.bukkit.material.Furnace) {
+                    org.bukkit.material.Furnace furnace = (org.bukkit.material.Furnace) materialData;
+                    switch (furnace.getFacing()) {
+                        case NORTH: return 90;
+                        case SOUTH: return 91;
+                        case WEST: return 92;
+                        case EAST: return 93;
+                        default:
+                            webSocketServerThread.log(Level.WARNING, "unknown furnace rotation: "+furnace.getFacing());
+                            return 90;
+                    }
+                }
+                return 90;
+                //return 54; // old
+            }
+            case BURNING_FURNACE: { // TODO: refactor with above, same code! different base block
+                if (materialData instanceof org.bukkit.material.Furnace) {
+                    org.bukkit.material.Furnace furnace = (org.bukkit.material.Furnace) materialData;
+                    switch (furnace.getFacing()) {
+                        case NORTH: return 94;
+                        case SOUTH: return 95;
+                        case WEST: return 96;
+                        case EAST: return 97;
+                        default:
+                            webSocketServerThread.log(Level.WARNING, "unknown furnace rotation: "+furnace.getFacing());
+                            return 94;
+                    }
+                }
+                return 94;
+                //return 55; // old
+            }
             case MOB_SPAWNER: return 56;
             case SNOW_BLOCK: return 57;
             case ICE: return 58;
