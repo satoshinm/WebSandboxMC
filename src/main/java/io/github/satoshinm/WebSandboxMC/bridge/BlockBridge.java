@@ -9,6 +9,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Furnace;
 import org.bukkit.block.Sign;
+import org.bukkit.material.Directional;
 import org.bukkit.material.MaterialData;
 import org.bukkit.material.Sapling;
 import org.bukkit.material.Wool;
@@ -349,6 +350,19 @@ public class BlockBridge {
         }
     }
 
+    // The web client represents directional blocks has four block ids
+    private int getDirectionalOrthogonalWebBlock(int base, Directional directional) {
+        switch (directional.getFacing()) {
+            case NORTH: return base+0;
+            case SOUTH: return base+1;
+            case WEST: return base+2;
+            case EAST: return base+3;
+            default:
+                webSocketServerThread.log(Level.WARNING, "unknown orthogonal directional rotation: "+directional.getFacing());
+                return base;
+        }
+    }
+
     // Translate web<->bukkit blocks
     // TODO: refactor to remove all bukkit dependency in this class (enums strings?), generalize to can support others
     private int toWebBlockType(Material material, BlockState blockState) {
@@ -473,15 +487,7 @@ public class BlockBridge {
             case FURNACE: {
                 if (materialData instanceof org.bukkit.material.Furnace) {
                     org.bukkit.material.Furnace furnace = (org.bukkit.material.Furnace) materialData;
-                    switch (furnace.getFacing()) {
-                        case NORTH: return 90;
-                        case SOUTH: return 91;
-                        case WEST: return 92;
-                        case EAST: return 93;
-                        default:
-                            webSocketServerThread.log(Level.WARNING, "unknown furnace rotation: "+furnace.getFacing());
-                            return 90;
-                    }
+                    return getDirectionalOrthogonalWebBlock(90, furnace); // 90, 91, 92, 93
                 }
                 return 90;
                 //return 54; // old
@@ -489,15 +495,7 @@ public class BlockBridge {
             case BURNING_FURNACE: { // TODO: refactor with above, same code! different base block
                 if (materialData instanceof org.bukkit.material.Furnace) {
                     org.bukkit.material.Furnace furnace = (org.bukkit.material.Furnace) materialData;
-                    switch (furnace.getFacing()) {
-                        case NORTH: return 94;
-                        case SOUTH: return 95;
-                        case WEST: return 96;
-                        case EAST: return 97;
-                        default:
-                            webSocketServerThread.log(Level.WARNING, "unknown furnace rotation: "+furnace.getFacing());
-                            return 94;
-                    }
+                    return getDirectionalOrthogonalWebBlock(94, furnace); // 94, 95, 96, 97
                 }
                 return 94;
                 //return 55; // old
