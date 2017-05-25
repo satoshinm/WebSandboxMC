@@ -9,10 +9,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Furnace;
 import org.bukkit.block.Sign;
-import org.bukkit.material.Directional;
-import org.bukkit.material.MaterialData;
-import org.bukkit.material.Sapling;
-import org.bukkit.material.Wool;
+import org.bukkit.material.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -351,12 +348,25 @@ public class BlockBridge {
     }
 
     // The web client represents directional blocks has four block ids
+    // example: furnaces
     private int getDirectionalOrthogonalWebBlock(int base, Directional directional) {
         switch (directional.getFacing()) {
             case NORTH: return base+0;
             case SOUTH: return base+1;
             case WEST: return base+2;
             case EAST: return base+3;
+            default:
+                webSocketServerThread.log(Level.WARNING, "unknown orthogonal directional rotation: "+directional.getFacing());
+                return base;
+        }
+    }
+    // example: pumpkins, for some reason, fronts are inverted
+    private int getDirectionalOrthogonalWebBlockReversed(int base, Directional directional) {
+        switch (directional.getFacing()) {
+            case SOUTH: return base+0;
+            case NORTH: return base+1;
+            case EAST: return base+2;
+            case WEST: return base+3;
             default:
                 webSocketServerThread.log(Level.WARNING, "unknown orthogonal directional rotation: "+directional.getFacing());
                 return base;
@@ -513,8 +523,22 @@ public class BlockBridge {
             case ENDER_STONE: return 26;
             case TNT: return 27;
             case EMERALD_BLOCK: return 28;
-            case PUMPKIN: return 78; // TODO: face
-            case JACK_O_LANTERN: return 79; // TODO: face side
+            case PUMPKIN: {
+                if (materialData instanceof Pumpkin) {
+                    Pumpkin pumpkin = (Pumpkin) materialData;
+                    return getDirectionalOrthogonalWebBlockReversed(98, pumpkin); // 98, 99, 100, 101
+                }
+
+                return 78; // faceless
+            }
+            case JACK_O_LANTERN: {
+                if (materialData instanceof Pumpkin) {
+                    Pumpkin pumpkin = (Pumpkin) materialData;
+                    return getDirectionalOrthogonalWebBlockReversed(102, pumpkin); // 102, 103, 104, 105
+                }
+
+                return 79; // all faces
+            }
             case HUGE_MUSHROOM_1: return 80; // brown TODO: data
             case HUGE_MUSHROOM_2: return 81; // red TODO: data
             case COMMAND: return 82;
