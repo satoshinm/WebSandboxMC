@@ -393,11 +393,17 @@ public class BlockBridge {
             case AIR: return 0;
             case GRASS: return 1;
             case SAND: return 2;
-            case SMOOTH_BRICK: return 3; // stone brick :0
-            //blocksToWebDefault.put(, 76; // TODO: mossy stone brick, :1
-            //blocksToWebDefault.put(, 77; // TODO: cracked stone brick, :2
-
-
+            case SMOOTH_BRICK: {
+                if (materialData instanceof TexturedMaterial) {
+                    TexturedMaterial texturedMaterial = (TexturedMaterial) materialData;
+                    switch (texturedMaterial.getMaterial()) {
+                        case STONE: return 3; // stone brick
+                        case MOSSY_COBBLESTONE: return 76; // mossy stone brick
+                        case COBBLESTONE: return 77; // cracked stone brick
+                    }
+                }
+                return 3; // stone brick
+            }
             case BRICK: return 4;
             case LOG: return 5;
             case LOG_2: return 5; // wood
