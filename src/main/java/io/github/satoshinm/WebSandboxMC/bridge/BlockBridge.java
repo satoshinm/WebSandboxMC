@@ -577,6 +577,8 @@ public class BlockBridge {
             case SOIL: return 86; // wet farmland TODO: dry farmland (87)
             case REDSTONE_LAMP_OFF: return 88;
             case REDSTONE_LAMP_ON: return 89;
+
+            case BARRIER: return 106;
             default: return this.blocksToWebMissing;
         }
     }
