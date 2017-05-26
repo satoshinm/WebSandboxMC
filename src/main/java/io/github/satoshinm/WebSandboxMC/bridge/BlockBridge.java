@@ -37,10 +37,6 @@ public class BlockBridge {
     public BlockBridge(WebSocketServerThread webSocketServerThread, Settings settings) {
         this.webSocketServerThread = webSocketServerThread;
 
-        this.x_center = settings.x_center;
-        this.y_center = settings.y_center;
-        this.z_center = settings.z_center;
-
         this.radius = settings.radius;
 
         this.y_offset = settings.y_offset;
@@ -52,6 +48,17 @@ public class BlockBridge {
         }
         if (this.world == null) {
             throw new IllegalArgumentException("World not found: " + settings.world);
+        }
+
+        if (settings.x_center == 0 && settings.y_center == 0 && settings.z_center == 0) {
+            Location spawn = this.world.getSpawnLocation();
+            this.x_center = spawn.getBlockX();
+            this.y_center = spawn.getBlockY();
+            this.z_center = spawn.getBlockZ();
+        } else {
+            this.x_center = settings.x_center;
+            this.y_center = settings.y_center;
+            this.z_center = settings.z_center;
         }
 
         // TODO: configurable spawn within range of sandbox, right now, it is the center of the sandbox

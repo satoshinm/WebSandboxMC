@@ -48,9 +48,11 @@ Configures what part of your world to expose:
 
 * `debug` (false): if true, enables vast amounts of additional logging with FINEST log level
 * `use_permissions` (false): if false, `/websandbox` command requires op; if true, checks for `websandbox.command.`+subcommand permission node
+* `world` (""): name of world for web clients to spawn in, or an empty string to use the first available
 * `x_center` (0): specifies the center of the world from the web client's perspective, X coordinate
 * `y_center` (75): " ", Y coordinate
 * `z_center` (0): " ", Z coordinate
+ * If x/y/z center are all 0, then the world's spawn location is used instead
 * `radius` (16): range out of the center to expose in each direction (cube), setting too high will slow down web client loading
 * `entity` ("Sheep"): name of entity class to spawn on server for web users, set to "" to disable
 * `entity_custom_names` (true): add web player names to the spawned entity's nametag if true
