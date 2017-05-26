@@ -405,8 +405,20 @@ public class BlockBridge {
                 return 3; // stone brick
             }
             case BRICK: return 4;
-            case LOG: return 5;
-            case LOG_2: return 5; // wood
+            case LOG:
+            case LOG_2: {
+                if (materialData instanceof Tree) {
+                    Tree tree = (Tree) materialData;
+                    switch (tree.getSpecies()) { // from Wood
+                        default:
+                        case GENERIC: return 5; // oak wood log
+                        case REDWOOD: return 107; // spruce wood log
+                        case BIRCH: return 108; // birch wood log
+                    }
+                    // TODO: tree.getDirection(), faces different
+                }
+                return 5; // oak wood log
+            }
 
             case GOLD_ORE: return 70;
             case IRON_ORE: return 71;
@@ -427,8 +439,18 @@ public class BlockBridge {
             // TODO: return  light stone (12);
             // TODO: return  dark stone (13);
             case CHEST: return 14;
-            case LEAVES: return 15;
-            case LEAVES_2: return 15;
+            case LEAVES:
+            case LEAVES_2: {
+                if (materialData instanceof Leaves) {
+                    Leaves leaves = (Leaves) materialData;
+                    switch (leaves.getSpecies()) {
+                        default:
+                        case GENERIC: return 15; // leaves
+                        case REDWOOD: return 109; // spruce leaves
+                    }
+                }
+                return 15;
+            }
             // TODO: return  cloud (16);
             case DOUBLE_PLANT: return 17;  // TODO: other double plants, but a lot look like longer long grass
             case LONG_GRASS: {
