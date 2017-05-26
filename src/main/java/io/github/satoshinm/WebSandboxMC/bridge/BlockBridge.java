@@ -425,8 +425,24 @@ public class BlockBridge {
             case LEAVES_2: return 15;
             // TODO: return  cloud (16);
             case DOUBLE_PLANT: return 17;  // TODO: other double plants, but a lot look like longer long grass
-            case LONG_GRASS: return 17; // tall grass
-            //blocksToWebDefault.put(, 29; // TODO: fern
+            case LONG_GRASS: {
+                if (materialData instanceof LongGrass) {
+                    LongGrass longGrass = (LongGrass) materialData;
+                    GrassSpecies grassSpecies = longGrass.getSpecies();
+                    switch (grassSpecies) {
+                        default:
+                        case NORMAL: return 17; // tall grass
+                        case DEAD: return 23; // "shrub", places on grass, same texture as deadbush
+                        // http://minecraft.gamepedia.com/Dead_Bush#Trivia "There is a variant of grass called "Shrub"
+                        // that looks identical to the dead bush, but will occasionally drop seeds and is randomly
+                        // offset from the center of the block like grass."
+
+                        case FERN_LIKE: return 29; // fern
+                    }
+                }
+                return 17; // tall grass
+            }
+            case DEAD_BUSH: return 23; // deadbush, places on sand
             case YELLOW_FLOWER: return 18;
             case RED_ROSE: return 19;
             //TODO case CHORUS_FLOWER: return 20;
