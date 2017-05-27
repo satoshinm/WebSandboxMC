@@ -138,27 +138,7 @@ public class WsCommand implements CommandExecutor {
                 name = player.getName();
             }
 
-            String key = webSocketServerThread.webPlayerBridge.newClientAuthKey(name);
-            String url = "http://localhost:4081/#-%20-%20-" + name + "%20" + key;
-
-            if (sender instanceof Player) {
-                /* TODO: fails java.lang.UnsupportedOperationException: Not supported yet.
-        at org.bukkit.entity.Player$Spigot.sendMessage(Player.java:1734)
-        see https://github.com/GlowstoneMC/Glowkit-Legacy/pull/8
-
-
-                TextComponent message = new TextComponent("Set authentication key " + key + ", click here to login");
-                message.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, url));
-
-                Player player = (Player) sender;
-                player.spigot().sendMessage(message);
-                */
-
-                sender.sendMessage("Set authentication key: " + url);
-
-            } else {
-                sender.sendMessage("Set authentication key: " + url);
-            }
+            webSocketServerThread.webPlayerBridge.newClientAuthKey(name, sender);
 
             return true;
         } else { // help

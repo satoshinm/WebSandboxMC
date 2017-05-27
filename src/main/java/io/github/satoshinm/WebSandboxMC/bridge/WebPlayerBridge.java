@@ -5,11 +5,18 @@ import io.github.satoshinm.WebSandboxMC.ws.WebSocketServerThread;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelId;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.TextComponent;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.entity.Sheep;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.json.simple.JSONObject;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
@@ -30,7 +37,9 @@ public class WebPlayerBridge {
     public Map<Integer, String> entityId2Username;
     public Map<String, Channel> name2channel;
 
-    public Map<String, String> playerAuthKeys = new HashMap<String, String>();
+    private Map<String, String> playerAuthKeys = new HashMap<String, String>();
+    private boolean clickableLinks;
+    private boolean clickableLinksTellraw;
 
     private boolean setCustomNames;
     private boolean disableGravity;
@@ -62,6 +71,9 @@ public class WebPlayerBridge {
 
         this.constrainToSandbox = settings.entityMoveSandbox;
         this.dieDisconnect = settings.entityDieDisconnect;
+
+        this.clickableLinks = settings.clickableLinks;
+        this.clickableLinksTellraw = settings.clickableLinksTellraw;
 
         this.lastPlayerID = 0;
         this.channelId2name = new HashMap<ChannelId, String>();
@@ -211,13 +223,43 @@ public class WebPlayerBridge {
 
     private final SecureRandom random = new SecureRandom();
 
-    public String newClientAuthKey(String username) {
+    public void newClientAuthKey(String username, CommandSender sender) {
         String token = new BigInteger(130, random).toString(32);
 
         playerAuthKeys.put(username, token);
-
-        return token;
         // TODO: persist to disk
+
+
+        String url = "http://localhost:4081/#++" + username + "+" + token;
+
+        if (clickableLinks && sender instanceof Player) {
+            Player player = (Player) sender;
+
+            // There are two strategies since TextComponents fails with on Glowstone with an error:
+            // java.lang.UnsupportedOperationException: Not supported yet.
+            // at org.bukkit.entity.Player$Spigot.sendMessage(Player.java:1734)
+            // see https://github.com/GlowstoneMC/Glowkit-Legacy/pull/8
+            if (clickableLinksTellraw) {
+                JSONObject json = new JSONObject();
+                json.put("text", "Click here to login");
+                json.put("bold", true);
+
+                JSONObject clickEventJson = new JSONObject();
+                clickEventJson.put("action", "open_url");
+                clickEventJson.put("value", url);
+                json.put("clickEvent", clickEventJson);
+
+                Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "tellraw " + player.getName() + " " + json.toJSONString());
+            } else {
+                TextComponent message = new TextComponent("Click here to login");
+                message.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, url));
+                message.setBold(true);
+
+                player.spigot().sendMessage(message);
+            }
+        } else {
+            sender.sendMessage("Visit this URL to login: " + url);
+        }
     }
 
     private boolean validateClientAuthKey(String username, String token) {

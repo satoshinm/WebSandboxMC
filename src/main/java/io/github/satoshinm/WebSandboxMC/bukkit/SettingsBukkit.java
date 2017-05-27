@@ -37,6 +37,8 @@ public class SettingsBukkit extends Settings {
         config.addDefault("mc.y_center", this.y_center);
         config.addDefault("mc.z_center", this.z_center);
         config.addDefault("mc.radius", this.radius);
+        config.addDefault("mc.clickable_links", this.clickableLinks);
+        config.addDefault("mc.clickable_links_tellraw", this.clickableLinksTellraw);
 
         config.addDefault("nc.y_offset", this.y_offset);
         config.addDefault("nc.allow_break_place_blocks", this.allowBreakPlaceBlocks);
@@ -69,6 +71,9 @@ public class SettingsBukkit extends Settings {
         this.y_center = plugin.getConfig().getInt("mc.y_center");
         this.z_center = plugin.getConfig().getInt("mc.z_center");
         this.radius = plugin.getConfig().getInt("mc.radius");
+
+        this.clickableLinks = plugin.getConfig().getBoolean("mc.clickable_links");
+        this.clickableLinksTellraw = plugin.getConfig().getBoolean("mc.clickable_links_tellraw");
 
         this.y_offset = plugin.getConfig().getInt("nc.y_offset");
 

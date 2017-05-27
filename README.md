@@ -54,6 +54,8 @@ Configures what part of your world to expose:
 * `z_center` (0): " ", Z coordinate
  * If x/y/z center are all 0, then the world's spawn location is used instead
 * `radius` (16): range out of the center to expose in each direction (cube), setting too high will slow down web client loading
+* `clickable_links` (true): send clickable links in chat commands from `/websandbox auth` if true, or as plain text if false
+* `clickable_links_tellraw` (false): use the `/tellraw` command to send richly formatted messages if true, or use the TextComponents API if false, change this if you get a formatting error with `/websandbox auth`
 * `entity` ("Sheep"): name of entity class to spawn on server for web users, set to "" to disable
 * `entity_custom_names` (true): add web player names to the spawned entity's nametag if true
 * `entity_disable_gravity` (true): disable gravity for the spawned entities if true
@@ -92,6 +94,7 @@ texture pack compatibility, see [NetCraft#textures](https://github.com/satoshinm
 * `/websandbox list [verbose]`: list all web users connected
 * `/websandbox tp [<user>]`: teleport to given web username, or web spawn location
 * `/websandbox kick <user>`: disconnect given web username
+* `/websandbox auth [<user>]`: generates an authentication token to allow the player to authenticate over the web as themselves instead of anonymously
 
 ## Compatibility
 

@@ -31,6 +31,9 @@ abstract public class Settings {
     // of this radius, +/-
     public int radius = 16;
 
+    public boolean clickableLinks = true;
+    public boolean clickableLinksTellraw = false;
+
     // raised this amount in the web world, so it is clearly distinguished from the client-generated terrain
     public int y_offset = 20;
 
