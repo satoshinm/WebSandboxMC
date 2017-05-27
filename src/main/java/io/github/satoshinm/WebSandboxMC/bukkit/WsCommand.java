@@ -27,8 +27,8 @@ public class WsCommand implements CommandExecutor {
         if (sender instanceof Player) {
             Player player = (Player) sender;
             if (!usePermissions) {
-                if (!player.isOp()) {
-                    sender.sendMessage("/websandbox requires op");
+                if (!player.isOp() && !subcommand.equals("auth") && !subcommand.equals("help")) {
+                    sender.sendMessage("This /websandbox subcommand requires op");
                     return true;
                 }
             } else {
