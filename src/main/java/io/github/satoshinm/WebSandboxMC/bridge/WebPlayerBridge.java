@@ -239,7 +239,7 @@ public class WebPlayerBridge {
             Player player = (Player) sender;
 
             String linkText = "Click here to login";
-            //TODO String hoverText = "Login to the web sandbox as this user";
+            String hoverText = "Login to the web sandbox as " + player.getName();
 
             // There are two strategies since TextComponents fails with on Glowstone with an error:
             // java.lang.UnsupportedOperationException: Not supported yet.
@@ -255,17 +255,18 @@ public class WebPlayerBridge {
                 clickEventJson.put("value", url);
                 json.put("clickEvent", clickEventJson);
 
-                /* TODO
                 JSONObject hoverEventJson = new JSONObject();
                 hoverEventJson.put("action", "show_text");
-                hoverEventJson.put("value", hoverText);
-                */
+                JSONObject hoverTextObject = new JSONObject();
+                hoverTextObject.put("text", hoverText);
+                hoverEventJson.put("value", hoverTextObject);
+                json.put("hoverEvent", hoverEventJson);
 
                 Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "tellraw " + player.getName() + " " + json.toJSONString());
             } else {
                 TextComponent message = new TextComponent(linkText);
                 message.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, url));
-                //message.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponent[] { new TextComponent(hoverText) }));
+                message.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponent[] { new TextComponent(hoverText) }));
                 message.setBold(true);
 
                 player.spigot().sendMessage(message);
