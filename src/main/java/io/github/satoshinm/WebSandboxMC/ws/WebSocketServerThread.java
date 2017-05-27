@@ -177,7 +177,25 @@ N,1,guest1
     // TODO: cleanup clients when they disconnect
 
     public void handle(String string, ChannelHandlerContext ctx) {
-        if (string.startsWith("B,")) {
+        if (string.startsWith("A,")) {
+            String[] array = string.trim().split(",");
+            if (array.length != 3) {
+                throw new RuntimeException("malformed authentication command A from client: "+string);
+            }
+            String username = array[1];
+            String token = array[2];
+            if (validateClientAuthKey(username, token)) {
+                this.webPlayerBridge.channelId2name.put(ctx.channel().id(), username);
+                /* TODO: properly update other structures
+                if (this.webPlayerBridge.channelId2Entity.containsKey(ctx.channel().id())) {
+                    this.webPlayerBridge.channelId2Entity.put(ctx.channel().id(), )
+                }
+                */
+                sendLine(ctx.channel(), "T,Successfully logged in as "+username);
+            } else {
+                sendLine(ctx.channel(), "T,Invalid token, failed to login as "+username);
+            }
+        } else if (string.startsWith("B,")) {
             this.log(Level.FINEST, "client block update: "+string);
             String[] array = string.trim().split(",");
             if (array.length != 5) {
