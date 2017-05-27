@@ -2,6 +2,8 @@ package io.github.satoshinm.WebSandboxMC.bukkit;
 
 import io.github.satoshinm.WebSandboxMC.ws.WebSocketServerThread;
 import io.netty.channel.Channel;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -137,7 +139,27 @@ public class WsCommand implements CommandExecutor {
             }
 
             String key = webSocketServerThread.webPlayerBridge.newClientAuthKey(name);
-            sender.sendMessage("Authentication key: " + key); // TODO: link
+            String url = "http://localhost:4081/#-%20-%20-" + name + "%20" + key;
+
+            if (sender instanceof Player) {
+                /* TODO: fails java.lang.UnsupportedOperationException: Not supported yet.
+        at org.bukkit.entity.Player$Spigot.sendMessage(Player.java:1734)
+        see https://github.com/GlowstoneMC/Glowkit-Legacy/pull/8
+
+
+                TextComponent message = new TextComponent("Set authentication key " + key + ", click here to login");
+                message.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, url));
+
+                Player player = (Player) sender;
+                player.spigot().sendMessage(message);
+                */
+
+                sender.sendMessage("Set authentication key: " + url);
+
+            } else {
+                sender.sendMessage("Set authentication key: " + url);
+            }
+
             return true;
         } else { // help
             sender.sendMessage("/websandbox list [verbose] -- list all web users connected");
