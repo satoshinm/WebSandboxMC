@@ -3,13 +3,24 @@ package io.github.satoshinm.WebSandboxMC.bridge;
 import io.github.satoshinm.WebSandboxMC.Settings;
 import io.github.satoshinm.WebSandboxMC.ws.WebSocketServerThread;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelId;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.HoverEvent;
+import net.md_5.bungee.api.chat.TextComponent;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.entity.Sheep;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.json.simple.JSONObject;
 
+import java.math.BigInteger;
+import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -27,6 +38,12 @@ public class WebPlayerBridge {
     public Map<Integer, String> entityId2Username;
     public Map<String, Channel> name2channel;
 
+    private Map<String, String> playerAuthKeys = new HashMap<String, String>();
+    private boolean clickableLinks;
+    private boolean clickableLinksTellraw;
+    private String publicURL;
+
+    private boolean allowAnonymous;
     private boolean setCustomNames;
     private boolean disableGravity;
     private boolean disableAI;
@@ -58,6 +75,11 @@ public class WebPlayerBridge {
         this.constrainToSandbox = settings.entityMoveSandbox;
         this.dieDisconnect = settings.entityDieDisconnect;
 
+        this.clickableLinks = settings.clickableLinks;
+        this.clickableLinksTellraw = settings.clickableLinksTellraw;
+        this.publicURL = settings.publicURL;
+
+        this.allowAnonymous = settings.allowAnonymous;
         this.lastPlayerID = 0;
         this.channelId2name = new HashMap<ChannelId, String>();
         this.channelId2Entity = new HashMap<ChannelId, Entity>();
@@ -65,9 +87,24 @@ public class WebPlayerBridge {
         this.name2channel = new HashMap<String, Channel>();
     }
 
-    public String newPlayer(final Channel channel) {
-        int theirID = ++this.lastPlayerID;
-        final String theirName = "webguest" + theirID;
+    public boolean newPlayer(final Channel channel, String proposedUsername, String token) {
+        String theirName;
+        if (validateClientAuthKey(proposedUsername, token)) {
+            theirName = proposedUsername;
+            // TODO: more features when logging in as an authenticated user: move to their last spawn?
+        } else {
+            if (!proposedUsername.equals("")) { // blank = anonymous
+                webSocketServerThread.sendLine(channel, "T,Failed to login as "+proposedUsername);
+            }
+
+            if (!allowAnonymous) {
+                webSocketServerThread.sendLine(channel,"T,This server requires authentication.");
+                return false;
+            }
+
+            int theirID = ++this.lastPlayerID;
+            theirName = "webguest" + theirID;
+        }
 
         this.channelId2name.put(channel.id(), theirName);
         this.name2channel.put(theirName, channel);
@@ -83,7 +120,7 @@ public class WebPlayerBridge {
                 entity.setCustomNameVisible(true);
             }
             if (disableGravity) {
-                entity.setGravity(false); // allow flying TODO: this doesn't seem to work on Glowstone? drops like a rock. update: known bug: https://github.com/GlowstoneMC/Glowstone/issues/454
+                entity.setGravity(false); // allow flying
             }
             if (disableAI) {
                 if (entity instanceof LivingEntity) {
@@ -101,8 +138,7 @@ public class WebPlayerBridge {
 
         // TODO: should this go to Bukkit chat, too/instead? make configurable?
         webSocketServerThread.broadcastLine("T," + theirName + " has joined.");
-
-        return theirName;
+        return true;
     }
 
     public void clientMoved(final Channel channel, final double x, final double y, final double z, final double rx, final double ry) {
@@ -192,5 +228,64 @@ public class WebPlayerBridge {
         if (channel != null) {
             webSocketServerThread.sendLine(channel, "T,You were sheared by " + playerName);
         }
+    }
+
+    private final SecureRandom random = new SecureRandom();
+
+    public void newClientAuthKey(String username, CommandSender sender) {
+        String token = new BigInteger(130, random).toString(32);
+
+        playerAuthKeys.put(username, token);
+        // TODO: persist to disk
+
+
+        String url = publicURL + "#++" + username + "+" + token;
+
+        if (clickableLinks && sender instanceof Player) {
+            Player player = (Player) sender;
+
+            String linkText = "Click here to login";
+            String hoverText = "Login to the web sandbox as " + player.getName();
+
+            // There are two strategies since TextComponents fails with on Glowstone with an error:
+            // java.lang.UnsupportedOperationException: Not supported yet.
+            // at org.bukkit.entity.Player$Spigot.sendMessage(Player.java:1734)
+            // see https://github.com/GlowstoneMC/Glowkit-Legacy/pull/8
+            if (clickableLinksTellraw) {
+                JSONObject json = new JSONObject();
+                json.put("text", linkText);
+                json.put("bold", true);
+
+                JSONObject clickEventJson = new JSONObject();
+                clickEventJson.put("action", "open_url");
+                clickEventJson.put("value", url);
+                json.put("clickEvent", clickEventJson);
+
+                JSONObject hoverEventJson = new JSONObject();
+                hoverEventJson.put("action", "show_text");
+                JSONObject hoverTextObject = new JSONObject();
+                hoverTextObject.put("text", hoverText);
+                hoverEventJson.put("value", hoverTextObject);
+                json.put("hoverEvent", hoverEventJson);
+
+                Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "tellraw " + player.getName() + " " + json.toJSONString());
+            } else {
+                TextComponent message = new TextComponent(linkText);
+                message.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, url));
+                message.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponent[] { new TextComponent(hoverText) }));
+                message.setBold(true);
+
+                player.spigot().sendMessage(message);
+            }
+        } else {
+            sender.sendMessage("Visit this URL to login: " + url);
+        }
+    }
+
+    private boolean validateClientAuthKey(String username, String token) {
+        String expected = playerAuthKeys.get(username);
+        if (expected == null) return false;
+        return expected.equals(token);
+        // TODO: load from disk
     }
 }

@@ -40,6 +40,7 @@ The settings are as follows:
 Configures the HTTP and WebSocket server:
 
 * `port` (4081): TCP port for the HTTP server to listen on
+* `publicURL` (http://localhost:4081/) - URL for publicly accessing this server, sent to clients when running the `/websandbox auth` command
 * `takeover` (false): advanced experimental option to reuse the server port from Bukkit (ignoring `port`) before startup, allowing this plugin to be used on hosts where only one port is allowed
 * `unbind_method` ('console.getServerConnection.b'): if `takeover` enabled, this method is called on `Bukkit.getServer()`, may need to change depending on your Bukkit server implementation
 
@@ -54,6 +55,8 @@ Configures what part of your world to expose:
 * `z_center` (0): " ", Z coordinate
  * If x/y/z center are all 0, then the world's spawn location is used instead
 * `radius` (16): range out of the center to expose in each direction (cube), setting too high will slow down web client loading
+* `clickable_links` (true): send clickable links in chat commands from `/websandbox auth` if true, or as plain text if false
+* `clickable_links_tellraw` (false): use the `/tellraw` command to send richly formatted messages if true, or use the TextComponents API if false, change this if you get a formatting error with `/websandbox auth`
 * `entity` ("Sheep"): name of entity class to spawn on server for web users, set to "" to disable
 * `entity_custom_names` (true): add web player names to the spawned entity's nametag if true
 * `entity_disable_gravity` (true): disable gravity for the spawned entities if true
@@ -65,6 +68,7 @@ Configures what part of your world to expose:
 Configures the NetCraft web client:
 
 * `y_offset` (20): height to shift the web client blocks upwards, to distinguish from the pre-generated landscape
+* `allow_anonymous` (true): allow web users to connect without logging in, otherwise a player must first run `/websandbox auth` and click the link
 * `allow_break_place_blocks` (true): allow web users to break/place blocks, set to false for view-only (see also `allow_signs`)
 * `unbreakable_blocks` (`BEDROCK`): list of block types to deny the client from breaking or placing
 * `allow_signs` (true): allow web users to place signs (by typing backquote followed by the text)
@@ -88,10 +92,13 @@ texture pack compatibility, see [NetCraft#textures](https://github.com/satoshinm
 
 ## Commands
 
-* `/websandbox`: show help
+* `/websandbox` or `/websandbox help`: show help
 * `/websandbox list [verbose]`: list all web users connected
 * `/websandbox tp [<user>]`: teleport to given web username, or web spawn location
 * `/websandbox kick <user>`: disconnect given web username
+* `/websandbox auth [<user>]`: generates an a web link to allow the player to authenticate over the web as themselves instead of anonymously
+
+All commands except help and auth require op, or a `websandbox.command.<command>` permission node.
 
 ## Compatibility
 

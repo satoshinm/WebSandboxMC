@@ -10,6 +10,7 @@ import java.util.logging.Level;
 abstract public class Settings {
     // User configurable settings
     public int httpPort = 4081;
+    public String publicURL = "http://localhost:" + httpPort + "/";
     public boolean takeover = false;
     public String unbindMethod = "console.getServerConnection.b";
 
@@ -31,9 +32,13 @@ abstract public class Settings {
     // of this radius, +/-
     public int radius = 16;
 
+    public boolean clickableLinks = true;
+    public boolean clickableLinksTellraw = false;
+
     // raised this amount in the web world, so it is clearly distinguished from the client-generated terrain
     public int y_offset = 20;
 
+    public boolean allowAnonymous = true;
     public boolean allowBreakPlaceBlocks = true;
     public List<String> unbreakableBlocks = new ArrayList<String>();
     public boolean allowSigns = true;

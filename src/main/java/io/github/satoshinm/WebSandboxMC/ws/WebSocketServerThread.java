@@ -116,7 +116,8 @@ public final class WebSocketServerThread extends Thread {
                 Channel ch = b.bind(PORT).sync().channel();
 
                 log(Level.INFO, "Open your web browser and navigate to " +
-                        (SSL ? "https" : "http") + "://127.0.0.1:" + PORT + "/");
+                        (SSL ? "https" : "http") + "://127.0.0.1:" + PORT + "/" +
+                        " or " + settings.publicURL);
 
                 ch.closeFuture().sync();
             } catch (InterruptedException ex) {
@@ -148,14 +149,16 @@ public final class WebSocketServerThread extends Thread {
         }
     }
 
-    // Handle a command from the client
-    public void handleNewClient(ChannelHandlerContext ctx) {
+    public void handleNewClient(ChannelHandlerContext ctx, String username, String token) {
         Channel channel = ctx.channel();
+
+        if (!webPlayerBridge.newPlayer(channel, username, token)) {
+            channel.close();
+            return;
+        }
 
         allUsersGroup.add(channel);
 
-        /*String theirName = */webPlayerBridge.newPlayer(channel);
-        // TODO: join newPlayer _after_ sending world? since then they are really "in" the world, before, in-progress
 
     /* Send initial server messages on client connect here, example from Python server for comparison:
 
@@ -172,9 +175,27 @@ N,1,guest1
         blockBridge.sendWorld(channel);
         playersBridge.sendPlayers(channel);
     }
-    // TODO: cleanup clients when they disconnect
 
+    // Handle a command from the client
     public void handle(String string, ChannelHandlerContext ctx) {
+        if (string.startsWith("A,")) {
+            String[] array = string.trim().split(",");
+            String username = "";
+            String token = "";
+            if (array.length == 3) {
+                username = array[1];
+                token = array[2];
+            }
+            handleNewClient(ctx, username, token);
+            return;
+        }
+
+        if (!allUsersGroup.contains(ctx.channel())) {
+            // Commands below this point require a successfully logged-in user
+            this.log(Level.FINEST, "Client tried to send command when not authenticated: "+string+" from "+ctx);
+            return;
+        }
+
         if (string.startsWith("B,")) {
             this.log(Level.FINEST, "client block update: "+string);
             String[] array = string.trim().split(",");

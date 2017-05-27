@@ -21,6 +21,7 @@ public class SettingsBukkit extends Settings {
         config.options().copyDefaults(true);
 
         config.addDefault("http.port", this.httpPort);
+        config.addDefault("http.publicURL", this.publicURL);
         config.addDefault("http.takeover", this.takeover);
         config.addDefault("http.unbind_method", this.unbindMethod);
 
@@ -37,8 +38,11 @@ public class SettingsBukkit extends Settings {
         config.addDefault("mc.y_center", this.y_center);
         config.addDefault("mc.z_center", this.z_center);
         config.addDefault("mc.radius", this.radius);
+        config.addDefault("mc.clickable_links", this.clickableLinks);
+        config.addDefault("mc.clickable_links_tellraw", this.clickableLinksTellraw);
 
         config.addDefault("nc.y_offset", this.y_offset);
+        config.addDefault("nc.allow_anonymous", this.allowAnonymous);
         config.addDefault("nc.allow_break_place_blocks", this.allowBreakPlaceBlocks);
         this.unbreakableBlocks.add("BEDROCK");
         config.addDefault("nc.unbreakable_blocks", this.unbreakableBlocks);
@@ -51,6 +55,7 @@ public class SettingsBukkit extends Settings {
         config.addDefault("nc.warn_missing_blocks_to_web", this.warnMissing);
 
         this.httpPort = plugin.getConfig().getInt("http.port");
+        this.publicURL = plugin.getConfig().getString("http.publicURL");
         this.takeover = plugin.getConfig().getBoolean("http.takeover");
         this.unbindMethod = plugin.getConfig().getString("http.unbind_method");
 
@@ -70,8 +75,12 @@ public class SettingsBukkit extends Settings {
         this.z_center = plugin.getConfig().getInt("mc.z_center");
         this.radius = plugin.getConfig().getInt("mc.radius");
 
+        this.clickableLinks = plugin.getConfig().getBoolean("mc.clickable_links");
+        this.clickableLinksTellraw = plugin.getConfig().getBoolean("mc.clickable_links_tellraw");
+
         this.y_offset = plugin.getConfig().getInt("nc.y_offset");
 
+        this.allowAnonymous = plugin.getConfig().getBoolean("nc.allow_anonymous");
         this.allowBreakPlaceBlocks = plugin.getConfig().getBoolean("nc.allow_break_place_blocks");
         this.unbreakableBlocks = plugin.getConfig().getStringList("nc.unbreakable_blocks");
         this.allowSigns = plugin.getConfig().getBoolean("nc.allow_signs");
