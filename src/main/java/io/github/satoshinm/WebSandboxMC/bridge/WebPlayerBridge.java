@@ -6,6 +6,7 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelId;
 import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -40,6 +41,7 @@ public class WebPlayerBridge {
     private Map<String, String> playerAuthKeys = new HashMap<String, String>();
     private boolean clickableLinks;
     private boolean clickableLinksTellraw;
+    private String publicURL;
 
     private boolean setCustomNames;
     private boolean disableGravity;
@@ -74,6 +76,7 @@ public class WebPlayerBridge {
 
         this.clickableLinks = settings.clickableLinks;
         this.clickableLinksTellraw = settings.clickableLinksTellraw;
+        this.publicURL = settings.publicURL;
 
         this.lastPlayerID = 0;
         this.channelId2name = new HashMap<ChannelId, String>();
@@ -230,10 +233,13 @@ public class WebPlayerBridge {
         // TODO: persist to disk
 
 
-        String url = "http://localhost:4081/#++" + username + "+" + token;
+        String url = publicURL + "#++" + username + "+" + token;
 
         if (clickableLinks && sender instanceof Player) {
             Player player = (Player) sender;
+
+            String linkText = "Click here to login";
+            //TODO String hoverText = "Login to the web sandbox as this user";
 
             // There are two strategies since TextComponents fails with on Glowstone with an error:
             // java.lang.UnsupportedOperationException: Not supported yet.
@@ -241,7 +247,7 @@ public class WebPlayerBridge {
             // see https://github.com/GlowstoneMC/Glowkit-Legacy/pull/8
             if (clickableLinksTellraw) {
                 JSONObject json = new JSONObject();
-                json.put("text", "Click here to login");
+                json.put("text", linkText);
                 json.put("bold", true);
 
                 JSONObject clickEventJson = new JSONObject();
@@ -249,10 +255,17 @@ public class WebPlayerBridge {
                 clickEventJson.put("value", url);
                 json.put("clickEvent", clickEventJson);
 
+                /* TODO
+                JSONObject hoverEventJson = new JSONObject();
+                hoverEventJson.put("action", "show_text");
+                hoverEventJson.put("value", hoverText);
+                */
+
                 Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "tellraw " + player.getName() + " " + json.toJSONString());
             } else {
-                TextComponent message = new TextComponent("Click here to login");
+                TextComponent message = new TextComponent(linkText);
                 message.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, url));
+                //message.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponent[] { new TextComponent(hoverText) }));
                 message.setBold(true);
 
                 player.spigot().sendMessage(message);

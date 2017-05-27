@@ -40,6 +40,7 @@ The settings are as follows:
 Configures the HTTP and WebSocket server:
 
 * `port` (4081): TCP port for the HTTP server to listen on
+* `publicURL` (http://localhost:4081/) - URL for publicly accessing this server, sent to clients when running the `/websandbox auth` command
 * `takeover` (false): advanced experimental option to reuse the server port from Bukkit (ignoring `port`) before startup, allowing this plugin to be used on hosts where only one port is allowed
 * `unbind_method` ('console.getServerConnection.b'): if `takeover` enabled, this method is called on `Bukkit.getServer()`, may need to change depending on your Bukkit server implementation
 

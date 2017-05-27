@@ -21,6 +21,7 @@ public class SettingsBukkit extends Settings {
         config.options().copyDefaults(true);
 
         config.addDefault("http.port", this.httpPort);
+        config.addDefault("http.publicURL", this.publicURL);
         config.addDefault("http.takeover", this.takeover);
         config.addDefault("http.unbind_method", this.unbindMethod);
 
@@ -53,6 +54,7 @@ public class SettingsBukkit extends Settings {
         config.addDefault("nc.warn_missing_blocks_to_web", this.warnMissing);
 
         this.httpPort = plugin.getConfig().getInt("http.port");
+        this.publicURL = plugin.getConfig().getString("http.publicURL");
         this.takeover = plugin.getConfig().getBoolean("http.takeover");
         this.unbindMethod = plugin.getConfig().getString("http.unbind_method");
 

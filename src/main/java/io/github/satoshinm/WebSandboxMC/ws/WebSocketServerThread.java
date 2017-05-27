@@ -116,7 +116,8 @@ public final class WebSocketServerThread extends Thread {
                 Channel ch = b.bind(PORT).sync().channel();
 
                 log(Level.INFO, "Open your web browser and navigate to " +
-                        (SSL ? "https" : "http") + "://127.0.0.1:" + PORT + "/");
+                        (SSL ? "https" : "http") + "://127.0.0.1:" + PORT + "/" +
+                        " or " + settings.publicURL);
 
                 ch.closeFuture().sync();
             } catch (InterruptedException ex) {

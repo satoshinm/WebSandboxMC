@@ -10,6 +10,7 @@ import java.util.logging.Level;
 abstract public class Settings {
     // User configurable settings
     public int httpPort = 4081;
+    public String publicURL = "http://localhost:" + httpPort + "/";
     public boolean takeover = false;
     public String unbindMethod = "console.getServerConnection.b";
 
