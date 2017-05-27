@@ -219,15 +219,22 @@ public class WebPlayerBridge {
 
     public void authenticateUser(ChannelHandlerContext ctx, String username, String token) {
         if (validateClientAuthKey(username, token)) {
-            this.channelId2name.put(ctx.channel().id(), username);
-                /* TODO: properly update other structures
-                if (this.webPlayerBridge.channelId2Entity.containsKey(ctx.channel().id())) {
-                    this.webPlayerBridge.channelId2Entity.put(ctx.channel().id(), )
-                }
-                */
+            // Rename user from the default guest name
+            ChannelId id = ctx.channel().id();
+            this.channelId2name.put(id, username);
+            Entity entity = this.channelId2Entity.get(id);
+            if (entity != null) {
+                this.entityId2Username.put(entity.getEntityId(), username);
+            }
+            this.name2channel.remove(username);
+            this.name2channel.put(username, ctx.channel());
+            // TODO: update entity custom name if has one
+
             webSocketServerThread.sendLine(ctx.channel(), "T,Successfully logged in as "+username);
         } else {
             webSocketServerThread.sendLine(ctx.channel(), "T,Invalid token, failed to login as "+username);
         }
+        // TODO: anonymous auth
+        // TODO: show "logged in" message here not earlier, since now know username!
     }
 }
