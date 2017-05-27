@@ -44,8 +44,6 @@ abstract public class Settings {
     public Map<String, Object> blocksToWebOverride = new HashMap<String, Object>();
     public boolean warnMissing = true;
 
-    public Map<String, String> playerAuthKeys = new HashMap<String, String>();
-
     // Automatic settings
     public String textureURL = null;
     public File pluginDataFolder = null;

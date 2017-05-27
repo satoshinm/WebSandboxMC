@@ -3,6 +3,7 @@ package io.github.satoshinm.WebSandboxMC.bridge;
 import io.github.satoshinm.WebSandboxMC.Settings;
 import io.github.satoshinm.WebSandboxMC.ws.WebSocketServerThread;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelId;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
@@ -10,6 +11,8 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Sheep;
 import org.bukkit.event.entity.EntityDamageEvent;
 
+import java.math.BigInteger;
+import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -26,6 +29,8 @@ public class WebPlayerBridge {
     public Map<ChannelId, Entity> channelId2Entity;
     public Map<Integer, String> entityId2Username;
     public Map<String, Channel> name2channel;
+
+    public Map<String, String> playerAuthKeys = new HashMap<String, String>();
 
     private boolean setCustomNames;
     private boolean disableGravity;
@@ -191,6 +196,38 @@ public class WebPlayerBridge {
 
         if (channel != null) {
             webSocketServerThread.sendLine(channel, "T,You were sheared by " + playerName);
+        }
+    }
+
+    private final SecureRandom random = new SecureRandom();
+
+    public String newClientAuthKey(String username) {
+        String token = new BigInteger(130, random).toString(32);
+
+        playerAuthKeys.put(username, token);
+
+        return token;
+        // TODO: persist to disk
+    }
+
+    private boolean validateClientAuthKey(String username, String token) {
+        String expected = playerAuthKeys.get(username);
+        if (expected == null) return false;
+        return expected.equals(token);
+        // TODO: load from disk
+    }
+
+    public void authenticateUser(ChannelHandlerContext ctx, String username, String token) {
+        if (validateClientAuthKey(username, token)) {
+            this.channelId2name.put(ctx.channel().id(), username);
+                /* TODO: properly update other structures
+                if (this.webPlayerBridge.channelId2Entity.containsKey(ctx.channel().id())) {
+                    this.webPlayerBridge.channelId2Entity.put(ctx.channel().id(), )
+                }
+                */
+            webSocketServerThread.sendLine(ctx.channel(), "T,Successfully logged in as "+username);
+        } else {
+            webSocketServerThread.sendLine(ctx.channel(), "T,Invalid token, failed to login as "+username);
         }
     }
 }

@@ -136,9 +136,9 @@ public class WsCommand implements CommandExecutor {
                 name = player.getName();
             }
 
-            String key = webSocketServerThread.newClientAuthKey(name);
+            String key = webSocketServerThread.webPlayerBridge.newClientAuthKey(name);
             sender.sendMessage("Authentication key: " + key); // TODO: link
-
+            return true;
         } else { // help
             sender.sendMessage("/websandbox list [verbose] -- list all web users connected");
             sender.sendMessage("/websandbox tp [<user>] -- teleport to given web username, or web spawn location");
