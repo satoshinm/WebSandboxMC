@@ -6,6 +6,7 @@ import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
@@ -116,14 +117,33 @@ public class WsCommand implements CommandExecutor {
                 return true;
             }
 
-            sender.sendMessage("Kicking web client "+name);
-            webSocketServerThread.sendLine(channel,"T,You were kicked by "+sender.getName());
+            sender.sendMessage("Kicking web client " + name);
+            webSocketServerThread.sendLine(channel, "T,You were kicked by " + sender.getName());
             webSocketServerThread.webPlayerBridge.clientDisconnected(channel);
             return true;
+        } else if (subcommand.equals("auth")) {
+            // TODO: non-ops should be able to run this command by default
+            String name;
+
+            if (!(sender instanceof Player)) {
+                if (split.length < 2) {
+                    sender.sendMessage("Usage: /websandbox auth <user>");
+                    return true;
+                }
+                name = split[1];
+            } else {
+                Player player = (Player) sender;
+                name = player.getName();
+            }
+
+            String key = webSocketServerThread.newClientAuthKey(name);
+            sender.sendMessage("Authentication key: " + key); // TODO: link
+
         } else { // help
             sender.sendMessage("/websandbox list [verbose] -- list all web users connected");
             sender.sendMessage("/websandbox tp [<user>] -- teleport to given web username, or web spawn location");
             sender.sendMessage("/websandbox kick <user> -- disconnect given web username");
+            sender.sendMessage("/websandbox auth [<user>] -- get authentication token to login non-anonymously");
             // TODO: reload, reconfig commands
         }
         return false;

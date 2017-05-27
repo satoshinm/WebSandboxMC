@@ -37,6 +37,8 @@ import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
 import io.netty.util.concurrent.ImmediateEventExecutor;
 
+import java.math.BigInteger;
+import java.security.SecureRandom;
 import java.util.logging.Level;
 
 /**
@@ -222,5 +224,23 @@ N,1,guest1
         }
 
         // TODO: handle more client messages
+    }
+
+    private final SecureRandom random = new SecureRandom();
+
+    public String newClientAuthKey(String playerName) {
+        String key = new BigInteger(130, random).toString(32);
+
+        settings.playerAuthKeys.put(playerName, key);
+
+        return key;
+        // TODO: persist to disk
+    }
+
+    public boolean validateClientAuthKey(String playerName, String key) {
+        String expectedKey = settings.playerAuthKeys.get(playerName);
+        if (expectedKey == null) return false;
+        return expectedKey.equals(key);
+        // TODO: load from disk
     }
 }
