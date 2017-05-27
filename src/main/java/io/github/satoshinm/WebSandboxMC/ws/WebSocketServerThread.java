@@ -148,13 +148,12 @@ public final class WebSocketServerThread extends Thread {
         }
     }
 
-    // Handle a command from the client
-    public void handleNewClient(ChannelHandlerContext ctx) {
+    public void handleNewClient(ChannelHandlerContext ctx, String username, String token) {
         Channel channel = ctx.channel();
 
         allUsersGroup.add(channel);
 
-        /*String theirName = */webPlayerBridge.newPlayer(channel);
+        /*String theirName = */webPlayerBridge.newPlayer(channel, username, token);
         // TODO: join newPlayer _after_ sending world? since then they are really "in" the world, before, in-progress
 
     /* Send initial server messages on client connect here, example from Python server for comparison:
@@ -172,17 +171,18 @@ N,1,guest1
         blockBridge.sendWorld(channel);
         playersBridge.sendPlayers(channel);
     }
-    // TODO: cleanup clients when they disconnect
 
+    // Handle a command from the client
     public void handle(String string, ChannelHandlerContext ctx) {
         if (string.startsWith("A,")) {
             String[] array = string.trim().split(",");
-            if (array.length != 3) {
-                throw new RuntimeException("malformed authentication command A from client: "+string);
+            String username = "";
+            String token = "";
+            if (array.length == 3) {
+                username = array[1];
+                token = array[2];
             }
-            String username = array[1];
-            String token = array[2];
-            webPlayerBridge.authenticateUser(ctx, username, token);
+            handleNewClient(ctx, username, token);
         } else if (string.startsWith("B,")) {
             this.log(Level.FINEST, "client block update: "+string);
             String[] array = string.trim().split(",");

@@ -32,25 +32,6 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
     }
 
     @Override
-    @SuppressWarnings("deprecation") // TODO: why is HANDSHAKE_COMPLETE deprecated and what is the replacement?
-    public void userEventTriggered(final ChannelHandlerContext ctx, Object evt) throws Exception {
-        webSocketServerThread.log(Level.FINEST, "userEventTriggered: "+evt);
-        if (evt == WebSocketServerProtocolHandler.ServerHandshakeStateEvent.HANDSHAKE_COMPLETE) {
-            // "The Handshake was complete successful and so the channel was upgraded to websockets"
-
-            // Since we're in a callback we cannot call any Bukkit API safely here, see:
-            // http://bukkit.gamepedia.com/Scheduler_Programming#Tips_for_thread_safety
-            // " Warning:	Asynchronous tasks should never access any API in Bukkit"
-            webSocketServerThread.scheduleSyncTask(new Runnable() {
-                @Override
-                public void run() {
-                    webSocketServerThread.handleNewClient(ctx);
-                }
-            });
-        }
-    }
-
-    @Override
     public void channelRead0(final ChannelHandlerContext ctx, WebSocketFrame frame) throws Exception {
         webSocketServerThread.log(Level.FINEST, "channel read, frame="+frame);
 

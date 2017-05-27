@@ -70,9 +70,19 @@ public class WebPlayerBridge {
         this.name2channel = new HashMap<String, Channel>();
     }
 
-    public String newPlayer(final Channel channel) {
-        int theirID = ++this.lastPlayerID;
-        final String theirName = "webguest" + theirID;
+    public String newPlayer(final Channel channel, String proposedUsername, String token) {
+        String theirName;
+        if (validateClientAuthKey(proposedUsername, token)) {
+            theirName = proposedUsername;
+            // TODO: more features when logging in as an authenticated user: move to their last spawn?
+        } else {
+            if (!proposedUsername.equals("")) { // blank = anonymous
+                webSocketServerThread.sendLine(channel, "T,Failed to login as "+proposedUsername);
+            }
+
+            int theirID = ++this.lastPlayerID;
+            theirName = "webguest" + theirID;
+        }
 
         this.channelId2name.put(channel.id(), theirName);
         this.name2channel.put(theirName, channel);
@@ -88,7 +98,7 @@ public class WebPlayerBridge {
                 entity.setCustomNameVisible(true);
             }
             if (disableGravity) {
-                entity.setGravity(false); // allow flying TODO: this doesn't seem to work on Glowstone? drops like a rock. update: known bug: https://github.com/GlowstoneMC/Glowstone/issues/454
+                entity.setGravity(false); // allow flying
             }
             if (disableAI) {
                 if (entity instanceof LivingEntity) {
@@ -215,26 +225,5 @@ public class WebPlayerBridge {
         if (expected == null) return false;
         return expected.equals(token);
         // TODO: load from disk
-    }
-
-    public void authenticateUser(ChannelHandlerContext ctx, String username, String token) {
-        if (validateClientAuthKey(username, token)) {
-            // Rename user from the default guest name
-            ChannelId id = ctx.channel().id();
-            this.channelId2name.put(id, username);
-            Entity entity = this.channelId2Entity.get(id);
-            if (entity != null) {
-                this.entityId2Username.put(entity.getEntityId(), username);
-            }
-            this.name2channel.remove(username);
-            this.name2channel.put(username, ctx.channel());
-            // TODO: update entity custom name if has one
-
-            webSocketServerThread.sendLine(ctx.channel(), "T,Successfully logged in as "+username);
-        } else {
-            webSocketServerThread.sendLine(ctx.channel(), "T,Invalid token, failed to login as "+username);
-        }
-        // TODO: anonymous auth
-        // TODO: show "logged in" message here not earlier, since now know username!
     }
 }
