@@ -42,6 +42,7 @@ public class SettingsBukkit extends Settings {
         config.addDefault("mc.clickable_links_tellraw", this.clickableLinksTellraw);
 
         config.addDefault("nc.y_offset", this.y_offset);
+        config.addDefault("nc.allow_anonymous", this.allowAnonymous);
         config.addDefault("nc.allow_break_place_blocks", this.allowBreakPlaceBlocks);
         this.unbreakableBlocks.add("BEDROCK");
         config.addDefault("nc.unbreakable_blocks", this.unbreakableBlocks);
@@ -79,6 +80,7 @@ public class SettingsBukkit extends Settings {
 
         this.y_offset = plugin.getConfig().getInt("nc.y_offset");
 
+        this.allowAnonymous = plugin.getConfig().getBoolean("nc.allow_anonymous");
         this.allowBreakPlaceBlocks = plugin.getConfig().getBoolean("nc.allow_break_place_blocks");
         this.unbreakableBlocks = plugin.getConfig().getStringList("nc.unbreakable_blocks");
         this.allowSigns = plugin.getConfig().getBoolean("nc.allow_signs");

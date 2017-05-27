@@ -38,6 +38,7 @@ abstract public class Settings {
     // raised this amount in the web world, so it is clearly distinguished from the client-generated terrain
     public int y_offset = 20;
 
+    public boolean allowAnonymous = true;
     public boolean allowBreakPlaceBlocks = true;
     public List<String> unbreakableBlocks = new ArrayList<String>();
     public boolean allowSigns = true;

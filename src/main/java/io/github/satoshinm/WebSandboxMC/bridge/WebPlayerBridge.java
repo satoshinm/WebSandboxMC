@@ -43,6 +43,7 @@ public class WebPlayerBridge {
     private boolean clickableLinksTellraw;
     private String publicURL;
 
+    private boolean allowAnonymous;
     private boolean setCustomNames;
     private boolean disableGravity;
     private boolean disableAI;
@@ -78,6 +79,7 @@ public class WebPlayerBridge {
         this.clickableLinksTellraw = settings.clickableLinksTellraw;
         this.publicURL = settings.publicURL;
 
+        this.allowAnonymous = settings.allowAnonymous;
         this.lastPlayerID = 0;
         this.channelId2name = new HashMap<ChannelId, String>();
         this.channelId2Entity = new HashMap<ChannelId, Entity>();
@@ -85,7 +87,7 @@ public class WebPlayerBridge {
         this.name2channel = new HashMap<String, Channel>();
     }
 
-    public String newPlayer(final Channel channel, String proposedUsername, String token) {
+    public boolean newPlayer(final Channel channel, String proposedUsername, String token) {
         String theirName;
         if (validateClientAuthKey(proposedUsername, token)) {
             theirName = proposedUsername;
@@ -93,6 +95,11 @@ public class WebPlayerBridge {
         } else {
             if (!proposedUsername.equals("")) { // blank = anonymous
                 webSocketServerThread.sendLine(channel, "T,Failed to login as "+proposedUsername);
+            }
+
+            if (!allowAnonymous) {
+                webSocketServerThread.sendLine(channel,"T,This server requires authentication.");
+                return false;
             }
 
             int theirID = ++this.lastPlayerID;
@@ -131,8 +138,7 @@ public class WebPlayerBridge {
 
         // TODO: should this go to Bukkit chat, too/instead? make configurable?
         webSocketServerThread.broadcastLine("T," + theirName + " has joined.");
-
-        return theirName;
+        return true;
     }
 
     public void clientMoved(final Channel channel, final double x, final double y, final double z, final double rx, final double ry) {
