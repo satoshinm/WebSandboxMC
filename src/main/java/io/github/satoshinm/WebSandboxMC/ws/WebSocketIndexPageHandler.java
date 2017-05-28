@@ -121,20 +121,21 @@ public class WebSocketIndexPageHandler extends SimpleChannelInboundHandler<FullH
         // Send the index page
         if ("/".equals(req.uri()) || "/index.html".equals(req.uri()) || "/craft.html".equals(req.uri())) {
             sendTextResource(null,"/craft.html", "text/html; charset=UTF-8", req, ctx);
-        } else if ("/craft.js".equals(req.uri())) {
+        } else if ("/craft.js".equals(req.uri()) || "/craftw.js".equals(req.uri())) {
             String prepend = "window.DEFAULT_ARGV = ['-'];"; // connect back to self
-            sendTextResource(prepend,"/craft.js", "application/javascript; charset=UTF-8", req, ctx);
+            sendTextResource(prepend, req.uri(), "application/javascript; charset=UTF-8", req, ctx);
         } else if ("/craft.html.mem".equals(req.uri())) {
-            sendBinaryResource("/craft.html.mem", "application/octet-stream", req, ctx);
-        } else if ("/craft.wasm".equals(req.uri())) {
-            // TODO: test WebAssembly, it is a supported build target: https://github.com/satoshinm/NetCraft/issues/1)
-            sendBinaryResource("/craft.wasm", "application/octet-stream", req, ctx);
-        } else if ("/craft.data".equals(req.uri())) {
+            sendBinaryResource(req.uri(), "application/octet-stream", req, ctx);
+        } else if ("/craftw.wasm".equals(req.uri())) {
+            // craftw = webassembly build
+            sendBinaryResource(req.uri(), "application/octet-stream", req, ctx);
+        } else if ("/craft.data".equals(req.uri()) || "/craftw.data".equals(req.uri())) {
+            // same data file for both asmjs and webassembly
             sendBinaryResource("/craft.data", "application/octet-stream", req, ctx);
         } else if ("/textures.zip".equals(req.uri())) {
             File file = new File(this.pluginDataFolder, "textures.zip");
             if (file.exists()) {
-                sendBinaryResource("/textures.zip", "application/octet-stream", req, ctx);
+                sendBinaryResource(req.uri(), "application/octet-stream", req, ctx);
             } else {
                 System.out.println("request for /textures.zip but does not exist in plugin data folder");
                 sendHttpResponse(ctx, req, new DefaultFullHttpResponse(HTTP_1_1, PRECONDITION_FAILED));
