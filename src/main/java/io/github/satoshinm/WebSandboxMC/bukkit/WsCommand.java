@@ -123,6 +123,9 @@ public class WsCommand implements CommandExecutor {
             webSocketServerThread.sendLine(channel, "T,You were kicked by " + sender.getName());
             webSocketServerThread.webPlayerBridge.clientDisconnected(channel);
             return true;
+        } else if (subcommand.equals("clear")) {
+            webSocketServerThread.webPlayerBridge.clearStaleEntities(sender);
+            return true;
         } else if (subcommand.equals("auth")) {
             // TODO: non-ops should be able to run this command by default
             String name;
@@ -145,6 +148,7 @@ public class WsCommand implements CommandExecutor {
             sender.sendMessage("/websandbox list [verbose] -- list all web users connected");
             sender.sendMessage("/websandbox tp [<user>] -- teleport to given web username, or web spawn location");
             sender.sendMessage("/websandbox kick <user> -- disconnect given web username");
+            sender.sendMessage("/websandbox clear -- remove stale entities in sandbox");
             sender.sendMessage("/websandbox auth [<user>] -- get authentication token to login non-anonymously");
             // TODO: reload, reconfig commands
         }

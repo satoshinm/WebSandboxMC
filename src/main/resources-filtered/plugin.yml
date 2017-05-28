@@ -4,4 +4,4 @@ version: ${version}
 commands:
     websandbox:
         description: Controls the WebSandbox WebGL HTML5 web interface.
-        usage: "Usage: /websandbox list|tp|kick|auth"
+        usage: "Usage: /websandbox list|tp|kick|clear|auth"

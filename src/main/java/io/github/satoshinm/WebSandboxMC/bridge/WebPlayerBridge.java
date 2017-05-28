@@ -21,6 +21,7 @@ import org.json.simple.JSONObject;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
@@ -139,6 +140,63 @@ public class WebPlayerBridge {
         // TODO: should this go to Bukkit chat, too/instead? make configurable?
         webSocketServerThread.broadcastLine("T," + theirName + " has joined.");
         return true;
+    }
+
+    public void clearStaleEntities(CommandSender sender) {
+        if (this.entityClass == null) {
+            sender.sendMessage("Nothing to clear, no entity class set");
+            return;
+        }
+
+        int removed = 0;
+        int found = 0;
+
+        // Get all entities within the web radius - note: server implementations may restrict these bounds
+        double r = webSocketServerThread.blockBridge.radius;
+        Collection<Entity> entities = webSocketServerThread.blockBridge.world.getNearbyEntities(
+                webSocketServerThread.blockBridge.spawnLocation, r, r, r);
+        for (Entity entity : entities) {
+            ++found;
+
+            webSocketServerThread.log(Level.INFO, "looking at entity "+entity);
+            if (this.entityClass.isInstance(entity)) {
+
+                if (entityId2Username.containsKey(entity.getEntityId())) {
+                    webSocketServerThread.log(Level.INFO, "ignored, in use: "+entity+
+                            " by "+entityId2Username.get(entity.getEntityId()));
+                    continue;
+                }
+
+                // Skip entities that don't match our expected properties
+
+                if (this.setCustomNames && entity.getCustomName() == null) {
+                    webSocketServerThread.log(Level.INFO, "ignored, missing custom name: "+entity);
+                    continue;
+                }
+
+                if (this.disableGravity && entity.hasGravity()) {
+                    webSocketServerThread.log(Level.INFO, "ignored, missing no gravity: "+entity);
+                    continue;
+                }
+
+                /* Glowstone seems to not persist setAI()?
+                if (entity instanceof LivingEntity) {
+                    LivingEntity livingEntity = (LivingEntity) entity;
+                    if (this.disableAI && livingEntity.hasAI()) {
+                        webSocketServerThread.log(Level.WARNING, "ignored, missing no AI: "+entity);
+                        continue;
+                    }
+                }
+                */
+
+                webSocketServerThread.log(Level.INFO, "removing "+entity);
+
+                sender.sendMessage("Removing " + entity);
+                entity.remove();
+                ++removed;
+            }
+        }
+        sender.sendMessage("Removed "+removed+" of "+found+" entities");
     }
 
     public void clientMoved(final Channel channel, final double x, final double y, final double z, final double rx, final double ry) {

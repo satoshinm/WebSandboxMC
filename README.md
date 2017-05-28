@@ -102,6 +102,7 @@ texture pack compatibility, see [NetCraft#textures](https://github.com/satoshinm
 * `/websandbox list [verbose]`: list all web users connected
 * `/websandbox tp [<user>]`: teleport to given web username, or web spawn location
 * `/websandbox kick <user>`: disconnect given web username
+* `/websandbox clear`: remove stale web player entities which can occur if the server is abnormally terminated
 * `/websandbox auth [<user>]`: generates an a web link to allow the player to authenticate over the web as themselves instead of anonymously
 
 All commands except help and auth require op, or a `websandbox.command.<command>` permission node.

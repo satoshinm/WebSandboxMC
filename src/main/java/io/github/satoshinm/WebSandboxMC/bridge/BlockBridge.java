@@ -23,7 +23,8 @@ import java.util.logging.Level;
 public class BlockBridge {
 
     public WebSocketServerThread webSocketServerThread;
-    private final int x_center, y_center, z_center, radius, y_offset;
+    private final int x_center, y_center, z_center, y_offset;
+    public final int radius;
     public final World world;
     public Location spawnLocation;
     private boolean allowBreakPlaceBlocks;
