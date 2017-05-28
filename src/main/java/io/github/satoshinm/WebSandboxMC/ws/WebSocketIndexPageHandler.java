@@ -129,6 +129,8 @@ public class WebSocketIndexPageHandler extends SimpleChannelInboundHandler<FullH
         } else if ("/craft.wasm".equals(req.uri())) {
             // TODO: test WebAssembly, it is a supported build target: https://github.com/satoshinm/NetCraft/issues/1)
             sendBinaryResource("/craft.wasm", "application/octet-stream", req, ctx);
+        } else if ("/craft.data".equals(req.uri())) {
+            sendBinaryResource("/craft.data", "application/octet-stream", req, ctx);
         } else if ("/textures.zip".equals(req.uri())) {
             File file = new File(this.pluginDataFolder, "textures.zip");
             if (file.exists()) {
