@@ -711,7 +711,11 @@ public class BlockBridge {
         BlockFace blockFace = BlockFace.NORTH;
         if (blockState.getData() instanceof org.bukkit.material.Sign) {
             org.bukkit.material.Sign sign = (org.bukkit.material.Sign) blockState.getData();
-            blockFace = sign.getFacing();
+            try {
+                blockFace = sign.getFacing();
+            } catch (NullPointerException ex) {
+                // ignore invalid data, https://github.com/GlowstoneMC/Glowstone/issues/484
+            }
         }
 
         int face = 7;
