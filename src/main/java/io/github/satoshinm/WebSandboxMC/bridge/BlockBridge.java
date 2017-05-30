@@ -398,6 +398,7 @@ public class BlockBridge {
                 if (materialData instanceof TexturedMaterial) {
                     TexturedMaterial texturedMaterial = (TexturedMaterial) materialData;
                     switch (texturedMaterial.getMaterial()) {
+                        default:
                         case STONE: return 3; // stone brick
                         case MOSSY_COBBLESTONE: return 76; // mossy stone brick
                         case COBBLESTONE: return 77; // cracked stone brick
