@@ -438,8 +438,7 @@ public class BlockBridge {
 
             case GLASS: return 10;
             case COBBLESTONE: return 11;
-            // TODO: return  light stone (12);
-            // TODO: return  dark stone (13);
+
             case CHEST: return 14;
             case LEAVES:
             case LEAVES_2: {
@@ -530,11 +529,14 @@ public class BlockBridge {
             case REDSTONE_TORCH_OFF: return 19;
             case REDSTONE_TORCH_ON: return 19; // red flower, vaguely a torch
 
-            // Liquids - currently using color blocks as placeholders since they appear too often
-            case STATIONARY_WATER: return 35; // light blue wool
-            case WATER: return 35; // light blue wool
-            case STATIONARY_LAVA: return 35; // orange wool
-            case LAVA: return 35; // orange wool
+            // Liquids
+            // TODO: flowing, stationary, and different heights of each liquid
+            case STATIONARY_WATER:
+            case WATER:
+                return 12; // water
+            case STATIONARY_LAVA:
+            case LAVA:
+                return 13; // lava
 
             // TODO: support more blocks by default
             case BEDROCK: return 65;
@@ -616,28 +618,36 @@ public class BlockBridge {
             case 0: material = Material.AIR; break;
             case 1: material = Material.GRASS; break;
             case 2: material = Material.SAND; break;
-            case 3: material = Material.SMOOTH_BRICK; break; // "smooth stone brick"
+            case 3: material = Material.SMOOTH_BRICK; break;
             case 4: material = Material.BRICK; break;
             case 5: material = Material.LOG; break;
-            case 6: material = Material.STONE; break; // "cement"
+            case 6: material = Material.STONE; break;
             case 7: material = Material.DIRT; break;
             case 8: material = Material.WOOD; break;
             case 9: material = Material.SNOW_BLOCK; break;
             case 10: material = Material.GLASS; break;
             case 11: material = Material.COBBLESTONE; break;
-            //case 12: material = Material. light stone?
-            //case 13: material = Material. dark stone?
-            case 14: material = Material.CHEST; break;
+            case 12: material = Material.WATER; break;
+            case 13: material = Material.LAVA; break;
+            case 14: material = Material.CHEST; break; // TODO: doesn't seem to set?
             case 15: material = Material.LEAVES; break;
             //case 16: material = Material.clouds; break; // clouds
             case 17: material = Material.LONG_GRASS; break;
             case 18: material = Material.YELLOW_FLOWER; break;
             case 19: material = Material.RED_ROSE; break;
             case 20: material = Material.CHORUS_FLOWER; break;
-            case 21: material = Material.DOUBLE_PLANT; break; // sunflower
-            case 22: material = Material.RED_ROSE; break; // TODO: white flower
-            case 23: material = Material.YELLOW_FLOWER; break; // TODO: blue flower
-            // TODO: 24-31
+            case 21: material = Material.RED_MUSHROOM; break;
+            case 22: material = Material.BROWN_MUSHROOM; break;
+            case 23: material = Material.DEAD_BUSH; break;
+            case 24: material = Material.SPONGE; break;
+            case 25: material = Material.MELON_BLOCK; break;
+            case 26: material = Material.ENDER_STONE; break;
+            case 27: material = Material.TNT; break;
+            case 28: material = Material.EMERALD_BLOCK; break;
+
+            case 29: material = Material.LONG_GRASS; break; // TODO: set fern
+            case 30: material = Material.SAPLING; break; // TODO: set spruce sapling
+            case 31: material = Material.SAPLING; break; // TODO: set birch sapling
 
             case 32:
             case 33:
@@ -679,7 +689,78 @@ public class BlockBridge {
                 materialData = new Wool(color);
                 break;
 
+            case 48: material = Material.DIAMOND_ORE; break;
+            case 49: material = Material.REDSTONE_ORE; break;
+            case 50: material = Material.BOOKSHELF; break;
+            case 51: material = Material.MOSSY_COBBLESTONE; break;
+            case 52: material = Material.OBSIDIAN; break;
+            case 53: material = Material.WORKBENCH; break;
+            case 54: material = Material.FURNACE; break; // TODO: remove, TODO: direction
+            case 55: material = Material.BURNING_FURNACE; break; // TODO: remove, TODO: direction
+            case 56: material = Material.AIR; break; // not allowing, dangerous Material.MOB_SPAWNER
+            case 57: material = Material.SNOW_BLOCK; break;
+            case 58: material = Material.ICE; break;
+            case 59: material = Material.CLAY; break;
+            case 60: material = Material.JUKEBOX; break;
+            case 61: material = Material.CACTUS; break;
+            case 62: material = Material.MYCEL; break;
+            case 63: material = Material.NETHERRACK; break;
             case 64: material = Material.GLOWSTONE; break;
+            case 65: material = Material.BEDROCK; break;
+            case 66: material = Material.GRAVEL; break;
+            case 67: material = Material.IRON_BLOCK; break;
+            case 68: material = Material.GOLD_BLOCK; break;
+            case 69: material = Material.DIAMOND_BLOCK; break;
+            case 70: material = Material.GOLD_ORE; break;
+            case 71: material = Material.IRON_ORE; break;
+            case 72: material = Material.COAL_ORE; break;
+            case 73: material = Material.LAPIS_ORE; break;
+            case 74: material = Material.LAPIS_BLOCK; break;
+            case 75: material = Material.SANDSTONE; break;
+            case 76: material = Material.MOSSY_COBBLESTONE; break; // TODO: mossy stone brick
+            case 77: material = Material.MOSSY_COBBLESTONE; break; // TODO: cracked stone brick
+            case 78: material = Material.PUMPKIN; break; // TODO: direction
+            case 79: material = Material.JACK_O_LANTERN; break; // TODO: direction
+            case 80: material = Material.HUGE_MUSHROOM_1; break; // TODO: type
+            case 81: material = Material.HUGE_MUSHROOM_2; break; // TODO: type
+            case 82: material = Material.AIR; break; // not ever allowing Material.COMMAND; break;
+            case 83: material = Material.EMERALD_ORE; break;
+            case 84: material = Material.SOUL_SAND; break;
+            case 85: material = Material.NETHER_BRICK; break;
+            case 86: material = Material.SOIL; break;
+            //case 87: // TODO: dry farmland
+            case 88: material = Material.REDSTONE_LAMP_OFF; break;
+            case 89: material = Material.REDSTONE_LAMP_ON; break;
+
+            case 90:
+            case 91:
+            case 92:
+            case 93:
+                material = Material.FURNACE; break; // TODO: direction
+
+            case 94:
+            case 95:
+            case 96:
+            case 97:
+                material = Material.BURNING_FURNACE; break; // TODO: direction
+
+            case 98:
+            case 99:
+            case 100:
+            case 101:
+                material = Material.PUMPKIN; break; // TODO: direction
+
+            case 102:
+            case 103:
+            case 104:
+            case 105:
+                material = Material.JACK_O_LANTERN; break; // TODO: direction
+
+            case 106: material = Material.AIR; break; // not allowing Material.BARRIER; break;
+            case 107: material = Material.LOG; break; // TODO: spruce wood log
+            case 108: material = Material.LOG; break; // TODO: birch wood log
+            case 109: material = Material.LEAVES; break; // TODO: spruce leaves
+
             default:
                 webSocketServerThread.log(Level.WARNING, "untranslated web block id "+type);
                 material = Material.DIAMOND_ORE; // placeholder TODO fix
