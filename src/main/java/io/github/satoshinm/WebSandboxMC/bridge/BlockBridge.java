@@ -2,6 +2,10 @@ package io.github.satoshinm.WebSandboxMC.bridge;
 
 import io.github.satoshinm.WebSandboxMC.Settings;
 import io.github.satoshinm.WebSandboxMC.ws.WebSocketServerThread;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
+import io.netty.buffer.ByteBufOutputStream;
+import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import org.bukkit.*;
@@ -11,11 +15,23 @@ import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.material.*;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
+import java.util.zip.GZIPOutputStream;
 
 /**
  * Bridges blocks in the world, translates between coordinate systems
@@ -114,6 +130,167 @@ public class BlockBridge {
         }
 
         this.textureURL = settings.textureURL;
+    }
+
+    // based heavily on thinkofname's ThinkMap
+    // https://github.com/thinkofname/ThinkMap/blob/75fec8c065a7b83ec723cff99336c10368b431ad/bukkit/src/main/java/uk/co/thinkofdeath/thinkcraft/bukkit/world/ChunkManager.java#L210-L254
+/*
+ * Copyright 2014 Matthew Collins
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+    //private final TLongSet activeChunks = new TLongHashSet();
+    private final ReadWriteLock worldLock = new ReentrantReadWriteLock();
+    private final ByteBufAllocator allocator = PooledByteBufAllocator.DEFAULT;
+
+    // Reads the chunk data for the location
+    private byte[] getChunkData(final int x, final int z) {
+        File worldFolder = null;//TODO new File(plugin.getWorldDir(), world.getName());
+        Lock lock = worldLock.readLock();
+        lock.lock();
+        try (RandomAccessFile region = new RandomAccessFile(new File(worldFolder,
+                String.format("region_%d-%d.dat", x >> 5, z >> 5)
+        ), "r")) {
+            if (region.length() < 4096 * 3) return null;
+            int id = ((x & 0x1F) | ((z & 0x1F) << 5));
+            // Read the header
+            region.seek(8 * id);
+            int offset = region.readInt();
+            int size = region.readInt();
+            if (offset == 0) { // No entry
+                return null;
+            }
+            region.seek(offset * 4096);
+            byte[] data = new byte[size];
+            region.readFully(data);
+            return data;
+        } catch (FileNotFoundException e) {
+            return null;
+        } catch (IOException e) {
+            return null;
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    // Gets the gzip'd chunk data for the location and stores it
+    // in out, returns false if the chunk wasn't loaded for any reason
+    public boolean getChunkBytes(final int x, final int z, ByteBuf out) {
+        ChunkSnapshot chunk = null;
+        boolean shouldGrabChunk = true;
+        // Check if the chunk is already loaded
+        /* TODO
+        synchronized (activeChunks) {
+            shouldGrabChunk = activeChunks.contains(chunkKey(x, z));
+        }
+        */
+        if (shouldGrabChunk) {
+            try {
+                chunk = Bukkit.getServer().getScheduler().callSyncMethod(null/*TODO: plugin*/, new Callable<ChunkSnapshot>() {
+                    @Override
+                    public ChunkSnapshot call() throws Exception {
+                        /* TODO
+                        synchronized (activeChunks) {
+                            // Double check to prevent a race where a chunk could unload
+                            // between the first check and grabbing the chunk
+                            if (activeChunks.contains(chunkKey(x, z))) {
+                            */
+                                return world.getChunkAt(x, z).getChunkSnapshot(false, true, false);
+                                /*
+                            } else {
+                                return null;
+                            }
+                        }
+                        */
+                    }
+                }).get(2, TimeUnit.SECONDS); // Time-out is encase the plugin is disabled
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            } catch (ExecutionException e) {
+                throw new RuntimeException(e);
+            } catch (TimeoutException e) {
+                webSocketServerThread.log(Level.WARNING, "Failed to load chunk on time. Time out");
+            }
+        }
+        if (chunk == null) { // Inactive chunk
+            byte[] data = getChunkData(x, z);
+            if (data == null) {
+                return false;
+            }
+            out.writeBytes(data);
+            return true;
+        }
+        // Active chunk
+        gzipChunk(chunk, out);
+        return true;
+    }
+
+    // Gzips a ChunkSnapshot and stores it in out
+    private void gzipChunk(ChunkSnapshot chunk, ByteBuf out) {
+        int mask = 0;
+        int count = 0;
+        for (int i = 0; i < 16; i++) {
+            if (!chunk.isSectionEmpty(i)) {
+                mask |= 1 << i;
+                count++;
+            }
+        }
+        ByteBuf data = allocator.buffer(16 * 16 * 16 * 4 * count + 3 + 256);
+        data.writeByte(1); // The chunk exists
+        data.writeShort(mask);
+        int offset = 0;
+        int blockDataOffset = 16 * 16 * 16 * 2 * count;
+        int skyDataOffset = blockDataOffset + 16 * 16 * 16 * count;
+        for (int i = 0; i < 16; i++) {
+            if (!chunk.isSectionEmpty(i)) {
+                for (int oy = 0; oy < 16; oy++) {
+                    for (int oz = 0; oz < 16; oz++) {
+                        for (int ox = 0; ox < 16; ox++) {
+                            int y = oy + (i << 4);
+                            // TODO: replace with non-deprecated, and translate to web block
+                            int id = chunk.getBlockTypeId(ox, y, oz);
+                            int dValue = chunk.getBlockData(ox, y, oz);
+                            data.setShort((offset << 1) + 3, (id << 4) | dValue);
+
+                            data.setByte(blockDataOffset + offset + 3, chunk.getBlockEmittedLight(ox, y, oz));
+                            data.setByte(skyDataOffset + offset + 3, chunk.getBlockSkyLight(ox, y, oz));
+
+                            offset++;
+                        }
+                    }
+                }
+            }
+        }
+        /* TODO: biomes?
+        for (int x = 0; x < 16; x++) {
+            for (int z = 0; z < 16; z++) {
+                data.setByte(skyDataOffset + offset + 3 + x + z * 16, ThinkBiome.bukkitToId(chunk.getBiome(x, z)));
+            }
+        }
+        */
+        data.writerIndex(data.capacity());
+        try {
+            GZIPOutputStream gzip = new GZIPOutputStream(new ByteBufOutputStream(out));
+            byte[] bytes = new byte[data.readableBytes()];
+            data.readBytes(bytes);
+            gzip.write(bytes);
+            gzip.close();
+        } catch (IOException e) {
+            throw new RuntimeException();
+        } finally {
+            data.release();
+        }
     }
 
     // Send the client the initial section of the world when they join
