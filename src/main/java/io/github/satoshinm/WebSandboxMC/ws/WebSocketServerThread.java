@@ -110,7 +110,7 @@ public final class WebSocketServerThread extends Thread {
                 ServerBootstrap b = new ServerBootstrap();
                 b.group(bossGroup, workerGroup)
                         .channel(NioServerSocketChannel.class)
-                        .handler(new LoggingHandler(LogLevel.INFO))
+                        .handler(new LoggingHandler())
                         .childHandler(new WebSocketServerInitializer(sslCtx, this,
                                 settings.pluginDataFolder));
 
