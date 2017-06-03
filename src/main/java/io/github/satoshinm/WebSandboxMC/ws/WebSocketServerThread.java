@@ -20,6 +20,7 @@ import io.github.satoshinm.WebSandboxMC.bridge.BlockBridge;
 import io.github.satoshinm.WebSandboxMC.bridge.WebPlayerBridge;
 import io.github.satoshinm.WebSandboxMC.bridge.PlayersBridge;
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -133,6 +134,10 @@ public final class WebSocketServerThread extends Thread {
 
     public void sendLine(Channel channel, String message) {
         channel.writeAndFlush(new BinaryWebSocketFrame(Unpooled.copiedBuffer((message + "\n").getBytes())));
+    }
+
+    public void sendBinary(Channel channel, ByteBuf data) {
+        channel.writeAndFlush(new BinaryWebSocketFrame(data));
     }
 
     public void broadcastLine(String message) {
