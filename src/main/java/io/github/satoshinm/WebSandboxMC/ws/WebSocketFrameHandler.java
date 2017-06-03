@@ -34,6 +34,8 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
     @Override
     public void channelRead0(final ChannelHandlerContext ctx, WebSocketFrame frame) throws Exception {
         webSocketServerThread.log(Level.FINEST, "channel read, frame="+frame);
+        // TODO: log at INFO level if this the first data we received from a client (new first connection), to
+        // help detect clients connecting but not sending authentication commands (in newPlayer)
 
         if (frame instanceof BinaryWebSocketFrame) {
             ByteBuf content = frame.content();

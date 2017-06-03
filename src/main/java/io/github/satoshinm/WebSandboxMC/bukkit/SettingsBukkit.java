@@ -26,6 +26,7 @@ public class SettingsBukkit extends Settings {
         config.addDefault("http.unbind_method", this.unbindMethod);
 
         config.addDefault("mc.debug", this.debug);
+        config.addDefault("mc.netty_log_info", this.nettyLogInfo);
         config.addDefault("mc.use_permissions", this.usePermissions);
         config.addDefault("mc.entity", this.entityClassName);
         config.addDefault("mc.entity_custom_names", this.setCustomNames);
@@ -60,6 +61,7 @@ public class SettingsBukkit extends Settings {
         this.unbindMethod = plugin.getConfig().getString("http.unbind_method");
 
         this.debug = plugin.getConfig().getBoolean("mc.debug");
+        this.nettyLogInfo = plugin.getConfig().getBoolean("mc.netty_log_info");
         this.usePermissions = plugin.getConfig().getBoolean("mc.use_permissions");
 
         this.entityClassName = plugin.getConfig().getString("mc.entity");

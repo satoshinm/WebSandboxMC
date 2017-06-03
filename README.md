@@ -54,6 +54,7 @@ Configures the HTTP and WebSocket server:
 Configures what part of your world to expose:
 
 * `debug` (false): if true, enables vast amounts of additional logging with FINEST log level
+* `netty_log_info` (false): if true, enables Netty connection logging at INFO level instead of DEBUG
 * `use_permissions` (false): if false, `/websandbox` command requires op; if true, checks for `websandbox.command.`+subcommand permission node
 * `world` (""): name of world for web clients to spawn in, or an empty string to use the first available
 * `x_center` (0): specifies the center of the world from the web client's perspective, X coordinate

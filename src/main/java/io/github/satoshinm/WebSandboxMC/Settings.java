@@ -15,6 +15,7 @@ abstract public class Settings {
     public String unbindMethod = "console.getServerConnection.b";
 
     public boolean debug = false;
+    public boolean nettyLogInfo = false;
     public boolean usePermissions = false;
     public String entityClassName = "Sheep";
     public boolean setCustomNames = true;
