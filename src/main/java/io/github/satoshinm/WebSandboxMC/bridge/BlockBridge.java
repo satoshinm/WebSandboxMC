@@ -14,11 +14,9 @@ import org.bukkit.material.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Level;
+import java.util.zip.DeflaterOutputStream;
 import java.util.zip.GZIPOutputStream;
 
 /**
@@ -128,11 +126,31 @@ public class BlockBridge {
             webSocketServerThread.sendLine(channel, "t," + textureURL);
         }
 
-        ByteBuf data = allocator.buffer((radius*2) * (radius*2) * (radius*2) * 2);
+        // Send a multi-block update message announcement that a binary chunk is coming
+        /*
+        int startx = -radius;
+        int starty = y_offset;
+        int startz = -radius;
+        int endx = radius - 1;
+        int endy = radius * 2 - 1 + y_offset;
+        int endz = radius - 1;
+        */
+        int startx = 0;
+        int starty = y_offset;
+        int startz = 0;
+        int endx = radius * 2 - 1;
+        int endy = radius * 2 - 1 + y_offset;
+        int endz = radius * 2 - 1;
+
+        webSocketServerThread.sendLine(channel, "b," + startx + "," + starty + "," + startz + "," + endx + "," + endy + "," + endz);
+
+        ByteBuf data = allocator.buffer( (radius*2) * (radius*2) * (radius*2) * 2);
 
         boolean thereIsAWorld = false;
+        LinkedList<String> blockUpdates = new LinkedList<String>();
         int offset = 0;
-        // TODO: bulk block update compressed, for efficiency (this is very inefficient, but surprisingly works!)
+        // Gather block data for multiblock update compression
+        // TODO: change x/y/z order to optimize compression?
         for (int i = -radius; i < radius; ++i) {
             for (int j = -radius; j < radius; ++j) {
                 for (int k = -radius; k < radius; ++k) {
@@ -142,30 +160,47 @@ public class BlockBridge {
                     BlockState blockState = block.getState();
 
                     int type = toWebBlockType(material, blockState);
-                    data.setShort(offset, (short) type);
+                    //if (offset < 200)
+                    //    webSocketServerThread.log(Level.INFO, "block ("+(i)+","+(j+radius+y_offset)+","+(k)+" = "+type);
+                    data.setShortLE(offset, (short) type);
                     offset += 2;
 
-                    // TODO: remove block update command but also need to check per-type: sign text, lighting
-                    thereIsAWorld |= setBlockUpdate(block.getLocation(), material, blockState);
+                    // Gather block data updates
+                    String blockUpdateCommand = getDataBlockUpdateCommand(block.getLocation(), material, blockState);
 
+                    if (type != 0) thereIsAWorld = true;
+                    if (blockUpdateCommand != null) blockUpdates.add(blockUpdateCommand);
                 }
             }
         }
         data.writerIndex(data.capacity());
 
+        // Send compressed block types
         try {
             webSocketServerThread.log(Level.INFO, "uncompressed: "+data.readableBytes());
+            // Compress with DeflateOutputStream, note _not_ GZIPOutputStream since that adds
+            // gzip headers (see https://stackoverflow.com/questions/1838699/how-can-i-decompress-a-gzip-stream-with-zlib)
+            // which miniz does not support (https://github.com/richgel999/miniz/blob/ec028ffe66e2da67eed208de3db66fcf72b24dac/miniz.h#L33)
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            GZIPOutputStream gzipOutputStream = new GZIPOutputStream(byteArrayOutputStream);
+            DeflaterOutputStream gzipOutputStream = new DeflaterOutputStream(byteArrayOutputStream);
             byte[] bytes = new byte[data.readableBytes()];
             data.readBytes(bytes);
             gzipOutputStream.write(bytes);
             gzipOutputStream.close();
             webSocketServerThread.log(Level.INFO, "gzip'd: " + byteArrayOutputStream.size());
+
+            byte[] gzipBytes = byteArrayOutputStream.toByteArray();
+            ByteBuf gzipBytesBuffer = Unpooled.wrappedBuffer(gzipBytes);
+            webSocketServerThread.sendBinary(channel, gzipBytesBuffer);
         } catch (IOException ex) {
             throw new RuntimeException(ex);
         } finally {
             data.release();
+        }
+
+        // then block data and refresh
+        for (String blockUpdateCommand : blockUpdates) {
+            webSocketServerThread.sendLine(channel, blockUpdateCommand);
         }
 
         webSocketServerThread.sendLine(channel,"K,0,0,1");
@@ -302,32 +337,16 @@ public class BlockBridge {
         webSocketServerThread.broadcastLine("R,0,0");
     }
 
-    private boolean setBlockUpdate(Location location, Material material, BlockState blockState) {
-        // Send to all web clients to let them know it changed using the "B," command
-        int type = toWebBlockType(material, blockState);
-        boolean substantial;
-
-        if (type == -1) {
-            if (warnMissing) {
-                webSocketServerThread.log(Level.WARNING, "Block type missing from blocks_to_web: " + material + " at " + location);
-            }
-            type = blocksToWebMissing;
-            substantial = false;
-        } else if (type == 0) {
-            substantial = false;
-        } else {
-            substantial = true;
-        }
-
-        int x = toWebLocationBlockX(location);
-        int y = toWebLocationBlockY(location);
-        int z = toWebLocationBlockZ(location);
-
-        webSocketServerThread.broadcastLine("B,0,0,"+x+","+y+","+z+","+type);
+    // Get the command string to send block data besides the type, if needed (signs, lighting)
+    private String getDataBlockUpdateCommand(Location location, Material material, BlockState blockState) {
+        if (material == null || material == Material.AIR) return null;
 
         int light_level = toWebLighting(material, blockState);
         if (light_level != 0) {
-            webSocketServerThread.broadcastLine("L,0,0,"+x+","+y+","+z+"," + light_level);
+            int x = location.getBlockX();
+            int y = location.getBlockY();
+            int z = location.getBlockZ();
+            return "L,0,0,"+x+","+y+","+z+"," + light_level;
         }
 
         if (material == Material.WALL_SIGN || material == Material.SIGN_POST) {
@@ -335,13 +354,35 @@ public class BlockBridge {
             if (blockState instanceof Sign) {
                 Sign sign = (Sign) blockState;
 
-                notifySignChange(block.getLocation(), block.getType(), block.getState(), sign.getLines());
+                return getNotifySignChange(block.getLocation(), block.getType(), block.getState(), sign.getLines());
             }
         }
 
-        webSocketServerThread.log(Level.FINEST, "notified block update: ("+x+","+y+","+z+") to "+type);
+        return null;
+    }
 
-        return substantial; // was something "real" set? (not air, not missing)
+    private void setBlockUpdate(Location location, Material material, BlockState blockState) {
+        // Send to all web clients to let them know it changed using the "B," command
+        int type = toWebBlockType(material, blockState);
+
+        if (type == -1) {
+            if (warnMissing) {
+                webSocketServerThread.log(Level.WARNING, "Block type missing from blocks_to_web: " + material + " at " + location);
+            }
+            type = blocksToWebMissing;
+        }
+
+        int x = toWebLocationBlockX(location);
+        int y = toWebLocationBlockY(location);
+        int z = toWebLocationBlockZ(location);
+
+        webSocketServerThread.broadcastLine("B,0,0,"+x+","+y+","+z+","+type);
+        String blockDataCommand = this.getDataBlockUpdateCommand(location, material, blockState);
+        if (blockDataCommand != null) {
+            webSocketServerThread.broadcastLine(blockDataCommand);
+        }
+
+        webSocketServerThread.log(Level.FINEST, "notified block update: ("+x+","+y+","+z+") to "+type);
     }
 
     private int toWebLighting(Material material, BlockState blockState) {
@@ -817,7 +858,7 @@ public class BlockBridge {
         }
     }
 
-    public void notifySignChange(Location location, Material material, BlockState blockState, String[] lines) {
+    public String getNotifySignChange(Location location, Material material, BlockState blockState, String[] lines) {
         int x = toWebLocationBlockX(location);
         int y = toWebLocationBlockY(location);
         int z = toWebLocationBlockZ(location);
@@ -898,8 +939,12 @@ public class BlockBridge {
             text = text.replaceAll("\n", " ");
         }
 
-        webSocketServerThread.broadcastLine("S,0,0,"+x+","+y+","+z+","+face+","+text);
-        webSocketServerThread.broadcastLine("R,0,0");
+        return "S,0,0,"+x+","+y+","+z+","+face+","+text;
+    }
+
+    public void notifySignChange(Location location, Material material, BlockState blockState, String[] lines) {
+        webSocketServerThread.broadcastLine(this.getNotifySignChange(location, material, blockState, lines));
+        webSocketServerThread.broadcastLine("R,0,0"); // TODO: refresh correct chunk
     }
 
     public void clientNewSign(ChannelHandlerContext ctx, int x, int y, int z, int face, String text) {
