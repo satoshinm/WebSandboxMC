@@ -339,9 +339,9 @@ public class BlockBridge {
 
         int light_level = toWebLighting(material, blockState);
         if (light_level != 0) {
-            int x = location.getBlockX();
-            int y = location.getBlockY();
-            int z = location.getBlockZ();
+            int x = toWebLocationBlockX(location);
+            int y = toWebLocationBlockY(location);
+            int z = toWebLocationBlockZ(location);
             return "L,0,0,"+x+","+y+","+z+"," + light_level;
         }
 
