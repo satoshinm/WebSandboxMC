@@ -159,8 +159,6 @@ public class BlockBridge {
                     BlockState blockState = block.getState();
 
                     int type = toWebBlockType(material, blockState);
-                    //if (offset < 200)
-                    //    webSocketServerThread.log(Level.INFO, "block ("+(i)+","+(j+radius+y_offset)+","+(k)+" = "+type);
                     data.setShortLE(offset, (short) type);
                     offset += 2;
 
@@ -176,7 +174,6 @@ public class BlockBridge {
 
         // Send compressed block types
         try {
-            webSocketServerThread.log(Level.INFO, "uncompressed: "+data.readableBytes());
             // Compress with DeflateOutputStream, note _not_ GZIPOutputStream since that adds
             // gzip headers (see https://stackoverflow.com/questions/1838699/how-can-i-decompress-a-gzip-stream-with-zlib)
             // which miniz does not support (https://github.com/richgel999/miniz/blob/ec028ffe66e2da67eed208de3db66fcf72b24dac/miniz.h#L33)
@@ -186,12 +183,12 @@ public class BlockBridge {
             data.readBytes(bytes);
             gzipOutputStream.write(bytes);
             gzipOutputStream.close();
-            webSocketServerThread.log(Level.INFO, "gzip'd: " + byteArrayOutputStream.size());
 
             byte[] gzipBytes = byteArrayOutputStream.toByteArray();
             ByteBuf gzipBytesBuffer = Unpooled.wrappedBuffer(gzipBytes);
             webSocketServerThread.sendBinary(channel, gzipBytesBuffer);
         } catch (IOException ex) {
+            webSocketServerThread.log(Level.WARNING, "Failed to compress chunk data to send to web client: "+ex);
             throw new RuntimeException(ex);
         } finally {
             data.release();
