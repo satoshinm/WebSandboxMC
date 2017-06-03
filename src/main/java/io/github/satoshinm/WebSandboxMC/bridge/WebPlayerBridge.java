@@ -20,6 +20,7 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.json.simple.JSONObject;
 
 import java.math.BigInteger;
+import java.net.InetSocketAddress;
 import java.security.SecureRandom;
 import java.util.Collection;
 import java.util.HashMap;
@@ -90,11 +91,12 @@ public class WebPlayerBridge {
 
     public boolean newPlayer(final Channel channel, String proposedUsername, String token) {
         String theirName;
+        boolean wantsAnonymous = proposedUsername.equals(""); // blank = anonymous
         if (validateClientAuthKey(proposedUsername, token)) {
             theirName = proposedUsername;
             // TODO: more features when logging in as an authenticated user: move to their last spawn?
         } else {
-            if (!proposedUsername.equals("")) { // blank = anonymous
+            if (!wantsAnonymous) {
                 webSocketServerThread.sendLine(channel, "T,Failed to login as "+proposedUsername);
             }
 
@@ -106,6 +108,10 @@ public class WebPlayerBridge {
             int theirID = ++this.lastPlayerID;
             theirName = "webguest" + theirID;
         }
+        String ip = ((InetSocketAddress) channel.remoteAddress()).getHostString() +
+                ":" + ((InetSocketAddress) channel.remoteAddress()).getPort();
+        webSocketServerThread.log(Level.INFO, "New web client joined: " + theirName +
+                (!wantsAnonymous ? " (authenticated)" : " (anonymous)") + " from " + ip);
 
         this.channelId2name.put(channel.id(), theirName);
         this.name2channel.put(theirName, channel);

@@ -26,7 +26,7 @@ public class SettingsBukkit extends Settings {
         config.addDefault("http.unbind_method", this.unbindMethod);
 
         config.addDefault("mc.debug", this.debug);
-        config.addDefault("mc.nettyLogInfo", this.nettyLogInfo);
+        config.addDefault("mc.netty_log_info", this.nettyLogInfo);
         config.addDefault("mc.use_permissions", this.usePermissions);
         config.addDefault("mc.entity", this.entityClassName);
         config.addDefault("mc.entity_custom_names", this.setCustomNames);
