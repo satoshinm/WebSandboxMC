@@ -150,11 +150,10 @@ public class BlockBridge {
         LinkedList<String> blockUpdates = new LinkedList<String>();
         int offset = 0;
         // Gather block data for multiblock update compression
-        // TODO: change x/y/z order to optimize compression?
         for (int i = -radius; i < radius; ++i) {
             for (int j = -radius; j < radius; ++j) {
                 for (int k = -radius; k < radius; ++k) {
-                    Block block = world.getBlockAt(i + x_center, j + y_center, k + z_center);
+                    Block block = world.getBlockAt(j + x_center, i + y_center, k + z_center);
 
                     Material material = block.getType();
                     BlockState blockState = block.getState();
