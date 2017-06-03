@@ -147,7 +147,7 @@ public class BlockBridge {
         ByteBuf data = allocator.buffer( (radius*2) * (radius*2) * (radius*2) * 2);
 
         boolean thereIsAWorld = false;
-        LinkedList<String> blockUpdates = new LinkedList<String>();
+        LinkedList<String> blockDataUpdates = new LinkedList<String>();
         int offset = 0;
         // Gather block data for multiblock update compression
         for (int i = -radius; i < radius; ++i) {
@@ -163,10 +163,10 @@ public class BlockBridge {
                     offset += 2;
 
                     // Gather block data updates
-                    String blockUpdateCommand = getDataBlockUpdateCommand(block.getLocation(), material, blockState);
+                    String blockDataCommand = getDataBlockUpdateCommand(block.getLocation(), material, blockState);
 
                     if (type != 0) thereIsAWorld = true;
-                    if (blockUpdateCommand != null) blockUpdates.add(blockUpdateCommand);
+                    if (blockDataCommand != null) blockDataUpdates.add(blockDataCommand);
                 }
             }
         }
@@ -195,8 +195,8 @@ public class BlockBridge {
         }
 
         // then block data and refresh
-        for (String blockUpdateCommand : blockUpdates) {
-            webSocketServerThread.sendLine(channel, blockUpdateCommand);
+        for (String blockDataCommand : blockDataUpdates) {
+            webSocketServerThread.sendLine(channel, blockDataCommand);
         }
 
         webSocketServerThread.sendLine(channel,"K,0,0,1");
