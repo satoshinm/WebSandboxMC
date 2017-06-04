@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.zip.DeflaterOutputStream;
-import java.util.zip.GZIPOutputStream;
 
 /**
  * Bridges blocks in the world, translates between coordinate systems

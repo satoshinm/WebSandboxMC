@@ -2,13 +2,10 @@ package io.github.satoshinm.WebSandboxMC.bukkit;
 
 import io.github.satoshinm.WebSandboxMC.ws.WebSocketServerThread;
 import io.netty.channel.Channel;
-import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
