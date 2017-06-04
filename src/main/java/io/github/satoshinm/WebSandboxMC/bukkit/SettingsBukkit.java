@@ -51,6 +51,7 @@ public class SettingsBukkit extends Settings {
         config.addDefault("nc.allow_chatting", this.allowChatting);
         config.addDefault("nc.see_chat", this.seeChat);
         config.addDefault("nc.see_players", this.seePlayers);
+        config.addDefault("nc.creative_mode", this.creativeMode);
 
         config.addDefault("nc.blocks_to_web_override", this.blocksToWebOverride);
         config.addDefault("nc.warn_missing_blocks_to_web", this.warnMissing);
@@ -89,6 +90,7 @@ public class SettingsBukkit extends Settings {
         this.allowChatting = plugin.getConfig().getBoolean("nc.allow_chatting");
         this.seeChat = plugin.getConfig().getBoolean("nc.see_chat");
         this.seePlayers = plugin.getConfig().getBoolean("nc.see_players");
+        this.creativeMode = plugin.getConfig().getBoolean("nc.creative_mode");
         if (plugin.getConfig().getConfigurationSection("nc.blocks_to_web") != null) {
             this.log(Level.WARNING, "blocks_to_web is now ignored, you can remove it or add to blocks_to_web_override instead");
         }

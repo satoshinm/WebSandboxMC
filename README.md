@@ -82,6 +82,7 @@ Configures the NetCraft web client:
 * `allow_chatting` (true): allow web users to send chat messages to the server
 * `see_chat` (true): allow web users to receive chat messages from the server
 * `see_players` (true): allow web users to see other player positions
+* `creative_mode` (true): if true, the web client is set to creative mode by default, else survival mode (warning: survival mode is incomplete and experiemntal)
 * `blocks_to_web_override`: map of Bukkit material names to NetCraft web client IDs -- you can add additional block types here if they don't show up correctly
  * This overrides the built-in map, and by default is empty (`blocks_to_web` pre-1.4.2 is no longer used).
  * The special material name "missing" is used for unmapped blocks, interesting values:

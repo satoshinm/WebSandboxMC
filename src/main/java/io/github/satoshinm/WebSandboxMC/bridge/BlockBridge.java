@@ -35,6 +35,7 @@ public class BlockBridge {
     private boolean warnMissing;
     private List<Material> unbreakableBlocks;
     private String textureURL;
+    private boolean creativeMode;
 
     public BlockBridge(WebSocketServerThread webSocketServerThread, Settings settings) {
         this.webSocketServerThread = webSocketServerThread;
@@ -115,6 +116,7 @@ public class BlockBridge {
         }
 
         this.textureURL = settings.textureURL;
+        this.creativeMode = settings.creativeMode;
     }
 
     private final ByteBufAllocator allocator = PooledByteBufAllocator.DEFAULT;
@@ -123,6 +125,12 @@ public class BlockBridge {
     public void sendWorld(final Channel channel) {
         if (textureURL != null) {
             webSocketServerThread.sendLine(channel, "t," + textureURL);
+        }
+
+        if (creativeMode) {
+            webSocketServerThread.sendLine(channel, "m,1");
+        } else {
+            webSocketServerThread.sendLine(channel, "m,0");
         }
 
         // Send a multi-block update message announcement that a binary chunk is coming
