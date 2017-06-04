@@ -19,15 +19,26 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
 import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;
+import org.bukkit.Bukkit;
 
+import java.util.Set;
 import java.util.logging.Level;
 
 public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocketFrame> {
 
     private final WebSocketServerThread webSocketServerThread;
+    private final Set<String> ipBans;
+    private boolean checkIPBans;
 
-    public WebSocketFrameHandler(WebSocketServerThread webSocketServerThread) {
+    public WebSocketFrameHandler(WebSocketServerThread webSocketServerThread, boolean checkIPBans) {
         this.webSocketServerThread = webSocketServerThread;
+        this.checkIPBans = checkIPBans;
+
+        if (this.checkIPBans) {
+            this.ipBans = Bukkit.getServer().getIPBans();
+        } else {
+            this.ipBans = null;
+        }
     }
 
     @Override
@@ -35,6 +46,14 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
         webSocketServerThread.log(Level.FINEST, "channel read, frame="+frame);
         // TODO: log at INFO level if this the first data we received from a client (new first connection), to
         // help detect clients connecting but not sending authentication commands (in newPlayer)
+
+        if (this.checkIPBans) {
+            String ip = webSocketServerThread.getRemoteIP(ctx.channel());
+            if (this.ipBans.contains(ip)) {
+                webSocketServerThread.sendLine(ctx.channel(), "T,Banned from server"); // TODO: show reason, getBanList
+                return;
+            }
+        }
 
         if (frame instanceof BinaryWebSocketFrame) {
             ByteBuf content = frame.content();

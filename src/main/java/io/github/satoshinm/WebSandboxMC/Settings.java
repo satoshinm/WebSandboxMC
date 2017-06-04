@@ -40,6 +40,7 @@ abstract public class Settings {
     public int y_offset = 20;
 
     public boolean allowAnonymous = true;
+    public boolean checkIPBans = true;
     public boolean allowBreakPlaceBlocks = true;
     public List<String> unbreakableBlocks = new ArrayList<String>();
     public boolean allowSigns = true;

@@ -41,13 +41,14 @@ public class WebSocketServerInitializer extends ChannelInitializer<SocketChannel
     private final SslContext sslCtx;
     private final WebSocketServerThread webSocketServerThread;
     private final File pluginDataFolder;
+    private final boolean checkIPBans;
 
     public WebSocketServerInitializer(SslContext sslCtx, WebSocketServerThread webSocketServerThread,
-                                      File pluginDataFolder) {
+                                      File pluginDataFolder, boolean checkIPBans) {
         this.sslCtx = sslCtx;
         this.webSocketServerThread = webSocketServerThread;
-
         this.pluginDataFolder = pluginDataFolder;
+        this.checkIPBans = checkIPBans;
     }
 
     @Override
@@ -61,6 +62,6 @@ public class WebSocketServerInitializer extends ChannelInitializer<SocketChannel
         pipeline.addLast(new WebSocketServerCompressionHandler());
         pipeline.addLast(new WebSocketServerProtocolHandler(WEBSOCKET_PATH, "binary", true));
         pipeline.addLast(new WebSocketIndexPageHandler(pluginDataFolder));
-        pipeline.addLast(new WebSocketFrameHandler(webSocketServerThread));
+        pipeline.addLast(new WebSocketFrameHandler(webSocketServerThread, checkIPBans));
     }
 }

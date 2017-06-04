@@ -113,7 +113,7 @@ public final class WebSocketServerThread extends Thread {
                         .channel(NioServerSocketChannel.class)
                         .handler(settings.nettyLogInfo ? new LoggingHandler(LogLevel.INFO) : new LoggingHandler())
                         .childHandler(new WebSocketServerInitializer(sslCtx, this,
-                                settings.pluginDataFolder));
+                                settings.pluginDataFolder, settings.checkIPBans));
 
                 Channel ch = b.bind(PORT).sync().channel();
 
