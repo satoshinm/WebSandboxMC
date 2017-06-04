@@ -91,12 +91,13 @@ public class WebPlayerBridge {
 
     public boolean newPlayer(final Channel channel, String proposedUsername, String token) {
         String theirName;
-        boolean wantsAnonymous = proposedUsername.equals(""); // blank = anonymous
+        boolean authenticated = false;
         if (validateClientAuthKey(proposedUsername, token)) {
             theirName = proposedUsername;
+            authenticated = true;
             // TODO: more features when logging in as an authenticated user: move to their last spawn?
         } else {
-            if (!wantsAnonymous) {
+            if (!proposedUsername.equals("")) { // blank = anonymous
                 webSocketServerThread.sendLine(channel, "T,Failed to login as "+proposedUsername);
             }
 
@@ -111,7 +112,7 @@ public class WebPlayerBridge {
         String ip = ((InetSocketAddress) channel.remoteAddress()).getHostString() +
                 ":" + ((InetSocketAddress) channel.remoteAddress()).getPort();
         webSocketServerThread.log(Level.INFO, "New web client joined: " + theirName +
-                (!wantsAnonymous ? " (authenticated)" : " (anonymous)") + " from " + ip);
+                (authenticated ? " (authenticated)" : " (anonymous)") + " from " + ip);
 
         this.channelId2name.put(channel.id(), theirName);
         this.name2channel.put(theirName, channel);
