@@ -38,6 +38,7 @@ import io.netty.handler.ssl.SslContextBuilder;
 import io.netty.handler.ssl.util.SelfSignedCertificate;
 import io.netty.util.concurrent.ImmediateEventExecutor;
 
+import java.net.InetSocketAddress;
 import java.util.logging.Level;
 
 /**
@@ -179,6 +180,19 @@ N,1,guest1
 
         blockBridge.sendWorld(channel);
         playersBridge.sendPlayers(channel);
+    }
+
+    public String getRemoteIP(Channel channel) {
+        return ((InetSocketAddress) channel.remoteAddress()).getHostString();
+        // TODO: respect X-Forwarded-For optionally, https://github.com/satoshinm/WebSandboxMC/issues/87
+    }
+
+    public int getRemotePort(Channel channel) {
+        return ((InetSocketAddress) channel.remoteAddress()).getPort();
+    }
+
+    public String getRemoteIPandPort(Channel channel) {
+        return getRemoteIP(channel) + ":" + getRemotePort(channel);
     }
 
     // Handle a command from the client

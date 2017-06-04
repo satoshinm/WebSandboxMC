@@ -18,7 +18,6 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.json.simple.JSONObject;
 
 import java.math.BigInteger;
-import java.net.InetSocketAddress;
 import java.security.SecureRandom;
 import java.util.Collection;
 import java.util.HashMap;
@@ -107,8 +106,7 @@ public class WebPlayerBridge {
             int theirID = ++this.lastPlayerID;
             theirName = "webguest" + theirID;
         }
-        String ip = ((InetSocketAddress) channel.remoteAddress()).getHostString() +
-                ":" + ((InetSocketAddress) channel.remoteAddress()).getPort();
+        String ip = webSocketServerThread.getRemoteIPandPort(channel);
         webSocketServerThread.log(Level.INFO, "New web client joined: " + theirName +
                 (authenticated ? " (authenticated)" : " (anonymous)") + " from " + ip);
 

@@ -9,8 +9,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
-import java.net.InetSocketAddress;
-
 public class WsCommand implements CommandExecutor {
     private WebSocketServerThread webSocketServerThread;
     private boolean usePermissions;
@@ -48,8 +46,7 @@ public class WsCommand implements CommandExecutor {
             for (String name: webSocketServerThread.webPlayerBridge.name2channel.keySet()) { // TODO: sort?
                 Channel channel = webSocketServerThread.webPlayerBridge.name2channel.get(name);
 
-                String ip = ((InetSocketAddress) channel.remoteAddress()).getHostString() +
-                        ":" + ((InetSocketAddress) channel.remoteAddress()).getPort();
+                String ip = webSocketServerThread.getRemoteIPandPort(channel);
 
                 Entity entity = webSocketServerThread.webPlayerBridge.channelId2Entity.get(channel.id());
                 String entityInfo = "";
