@@ -872,11 +872,15 @@ public class BlockBridge {
                 blockFace = sign.getFacing();
             } catch (NullPointerException ex) {
                 // ignore invalid data, https://github.com/GlowstoneMC/Glowstone/issues/484
+                webSocketServerThread.log(Level.WARNING, "Invalid sign data at " + location);
             }
         }
 
         int face = 7;
-        if (material == Material.WALL_SIGN) {
+        if (blockFace == null) {
+            // https://github.com/satoshinm/WebSandboxMC/issues/92
+            webSocketServerThread.log(Level.WARNING, "Invalid sign face at " + location);
+        } else if (material == Material.WALL_SIGN) {
             // wallsigns, attached to block behind
             switch (blockFace) {
                 default:
