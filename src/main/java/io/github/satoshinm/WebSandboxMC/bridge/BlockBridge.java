@@ -133,6 +133,13 @@ public class BlockBridge {
             webSocketServerThread.sendLine(channel, "m,0");
         }
 
+        int day_length = 60 * 20; // 20 minutes
+
+        double fraction = world.getTime() / 1000.0 / 24.0; // 0-1
+        double elapsed = (fraction + 6.0 / 24) * day_length;
+        System.out.println("day_length = "+day_length+", elapsed="+elapsed);
+        webSocketServerThread.sendLine(channel, "E," + elapsed + "," + day_length);
+
         // Send a multi-block update message announcement that a binary chunk is coming
         /*
         int startx = -radius;
