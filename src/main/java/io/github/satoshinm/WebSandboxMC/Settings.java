@@ -47,6 +47,7 @@ abstract public class Settings {
     public boolean allowChatting = true;
     public boolean seeChat = true;
     public boolean seePlayers = true;
+    public boolean seeTime = true;
     public boolean creativeMode = true;
 
     public Map<String, Object> blocksToWebOverride = new HashMap<String, Object>();
