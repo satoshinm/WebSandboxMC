@@ -30,6 +30,7 @@ public class BlockBridge {
     public Location spawnLocation;
     private boolean allowBreakPlaceBlocks;
     private boolean allowSigns;
+    private boolean seeTime;
     private Map<Material, Integer> blocksToWeb;
     private int blocksToWebMissing; // unknown/unsupported becomes cloud, if key missing
     private boolean warnMissing;
@@ -69,6 +70,7 @@ public class BlockBridge {
 
         this.allowBreakPlaceBlocks = settings.allowBreakPlaceBlocks;
         this.allowSigns = settings.allowSigns;
+        this.seeTime = settings.seeTime;
 
         this.blocksToWeb = new HashMap<Material, Integer>();
         this.blocksToWebMissing = 16; // unknown/unsupported becomes cloud
@@ -135,10 +137,15 @@ public class BlockBridge {
 
         int day_length = 60 * 20; // 20 minutes
 
-        double fraction = world.getTime() / 1000.0 / 24.0; // 0-1
-        double elapsed = (fraction + 6.0 / 24) * day_length;
-        System.out.println("day_length = "+day_length+", elapsed="+elapsed);
-        webSocketServerThread.sendLine(channel, "E," + elapsed + "," + day_length);
+        if (seeTime) {
+            double fraction = world.getTime() / 1000.0 / 24.0; // 0-1
+            double elapsed = (fraction + 6.0 / 24) * day_length;
+            System.out.println("day_length = "+day_length+", elapsed="+elapsed);
+            webSocketServerThread.sendLine(channel, "E," + elapsed + "," + day_length);
+            // TODO: listen for server time change and resend E, command
+        } else {
+            webSocketServerThread.sendLine(channel, "E,0,0");
+        }
 
         // Send a multi-block update message announcement that a binary chunk is coming
         /*
