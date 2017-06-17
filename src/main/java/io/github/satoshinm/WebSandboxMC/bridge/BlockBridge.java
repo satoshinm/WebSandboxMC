@@ -135,6 +135,9 @@ public class BlockBridge {
             webSocketServerThread.sendLine(channel, "m,0");
         }
 
+        String name = webSocketServerThread.webPlayerBridge.channelId2name.get(channel.id());
+        webSocketServerThread.sendLine(channel, "u," + name);
+
         int day_length = 60 * 20; // 20 minutes
 
         if (seeTime) {
