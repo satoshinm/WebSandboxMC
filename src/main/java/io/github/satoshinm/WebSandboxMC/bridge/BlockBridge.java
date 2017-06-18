@@ -143,7 +143,6 @@ public class BlockBridge {
         if (seeTime) {
             double fraction = world.getTime() / 1000.0 / 24.0; // 0-1
             double elapsed = (fraction + 6.0 / 24) * day_length;
-            System.out.println("day_length = "+day_length+", elapsed="+elapsed);
             webSocketServerThread.sendLine(channel, "E," + elapsed + "," + day_length);
             // TODO: listen for server time change and resend E, command
         } else {
