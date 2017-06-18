@@ -1,13 +1,10 @@
 package io.github.satoshinm.WebSandboxMC.bridge;
 
 import io.github.satoshinm.WebSandboxMC.Settings;
+import io.github.satoshinm.WebSandboxMC.bukkit.ClickableLinks;
 import io.github.satoshinm.WebSandboxMC.ws.WebSocketServerThread;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelId;
-import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.HoverEvent;
-import net.md_5.bungee.api.chat.TextComponent;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
@@ -15,7 +12,6 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Sheep;
 import org.bukkit.event.entity.EntityDamageEvent;
-import org.json.simple.JSONObject;
 
 import java.math.BigInteger;
 import java.security.SecureRandom;
@@ -303,41 +299,7 @@ public class WebPlayerBridge {
         String url = publicURL + "#++" + username + "+" + token;
 
         if (clickableLinks && sender instanceof Player) {
-            Player player = (Player) sender;
-
-            String linkText = "Click here to login";
-            String hoverText = "Login to the web sandbox as " + player.getName();
-
-            // There are two strategies since TextComponents fails with on Glowstone with an error:
-            // java.lang.UnsupportedOperationException: Not supported yet.
-            // at org.bukkit.entity.Player$Spigot.sendMessage(Player.java:1734)
-            // see https://github.com/GlowstoneMC/Glowkit-Legacy/pull/8
-            if (clickableLinksTellraw) {
-                JSONObject json = new JSONObject();
-                json.put("text", linkText);
-                json.put("bold", true);
-
-                JSONObject clickEventJson = new JSONObject();
-                clickEventJson.put("action", "open_url");
-                clickEventJson.put("value", url);
-                json.put("clickEvent", clickEventJson);
-
-                JSONObject hoverEventJson = new JSONObject();
-                hoverEventJson.put("action", "show_text");
-                JSONObject hoverTextObject = new JSONObject();
-                hoverTextObject.put("text", hoverText);
-                hoverEventJson.put("value", hoverTextObject);
-                json.put("hoverEvent", hoverEventJson);
-
-                Bukkit.getServer().dispatchCommand(Bukkit.getConsoleSender(), "tellraw " + player.getName() + " " + json.toJSONString());
-            } else {
-                TextComponent message = new TextComponent(linkText);
-                message.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, url));
-                message.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponent[] { new TextComponent(hoverText) }));
-                message.setBold(true);
-
-                player.spigot().sendMessage(message);
-            }
+            ClickableLinks.sendLink((Player) sender, url, clickableLinksTellraw);
         } else {
             sender.sendMessage("Visit this URL to login: " + url);
         }
