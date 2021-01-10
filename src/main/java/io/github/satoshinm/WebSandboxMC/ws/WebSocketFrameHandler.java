@@ -20,7 +20,11 @@ import io.netty.channel.*;
 import io.netty.handler.codec.http.websocketx.BinaryWebSocketFrame;
 import io.netty.handler.codec.http.websocketx.WebSocketFrame;
 import org.bukkit.Bukkit;
+import org.spongepowered.api.Sponge;
+import org.spongepowered.api.service.ban.BanService;
+import org.spongepowered.api.util.ban.Ban;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 
@@ -34,11 +38,24 @@ public class WebSocketFrameHandler extends SimpleChannelInboundHandler<WebSocket
         this.webSocketServerThread = webSocketServerThread;
         this.checkIPBans = checkIPBans;
 
+        Set<String> ipBans = null;
         if (this.checkIPBans) {
-            this.ipBans = Bukkit.getServer().getIPBans();
-        } else {
-            this.ipBans = null;
+            // TODO: refactor out Bukkit/Sponge banning into separate modules
+            try {
+                ipBans = Bukkit.getServer().getIPBans();
+            } catch (NoClassDefFoundError e1) {
+                try {
+                    ipBans = new HashSet<String>();
+                    BanService service = Sponge.getServiceManager().provide(BanService.class).get();
+                    for (Ban.Ip b : service.getIpBans()) {
+                        ipBans.add(b.getAddress().toString());
+                    }
+                } catch (NoClassDefFoundError e) {
+                    throw new UnsupportedOperationException("Unable to get ban list, try setting checkIPBans: false");
+                }
+            }
         }
+        this.ipBans = ipBans;
     }
 
     @Override
