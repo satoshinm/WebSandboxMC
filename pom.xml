@@ -54,6 +54,12 @@
       <version>${netty.version}</version>
       <scope>compile</scope>
     </dependency>
+    <dependency>
+      <groupId>com.googlecode.json-simple</groupId>
+      <artifactId>json-simple</artifactId>
+      <version>1.1.1</version>
+      <scope>compile</scope>
+    </dependency>
   </dependencies>
 
   <build>
@@ -95,6 +101,12 @@
                   <pattern>io.netty</pattern>
                   <shadedPattern>
                     io.github.satoshinm.WebSandboxMC.dep.io.netty
+                  </shadedPattern>
+                </relocation>
+                <relocation>
+                  <pattern>org.json.simple</pattern>
+                  <shadedPattern>
+                    io.github.satoshinm.WebSandboxMC.dep.org.json.simple
                   </shadedPattern>
                 </relocation>
               </relocations>
