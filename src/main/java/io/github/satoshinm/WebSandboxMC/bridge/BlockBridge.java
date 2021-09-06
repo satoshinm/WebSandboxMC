@@ -522,7 +522,7 @@ public class BlockBridge {
 
         switch (material) {
             case AIR: return 0;
-            case GRASS: return 1;
+            case GRASS_BLOCK: return 1;
             case SAND: return 2;
             case SMOOTH_STONE: return 3;  // TODO: 3 is smooth stone brick, what is this?
             case MOSSY_STONE_BRICKS: return 76; // mossy stone brick
@@ -600,6 +600,7 @@ public class BlockBridge {
 
             // TODO: return  cloud (16);
 
+            case GRASS:
             case TALL_GRASS: return 17;
 
             // TODO: other double plants, but a lot look like longer long grass
