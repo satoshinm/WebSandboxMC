@@ -474,7 +474,8 @@ public class BlockBridge {
 
     // The web client represents directional blocks has four block ids
     // example: furnaces
-    private int getDirectionalOrthogonalWebBlock(int base, BlockFace facing) {
+    private int getDirectionalOrthogonalWebBlock(int base, Directional directional) {
+        BlockFace facing = directional.getFacing();
         switch (facing) {
             case NORTH: return base+0;
             case SOUTH: return base+1;
@@ -485,12 +486,10 @@ public class BlockBridge {
                 return base;
         }
     }
-    private int getDirectionalOrthogonalWebBlock(int base, Directional directional) {
-        return this.getDirectionalOrthogonalWebBlock(base, directional.getFacing());
-    }
 
     // example: pumpkins, for some reason, fronts are inverted
-    private int getDirectionalOrthogonalWebBlockReversed(int base, BlockFace facing) {
+    private int getDirectionalOrthogonalWebBlockReversed(int base, Directional directional) {
+        BlockFace facing = directional.getFacing();
         switch (facing) {
             case SOUTH: return base+0;
             case NORTH: return base+1;
@@ -500,9 +499,6 @@ public class BlockBridge {
                 webSocketServerThread.log(Level.WARNING, "unknown orthogonal directional rotation: "+facing);
                 return base;
         }
-    }
-    private int getDirectionalOrthogonalWebBlockReversed(int base, Directional directional) {
-        return this.getDirectionalOrthogonalWebBlockReversed(base, directional);
     }
 
     // Translate web<->bukkit blocks
