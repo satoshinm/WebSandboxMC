@@ -10,6 +10,8 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.block.data.Lightable;
 import org.bukkit.material.*;
 
 import java.io.ByteArrayOutputStream;
@@ -368,13 +370,11 @@ public class BlockBridge {
             return "L,0,0,"+x+","+y+","+z+"," + light_level;
         }
 
-        if (material == Material.WALL_SIGN || material == Material.SIGN_POST) {
+        if (blockState instanceof Sign) {
             Block block = location.getWorld().getBlockAt(location);
-            if (blockState instanceof Sign) {
-                Sign sign = (Sign) blockState;
+            Sign sign = (Sign) blockState;
 
-                return getNotifySignChange(block.getLocation(), block.getType(), block.getState(), sign.getLines());
-            }
+            return getNotifySignChange(block.getLocation(), block.getType(), block.getState(), sign.getLines());
         }
 
         return null;
@@ -405,16 +405,26 @@ public class BlockBridge {
     }
 
     private int toWebLighting(Material material, BlockState blockState) {
+        BlockData blockData = blockState.getBlockData();
+        boolean isLit = false;
+
+        if (blockData instanceof Lightable) {
+            Lightable lightable = (Lightable) blockData;
+            isLit = lightable.isLit();
+        }
         // See http://minecraft.gamepedia.com/Light#Blocks
         // Note not all of these may be fully supported yet
         switch (material) {
             case BEACON:
-            case ENDER_PORTAL:
             case FIRE:
             case GLOWSTONE:
             case JACK_O_LANTERN:
             case LAVA:
-            case REDSTONE_LAMP_ON: // TODO: get notified when toggles on/off
+            case REDSTONE_LAMP: // TODO: get notified when toggles on/off
+                if (!isLit) {
+                    return 0;
+                }
+
             case SEA_LANTERN:
             case END_ROD:
                 return 15;
@@ -422,26 +432,40 @@ public class BlockBridge {
             case TORCH:
                 return 14;
 
-            case BURNING_FURNACE:
+            case FURNACE:
+                if (blockData instanceof org.bukkit.block.data.type.Furnace) { // TODO: or is Lightable too?
+                    org.bukkit.block.data.type.Furnace furnace = (org.bukkit.block.data.type.Furnace) blockData;
+                    if (!furnace.isLit()) {
+                        return 0;
+                    }
+                }
                 return 13;
 
-            case PORTAL:
+            case END_PORTAL:
+            case NETHER_PORTAL:
                 return 11;
 
-            case GLOWING_REDSTONE_ORE:
+            case REDSTONE_ORE:
+            case DEEPSLATE_REDSTONE_ORE:
+                if (!isLit) {
+                    return 0;
+                }
                 return 9;
 
             case ENDER_CHEST:
-            case REDSTONE_TORCH_ON:
+            case REDSTONE_TORCH:
+                if (!isLit) {
+                    return 0;
+                }
                 return 7;
 
-            case MAGMA:
+            case MAGMA_BLOCK:
                 return 3;
 
             case BREWING_STAND:
             case BROWN_MUSHROOM:
             case DRAGON_EGG:
-            case ENDER_PORTAL_FRAME:
+            case END_PORTAL_FRAME:
                 return 1;
             default:
                 return 0;
@@ -450,28 +474,35 @@ public class BlockBridge {
 
     // The web client represents directional blocks has four block ids
     // example: furnaces
-    private int getDirectionalOrthogonalWebBlock(int base, Directional directional) {
-        switch (directional.getFacing()) {
+    private int getDirectionalOrthogonalWebBlock(int base, BlockFace facing) {
+        switch (facing) {
             case NORTH: return base+0;
             case SOUTH: return base+1;
             case WEST: return base+2;
             case EAST: return base+3;
             default:
-                webSocketServerThread.log(Level.WARNING, "unknown orthogonal directional rotation: "+directional.getFacing());
+                webSocketServerThread.log(Level.WARNING, "unknown orthogonal directional rotation: "+facing);
                 return base;
         }
     }
+    private int getDirectionalOrthogonalWebBlock(int base, Directional directional) {
+        return this.getDirectionalOrthogonalWebBlock(base, directional.getFacing());
+    }
+
     // example: pumpkins, for some reason, fronts are inverted
-    private int getDirectionalOrthogonalWebBlockReversed(int base, Directional directional) {
-        switch (directional.getFacing()) {
+    private int getDirectionalOrthogonalWebBlockReversed(int base, BlockFace facing) {
+        switch (facing) {
             case SOUTH: return base+0;
             case NORTH: return base+1;
             case EAST: return base+2;
             case WEST: return base+3;
             default:
-                webSocketServerThread.log(Level.WARNING, "unknown orthogonal directional rotation: "+directional.getFacing());
+                webSocketServerThread.log(Level.WARNING, "unknown orthogonal directional rotation: "+facing);
                 return base;
         }
+    }
+    private int getDirectionalOrthogonalWebBlockReversed(int base, Directional directional) {
+        return this.getDirectionalOrthogonalWebBlockReversed(base, directional);
     }
 
     // Translate web<->bukkit blocks
@@ -481,39 +512,59 @@ public class BlockBridge {
             return blocksToWeb.get(material);
         }
 
-        MaterialData materialData = blockState != null ? blockState.getData() : null;
+        BlockData blockData = blockState != null ? blockState.getBlockData() : null;
+
+        Directional directional = null;
+        if (blockData instanceof Directional) {
+            directional = (Directional) blockData;
+        }
+
+        boolean isLit = false;
+        if (blockData instanceof Lightable) {
+            Lightable lightable = (Lightable) blockData;
+            isLit = lightable.isLit();
+        }
 
         switch (material) {
             case AIR: return 0;
             case GRASS: return 1;
             case SAND: return 2;
-            case SMOOTH_BRICK: {
-                if (materialData instanceof TexturedMaterial) {
-                    TexturedMaterial texturedMaterial = (TexturedMaterial) materialData;
-                    switch (texturedMaterial.getMaterial()) {
-                        default:
-                        case STONE: return 3; // stone brick
-                        case MOSSY_COBBLESTONE: return 76; // mossy stone brick
-                        case COBBLESTONE: return 77; // cracked stone brick
-                    }
-                }
-                return 3; // stone brick
-            }
-            case BRICK: return 4;
-            case LOG:
-            case LOG_2: {
-                if (materialData instanceof Tree) {
-                    Tree tree = (Tree) materialData;
-                    switch (tree.getSpecies()) { // from Wood
-                        default:
-                        case GENERIC: return 5; // oak wood log
-                        case REDWOOD: return 107; // spruce wood log
-                        case BIRCH: return 108; // birch wood log
-                    }
-                    // TODO: tree.getDirection(), faces different
-                }
+            case SMOOTH_STONE: return 3;  // TODO: 3 is smooth stone brick, what is this?
+            case MOSSY_STONE_BRICKS: return 76; // mossy stone brick
+            case CRACKED_STONE_BRICKS: return 77; // cracked stone brick
+            case BRICKS: return 4;
+
+            case OAK_LOG: // log = block found in trees
+            case OAK_WOOD: // wood = bark block
+            case STRIPPED_OAK_LOG:
+            case STRIPPED_OAK_WOOD:
+
+            case JUNGLE_LOG:
+            case JUNGLE_WOOD:
+            case STRIPPED_JUNGLE_LOG:
+            case STRIPPED_JUNGLE_WOOD:
+
+            case ACACIA_LOG:
+            case ACACIA_WOOD:
+            case STRIPPED_ACACIA_LOG:
+            case STRIPPED_ACACIA_WOOD:
+
+            case DARK_OAK_LOG:
+            case DARK_OAK_WOOD:
+            case STRIPPED_DARK_OAK_LOG:
+            case STRIPPED_DARK_OAK_WOOD:
+
                 return 5; // oak wood log
-            }
+
+            case SPRUCE_LOG:
+            case STRIPPED_SPRUCE_LOG:
+                return 107; // spruce wood log
+
+            case BIRCH_LOG:
+            case STRIPPED_BIRCH_LOG:
+                return 108; // birch wood log
+
+            // TODO: tree.getDirection(), faces different
 
             case GOLD_ORE: return 70;
             case IRON_ORE: return 71;
@@ -523,111 +574,120 @@ public class BlockBridge {
             case DIAMOND_ORE: return 48;
             case REDSTONE_ORE: return 49;
             // TODO: more ores, for now, showing as stone
-            case QUARTZ_ORE: return 6;
+            case NETHER_QUARTZ_ORE: return 6;
             case STONE: return 6;
             case DIRT: return 7;
-            case WOOD: return 8; // plank
+
+            case OAK_PLANKS:
+            case SPRUCE_PLANKS:
+            case BIRCH_PLANKS:
+            case JUNGLE_PLANKS:
+            case ACACIA_PLANKS:
+            case DARK_OAK_PLANKS:
+            case CRIMSON_PLANKS:
+                return 8; // plank
+
             case SNOW: return 9;
 
             case GLASS: return 10;
             case COBBLESTONE: return 11;
 
             case CHEST: return 14;
-            case LEAVES:
-            case LEAVES_2: {
-                if (materialData instanceof Leaves) {
-                    Leaves leaves = (Leaves) materialData;
-                    switch (leaves.getSpecies()) {
-                        default:
-                        case GENERIC: return 15; // leaves
-                        case REDWOOD: return 109; // spruce leaves
-                    }
-                }
-                return 15;
-            }
+
+            case OAK_LEAVES:
+            case DARK_OAK_LEAVES:
+            case ACACIA_LEAVES:
+            case BIRCH_LEAVES:
+                return 15; // leaves
+
+            case SPRUCE_LEAVES: // "redwood
+                return 109; // spruce leaves
+
             // TODO: return  cloud (16);
-            case DOUBLE_PLANT: return 17;  // TODO: other double plants, but a lot look like longer long grass
-            case LONG_GRASS: {
-                if (materialData instanceof LongGrass) {
-                    LongGrass longGrass = (LongGrass) materialData;
-                    GrassSpecies grassSpecies = longGrass.getSpecies();
-                    switch (grassSpecies) {
-                        default:
-                        case NORMAL: return 17; // tall grass
-                        case DEAD: return 23; // "shrub", places on grass, same texture as deadbush
-                        // http://minecraft.gamepedia.com/Dead_Bush#Trivia "There is a variant of grass called "Shrub"
-                        // that looks identical to the dead bush, but will occasionally drop seeds and is randomly
-                        // offset from the center of the block like grass."
 
-                        case FERN_LIKE: return 29; // fern
-                    }
-                }
-                return 17; // tall grass
-            }
+            case TALL_GRASS: return 17;
+
+            // TODO: other double plants, but a lot look like longer long grass
+
+            case FERN: return 29; // fern
+
             case DEAD_BUSH: return 23; // deadbush, places on sand
-            case YELLOW_FLOWER: return 18;
-            case RED_ROSE: return 19;
-            //TODO case CHORUS_FLOWER: return 20;
-            case SAPLING: {
-                if (materialData instanceof Sapling) {
-                    Sapling sapling = (Sapling) materialData;
-                    switch (sapling.getSpecies()) {
-                        default:
-                        case GENERIC: return 20; // oak sapling
-                        case REDWOOD: return 30; // spruce sapling ("darker barked/leaves tree species")
-                        case BIRCH: return 31; // birch sapling
-                    }
-                }
+            case DANDELION: return 18;
+            case POPPY:
+            case ALLIUM:
+            case AZURE_BLUET:
+            case RED_TULIP:
+            case ORANGE_TULIP:
+            case PINK_TULIP:
+            case OXEYE_DAISY:
+            case CORNFLOWER:
+            case LILY_OF_THE_VALLEY:
+            case WITHER_ROSE:
+            case SPORE_BLOSSOM:
+                return 19; // red rose
+
+            case CHORUS_FLOWER: return 20;
+
+            case OAK_SAPLING:
+            case DARK_OAK_SAPLING:
+            case ACACIA_SAPLING:
+            case JUNGLE_SAPLING:
                 return 20; // oak sapling
-            }
-            // TODO: return  sunflower (21);
-            // TODO: return  white flower (22);
-            // TODO: return  blue flower (23);
 
-            case WOOL:
-            {
-                if (materialData instanceof Wool) {
-                    Wool wool = (Wool) materialData;
-                    switch (wool.getColor()) {
-                        case WHITE: return 32;
-                        case ORANGE: return 33;
-                        case MAGENTA: return 34;
-                        case LIGHT_BLUE: return 35;
-                        case YELLOW: return 36;
-                        case LIME: return 37;
-                        case PINK: return 38;
-                        case GRAY: return 39;
-                        case SILVER: return 40; // light gray
-                        case CYAN: return 41;
-                        case PURPLE: return 42;
-                        case BLUE: return 43;
-                        case BROWN: return 44;
-                        case GREEN: return 45;
-                        case RED: return 46;
-                        default:
-                        case BLACK: return 47;
-                    }
-                }
-                return 47;
+            case SPRUCE_SAPLING:
+                return 30; // spruce sapling ("darker barked/leaves tree species")
 
-            }
+            case BIRCH_SAPLING:
+                return 31; // birch sapling
 
-            case WALL_SIGN: return 0; // air, since text is written on block behind it
-            case SIGN_POST: return 8; // plank TODO: return  sign post model
+            case SUNFLOWER: return 21;
+            case WHITE_TULIP: return 22; // white flower
+            case BLUE_ORCHID: return 23; // blue flower
 
-            // Light sources (nonzero toWebLighting()) TODO: return  different textures? + allow placement, distinct blocks
+            case WHITE_WOOL: return 32;
+            case ORANGE_WOOL: return 33;
+            case MAGENTA_WOOL: return 34;
+            case LIGHT_BLUE_WOOL: return 35;
+            case YELLOW_WOOL: return 36;
+            case LIME_WOOL: return 37;
+            case PINK_WOOL: return 38;
+            case GRAY_WOOL: return 39;
+            case LIGHT_GRAY_WOOL: return 40; // formerly silver
+            case CYAN_WOOL: return 41;
+            case PURPLE_WOOL: return 42;
+            case BLUE_WOOL: return 43;
+            case BROWN_WOOL: return 44;
+            case GREEN_WOOL: return 45;
+            case BLACK_WOOL: return 47;
+
+            case OAK_WALL_SIGN:
+            case SPRUCE_WALL_SIGN:
+            case BIRCH_WALL_SIGN:
+            case JUNGLE_WALL_SIGN:
+            case DARK_OAK_WALL_SIGN:
+            case CRIMSON_WALL_SIGN:
+                return 0; // air, since text is written on block behind it
+
+            case OAK_SIGN:
+            case SPRUCE_SIGN:
+            case BIRCH_SIGN:
+            case JUNGLE_SIGN:
+            case DARK_OAK_SIGN:
+            case CRIMSON_SIGN:
+                return 8; // plank TODO: return  sign post model
+
+                // Light sources (nonzero toWebLighting()) TODO: return  different textures? + allow placement, distinct blocks
             case GLOWSTONE: return 64; // #define GLOWING_STONE
             case SEA_LANTERN: return 35; // light blue wool
             case TORCH: return 21; // sunflower, looks kinda like a torch
-            case REDSTONE_TORCH_OFF: return 19;
-            case REDSTONE_TORCH_ON: return 19; // red flower, vaguely a torch
+            case REDSTONE_TORCH:
+            case REDSTONE_WALL_TORCH:
+                return 19; // red flower, vaguely a torch
 
             // Liquids
             // TODO: flowing, stationary, and different heights of each liquid
-            case STATIONARY_WATER:
             case WATER:
                 return 12; // water
-            case STATIONARY_LAVA:
             case LAVA:
                 return 13; // lava
 
@@ -641,61 +701,56 @@ public class BlockBridge {
             case BOOKSHELF: return 50;
             case MOSSY_COBBLESTONE: return 51;
             case OBSIDIAN: return 52;
-            case WORKBENCH: return 53;
+            case CRAFTING_TABLE: return 53;
             case FURNACE: {
-                if (materialData instanceof org.bukkit.material.Furnace) {
-                    org.bukkit.material.Furnace furnace = (org.bukkit.material.Furnace) materialData;
-                    return getDirectionalOrthogonalWebBlock(90, furnace); // 90, 91, 92, 93
+                if (directional != null) {
+                    if (!isLit) {
+                        return getDirectionalOrthogonalWebBlock(90, directional); // 90, 91, 92, 93
+                    } else {
+                        return getDirectionalOrthogonalWebBlock(94, directional); // 94, 95, 96, 97
+                    }
                 }
-                return 90;
-                //return 54; // old
+                return !isLit ? 90 : 94;
+                //return !isLit ? 54 : 55; // old
             }
-            case BURNING_FURNACE: { // TODO: refactor with above, same code! different base block
-                if (materialData instanceof org.bukkit.material.Furnace) {
-                    org.bukkit.material.Furnace furnace = (org.bukkit.material.Furnace) materialData;
-                    return getDirectionalOrthogonalWebBlock(94, furnace); // 94, 95, 96, 97
-                }
-                return 94;
-                //return 55; // old
-            }
-            case MOB_SPAWNER: return 56;
+
+            case SPAWNER: return 56;
             case SNOW_BLOCK: return 57;
             case ICE: return 58;
             case CLAY: return 59;
             case JUKEBOX: return 60;
             case CACTUS: return 61;
-            case MYCEL: return 62;
+            case MYCELIUM: return 62;
             case NETHERRACK: return 63;
             case SPONGE: return 24;
-            case MELON_BLOCK: return 25;
-            case ENDER_STONE: return 26;
+            case MELON: return 25;
+            case END_STONE: return 26;
             case TNT: return 27;
             case EMERALD_BLOCK: return 28;
-            case PUMPKIN: {
-                if (materialData instanceof Pumpkin) {
-                    Pumpkin pumpkin = (Pumpkin) materialData;
-                    return getDirectionalOrthogonalWebBlockReversed(98, pumpkin); // 98, 99, 100, 101
+            case CARVED_PUMPKIN: {
+                if (directional != null) {
+                    return getDirectionalOrthogonalWebBlockReversed(98, directional); // 98, 99, 100, 101
                 }
-
-                return 78; // faceless
             }
+            case PUMPKIN:
+                return 78; // faceless
+
             case JACK_O_LANTERN: {
-                if (materialData instanceof Pumpkin) {
-                    Pumpkin pumpkin = (Pumpkin) materialData;
-                    return getDirectionalOrthogonalWebBlockReversed(102, pumpkin); // 102, 103, 104, 105
+                if (directional != null) {
+                    return getDirectionalOrthogonalWebBlockReversed(102, directional); // 102, 103, 104, 105
                 }
 
                 return 79; // all faces
             }
-            case HUGE_MUSHROOM_1: return 80; // brown TODO: data
-            case HUGE_MUSHROOM_2: return 81; // red TODO: data
-            case COMMAND: return 82;
+            case BROWN_MUSHROOM_BLOCK: return 80; // brown TODO: data
+            case RED_MUSHROOM_BLOCK: return 81; // red TODO: data
+            case COMMAND_BLOCK: return 82;
             case EMERALD_ORE: return 83;
             case SOUL_SAND: return 84;
             case NETHER_BRICK: return 85;
-            case SOIL: return 86; // wet farmland TODO: dry farmland (87)
-            case REDSTONE_LAMP_OFF: return 88;
-            case REDSTONE_LAMP_ON: return 89;
+            case FARMLAND: return 86; // wet farmland TODO: dry farmland (87)
+            case REDSTONE_LAMP:
+                return !isLit ? 88 : 89;
 
             case BARRIER: return 106;
             default: return this.blocksToWebMissing;
@@ -705,98 +760,79 @@ public class BlockBridge {
     // Mutate blockState to block of type type
     private void toBukkitBlockType(int type, BlockState blockState) {
         Material material = null;
-        MaterialData materialData = null;
+        BlockData blockData = null;
 
         switch (type) {
             case 0: material = Material.AIR; break;
             case 1: material = Material.GRASS; break;
             case 2: material = Material.SAND; break;
-            case 3: material = Material.SMOOTH_BRICK; break;
+            case 3: material = Material.SMOOTH_STONE; break; // TODO: what is smooth brick?
             case 4: material = Material.BRICK; break;
-            case 5: material = Material.LOG; break;
+            case 5: material = Material.OAK_LOG; break;
             case 6: material = Material.STONE; break;
             case 7: material = Material.DIRT; break;
-            case 8: material = Material.WOOD; break;
+            case 8: material = Material.OAK_WOOD; break; // TODO: this was WOOD, is this right? bark?
             case 9: material = Material.SNOW_BLOCK; break;
             case 10: material = Material.GLASS; break;
             case 11: material = Material.COBBLESTONE; break;
             case 12: material = Material.WATER; break;
             case 13: material = Material.LAVA; break;
             case 14: material = Material.CHEST; break; // TODO: doesn't seem to set?
-            case 15: material = Material.LEAVES; break;
+            case 15: material = Material.OAK_LEAVES; break;
             //case 16: material = Material.clouds; break; // clouds
-            case 17: material = Material.LONG_GRASS; break;
-            case 18: material = Material.YELLOW_FLOWER; break;
-            case 19: material = Material.RED_ROSE; break;
+            case 17: material = Material.TALL_GRASS; break;
+            case 18: material = Material.DANDELION; break;
+            case 19: material = Material.RED_TULIP; break;
             case 20: material = Material.CHORUS_FLOWER; break;
             case 21: material = Material.RED_MUSHROOM; break;
             case 22: material = Material.BROWN_MUSHROOM; break;
             case 23: material = Material.DEAD_BUSH; break;
             case 24: material = Material.SPONGE; break;
-            case 25: material = Material.MELON_BLOCK; break;
-            case 26: material = Material.ENDER_STONE; break;
+            case 25: material = Material.MELON; break;
+            case 26: material = Material.END_STONE; break;
             case 27: material = Material.TNT; break;
             case 28: material = Material.EMERALD_BLOCK; break;
 
-            case 29: material = Material.LONG_GRASS; break; // TODO: set fern
-            case 30: material = Material.SAPLING; break; // TODO: set spruce sapling
-            case 31: material = Material.SAPLING; break; // TODO: set birch sapling
+            case 29: material = Material.FERN; break;
+            case 30: material = Material.SPRUCE_SAPLING; break;
+            case 31: material = Material.BIRCH_SAPLING; break;
 
-            case 32:
-            case 33:
-            case 34:
-            case 35:
-            case 36:
-            case 37:
-            case 38:
-            case 39:
-            case 40:
-            case 41:
-            case 42:
-            case 43:
-            case 44:
-            case 45:
-            case 46:
-            case 47:
-                material = Material.WOOL;
-                DyeColor color;
-                switch (type) {
-                    default:
-                    case 32: color = DyeColor.WHITE; break;
-                    case 33: color = DyeColor.ORANGE; break;
-                    case 34: color = DyeColor.MAGENTA; break;
-                    case 35: color = DyeColor.LIGHT_BLUE; break;
-                    case 36: color = DyeColor.YELLOW; break;
-                    case 37: color = DyeColor.LIME; break;
-                    case 38: color = DyeColor.PINK; break;
-                    case 39: color = DyeColor.GRAY; break;
-                    case 40: color = DyeColor.SILVER; break; // light gray
-                    case 41: color = DyeColor.CYAN; break;
-                    case 42: color = DyeColor.PURPLE; break;
-                    case 43: color = DyeColor.BLUE; break;
-                    case 44: color = DyeColor.BROWN; break;
-                    case 45: color = DyeColor.GREEN; break;
-                    case 46: color = DyeColor.RED; break;
-                    case 47: color = DyeColor.BLACK; break;
-                }
-                materialData = new Wool(color);
-                break;
+            case 32: material = Material.WHITE_WOOL; break;
+            case 33: material = Material.ORANGE_WOOL; break;
+            case 34: material = Material.MAGENTA_WOOL; break;
+            case 35: material = Material.LIGHT_BLUE_WOOL; break;
+            case 36: material = Material.YELLOW_WOOL; break;
+            case 37: material = Material.LIME_WOOL; break;
+            case 38: material = Material.PINK_WOOL; break;
+            case 39: material = Material.GRAY_WOOL; break;
+            case 40: material = Material.LIGHT_GRAY_WOOL; break;
+            case 41: material = Material.CYAN_WOOL; break;
+            case 42: material = Material.PURPLE_WOOL; break;
+            case 43: material = Material.BLUE_WOOL; break;
+            case 44: material = Material.BROWN_WOOL; break;
+            case 45: material = Material.GREEN_WOOL; break;
+            case 46: material = Material.RED_WOOL; break;
+            case 47: material = Material.BLACK_WOOL; break;
 
             case 48: material = Material.DIAMOND_ORE; break;
             case 49: material = Material.REDSTONE_ORE; break;
             case 50: material = Material.BOOKSHELF; break;
             case 51: material = Material.MOSSY_COBBLESTONE; break;
             case 52: material = Material.OBSIDIAN; break;
-            case 53: material = Material.WORKBENCH; break;
-            case 54: material = Material.FURNACE; break; // TODO: remove, TODO: direction
-            case 55: material = Material.BURNING_FURNACE; break; // TODO: remove, TODO: direction
+            case 53: material = Material.CRAFTING_TABLE; break;
+
+            case 54: // TODO: remove, what was this?
+            case 55: // TODO: remove, what was this?
+                material = Material.FURNACE;
+                break;
+
             case 56: material = Material.AIR; break; // not allowing, dangerous Material.MOB_SPAWNER
             case 57: material = Material.SNOW_BLOCK; break;
             case 58: material = Material.ICE; break;
             case 59: material = Material.CLAY; break;
             case 60: material = Material.JUKEBOX; break;
             case 61: material = Material.CACTUS; break;
-            case 62: material = Material.MYCEL; break;
+            case 62: material = Material.MYCELIUM; break;
             case 63: material = Material.NETHERRACK; break;
             case 64: material = Material.GLOWSTONE; break;
             case 65: material = Material.BEDROCK; break;
@@ -814,28 +850,37 @@ public class BlockBridge {
             case 77: material = Material.MOSSY_COBBLESTONE; break; // TODO: cracked stone brick
             case 78: material = Material.PUMPKIN; break; // TODO: direction
             case 79: material = Material.JACK_O_LANTERN; break; // TODO: direction
-            case 80: material = Material.HUGE_MUSHROOM_1; break; // TODO: type
-            case 81: material = Material.HUGE_MUSHROOM_2; break; // TODO: type
+            case 80: material = Material.BROWN_MUSHROOM_BLOCK; break; // TODO: type
+            case 81: material = Material.RED_MUSHROOM_BLOCK; break; // TODO: type
             case 82: material = Material.AIR; break; // not ever allowing Material.COMMAND; break;
             case 83: material = Material.EMERALD_ORE; break;
             case 84: material = Material.SOUL_SAND; break;
             case 85: material = Material.NETHER_BRICK; break;
-            case 86: material = Material.SOIL; break;
+            case 86: material = Material.FARMLAND; break;
             //case 87: // TODO: dry farmland
-            case 88: material = Material.REDSTONE_LAMP_OFF; break;
-            case 89: material = Material.REDSTONE_LAMP_ON; break;
+            case 88:
+            case 89:
+                material = Material.REDSTONE_LAMP;
+                // TODO: set lit
+                //Lightable lit = new Lightable();
+                //lit.setLit(type == 89); // lamp on
+                break;
 
             case 90:
             case 91:
             case 92:
             case 93:
-                material = Material.FURNACE; break; // TODO: direction
 
             case 94:
             case 95:
             case 96:
             case 97:
-                material = Material.BURNING_FURNACE; break; // TODO: direction
+                material = Material.FURNACE; // TODO: direction
+                // TODO: set lit
+                //org.bukkit.block.data.type.Furnace f = new org.bukkit.block.data.type.Furnace(); // TODO: how to construct this? it is an interface, do we have to get after?
+                //f.setLit(type >= 94); // burning
+                // TODO: set direction
+                break;
 
             case 98:
             case 99:
@@ -850,9 +895,9 @@ public class BlockBridge {
                 material = Material.JACK_O_LANTERN; break; // TODO: direction
 
             case 106: material = Material.AIR; break; // not allowing Material.BARRIER; break;
-            case 107: material = Material.LOG; break; // TODO: spruce wood log
-            case 108: material = Material.LOG; break; // TODO: birch wood log
-            case 109: material = Material.LEAVES; break; // TODO: spruce leaves
+            case 107: material = Material.SPRUCE_WOOD; break; // spruce wood log
+            case 108: material = Material.BIRCH_WOOD; break; // birch wood log
+            case 109: material = Material.SPRUCE_LEAVES; break; // TODO: spruce leaves
 
             default:
                 webSocketServerThread.log(Level.WARNING, "untranslated web block id "+type);
@@ -867,8 +912,8 @@ public class BlockBridge {
         if (material != null) {
             blockState.setType(material);
 
-            if (materialData != null) {
-                blockState.setData(materialData);
+            if (blockData != null) {
+                blockState.setBlockData(blockData);
             }
 
             boolean force = true;
@@ -896,7 +941,13 @@ public class BlockBridge {
         if (blockFace == null) {
             // https://github.com/satoshinm/WebSandboxMC/issues/92
             webSocketServerThread.log(Level.WARNING, "Invalid sign face at " + location);
-        } else if (material == Material.WALL_SIGN) {
+
+        } else if (material == Material.OAK_WALL_SIGN ||
+                material == Material.SPRUCE_WALL_SIGN ||
+                material == Material.BIRCH_WALL_SIGN ||
+                material == Material.JUNGLE_WALL_SIGN ||
+                material == Material.DARK_OAK_WALL_SIGN ||
+                material == Material.CRIMSON_WALL_SIGN) {
             // wallsigns, attached to block behind
             switch (blockFace) {
                 default:
@@ -917,7 +968,12 @@ public class BlockBridge {
                     x -= 1;
                     break;
             }
-        } else if (material == Material.SIGN_POST) {
+    } else if (material == Material.OAK_SIGN ||
+            material == Material.SPRUCE_SIGN ||
+            material == Material.BIRCH_SIGN ||
+            material == Material.JUNGLE_SIGN ||
+            material == Material.DARK_OAK_SIGN ||
+            material == Material.CRIMSON_SIGN) {
             // standing sign, on the block itself
             // TODO: support more fine-grained directions, right now Craft only four cardinal
             switch (blockFace) {
@@ -1013,7 +1069,7 @@ public class BlockBridge {
         webSocketServerThread.log(Level.FINEST, "setting sign at "+location+" data="+data);
         */
         BlockState blockState = block.getState();
-        blockState.setType(Material.WALL_SIGN);
+        blockState.setType(Material.OAK_WALL_SIGN);
         blockState.setData(signDirection);
         boolean force = true;
         boolean applyPhysics = false;
