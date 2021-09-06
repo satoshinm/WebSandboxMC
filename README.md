@@ -33,9 +33,9 @@ TODO: missing features
 * Build the WebSandboxMC plugin: `mvn package`
 
 ## Usage
-* Copy target/WebSandboxMC.jar to the `plugins` folder of your [Glowstone](https://www.glowstone.net) server (note: may/not work with other Bukkit-compatible servers, TODO: test)
-* Visit http://localhost:4081/ in a modern browser (requires WebGL, Pointer Lock, WebSockets)
-* Play the game
+1. Copy target/WebSandboxMC.jar to the `plugins` folder of your Bukkit-compatible server (see below)
+2. Visit http://localhost:4081/ in a modern browser (requires WebGL, Pointer Lock, WebSockets)
+3. Play the game
 
 ## Configuration
 
@@ -118,6 +118,10 @@ server compatibility. Known compatible server software:
 
 * [Glowstone](https://www.glowstone.net): for a fully open source end-to-end gameplay experience
 * [SpigotMC](https://www.spigotmc.org)
+
+WebSandboxMC 2.x is compatible with 1.17 (and possibly newer) down to 1.14 API version.
+
+WebSandboxMC 1.x is compatible down to 1.7, but will use "legacy materials" on API versions newer than 1.12. 
 
 ## License
 
