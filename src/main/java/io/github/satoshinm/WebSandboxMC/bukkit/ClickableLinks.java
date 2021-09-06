@@ -3,6 +3,7 @@ package io.github.satoshinm.WebSandboxMC.bukkit;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
+import net.md_5.bungee.api.chat.hover.content.Text;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.json.simple.JSONObject;
@@ -37,7 +38,7 @@ public class ClickableLinks {
         } else {
             TextComponent message = new TextComponent(linkText);
             message.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, url));
-            message.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponent[] { new TextComponent(hoverText) }));
+            message.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new Text(hoverText)));
             message.setBold(true);
 
             player.spigot().sendMessage(message);
