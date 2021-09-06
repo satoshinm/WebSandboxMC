@@ -1,6 +1,8 @@
 name: WebSandboxMC
 main: io.github.satoshinm.WebSandboxMC.bukkit.WebSandboxPlugin
 version: ${version}
+api-version: 1.17
+website: https://www.spigotmc.org/resources/websandboxmc.39415/
 commands:
     websandbox:
         description: Controls the WebSandbox WebGL HTML5 web interface.
