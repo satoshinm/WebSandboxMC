@@ -9,6 +9,7 @@ import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
+import org.bukkit.block.Sign;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Directional;
 import org.bukkit.block.data.Lightable;
@@ -369,12 +370,10 @@ public class BlockBridge {
             return "L,0,0,"+x+","+y+","+z+"," + light_level;
         }
 
-        if (blockState instanceof org.bukkit.block.data.type.Sign) {
-            Block block = location.getWorld().getBlockAt(location);
-            org.bukkit.block.data.type.Sign sign = (org.bukkit.block.data.type.Sign) blockState;
+        if (blockState instanceof org.bukkit.block.Sign) {
+            Sign sign = (Sign) blockState;
 
-            // XXX TODO: get Sign lines
-            //return getNotifySignChange(block.getLocation(), block.getType(), block.getState(), sign.getLines());
+            return getNotifySignChange(blockState.getLocation(), blockState.getType(), blockState, sign.getLines());
         }
 
         return null;
@@ -1063,40 +1062,41 @@ public class BlockBridge {
 
         // Create the sign
         Block block = location.getWorld().getBlockAt(location);
-        /*
-        block.setTypeIdAndData(Material.WALL_SIGN.getId(), data, applyPhysics);
-        webSocketServerThread.log(Level.FINEST, "setting sign at "+location+" data="+data);
-        */
+        webSocketServerThread.log(Level.FINEST, "setting sign at "+location+" text="+text);
+        block.setType(Material.OAK_WALL_SIGN);
+
         BlockState blockState = block.getState();
-        blockState.setType(Material.OAK_WALL_SIGN);
-
-        /* XXX TODO: Directional, set sign direction - but have to create somehow - Sign is an interface
-        org.bukkit.material.Sign signDirection = new org.bukkit.material.Sign();
-        signDirection.setFacingDirection(blockFace);
-         */
-        //blockState.setBlockData(blockData);
-
-        boolean force = true;
-        boolean applyPhysics = false;
-        blockState.update(force, applyPhysics);
-        webSocketServerThread.log(Level.FINEST, "setting sign at "+location+" blockFace="+blockFace);
-
-        // Set the sign text
-        blockState = block.getState();
-        BlockData blockData = blockState.getBlockData();
-        if (!(blockData instanceof org.bukkit.block.data.type.Sign)) {
+        if (!(blockState instanceof Sign)) {
             webSocketServerThread.log(Level.WARNING, "failed to place sign at "+location);
             return;
         }
-        org.bukkit.block.data.type.Sign sign = (org.bukkit.block.data.type.Sign) blockData;
 
-        // XXX TODO: so how are we supposed to set sign text now? Sign block state methods?
+        Sign sign = (Sign) blockState;
+
+        // Set the sign text
         // TODO: text lines by 15 characters into 5 lines
-        //sign.setLine(0, text);
-        //sign.update(force, applyPhysics);
+        sign.setLine(0, text);
         webSocketServerThread.log(Level.FINEST, "set sign text="+text+", sign="+sign+", blockFace="+blockFace+", block="+block+", face="+face);
 
+        // Set sign direction
+        BlockData blockData = blockState.getBlockData();
+        if (!(blockData instanceof Directional)) {
+            webSocketServerThread.log(Level.WARNING, "failed to get sign directional block data at " + location);
+        }
+
+        Directional directional = (Directional) blockData;
+        directional.setFacing(blockFace);
+        webSocketServerThread.log(Level.FINEST, "setting sign at "+location+" blockFace="+blockFace);
+
+        blockState.setBlockData(directional);
+
+        boolean force = true;
+        boolean applyPhysics = false;
+        sign.update(force, applyPhysics);
+        blockState.update(force, applyPhysics);
+        webSocketServerThread.log(Level.FINEST, "updated sign at "+location);
+
         // SignChangeEvent not posted when signs created programmatically; notify web clients ourselves
-        // XXX TODO: notifySignChange(location, block.getType(), block.getState(), sign.getLines());
+        notifySignChange(location, block.getType(), block.getState(), sign.getLines());
     }
 }
